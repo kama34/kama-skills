@@ -26,6 +26,7 @@ Each skill directory serves dual purpose: **skill source** (in `.claude/skills/`
 | Skill | Directory | Trigger |
 |-------|-----------|---------|
 | Slidev Presentation Generator | `slidev/` | `/slidev` |
+| Outline Structure Generator | `outline/` | `/outline` |
 
 ## Working with Skills
 
