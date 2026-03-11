@@ -1,7 +1,7 @@
 ---
 name: outline
-description: "Use when creating presentation outlines/structures. Supports agent pipeline presets, auto-selection, preset creation, and agent training. Handles --preset, --format, --new-preset, --learn=N, and --help."
-argument-hint: "[--help | --preset <name> | --format <fmt> | --new-preset | --learn=N [preset]] [<topic>]"
+description: "Use when creating presentation outlines/structures. Supports agent pipeline presets, auto-selection, preset creation, editing, review, and agent training. Handles --preset, --format, --new-preset, --edit, --review, --questions, --learn=N, and --help."
+argument-hint: "[--help | --preset <name> | --format <fmt> | --questions | --new-preset | --edit <file> <comment> | --review <file> [--preset <name>] | --learn=N [preset]] [<topic>]"
 ---
 
 # Outline — Presentation Structure Generator
@@ -40,6 +40,9 @@ Outline — Генератор структуры презентаций
   /outline <тема>                               Сгенерировать структуру (авто-выбор пресета)
   /outline --preset <имя> <тема>                Использовать конкретный пресет
   /outline --format <slidev|universal|custom>   Переопределить формат вывода
+  /outline --questions <тема>                   Генерация с уточняющими вопросами
+  /outline --edit <файл> <комментарий>           Отредактировать существующую структуру
+  /outline --review <файл> [--preset <имя>]     Ревью и улучшение любой структуры
   /outline --new-preset                         Создать новый пресет агентного пайплайна
   /outline --learn=N [пресет]                   Обучить агентов на N тестовых прогонах
   /outline --help                               Эта справка
@@ -72,11 +75,19 @@ Stop here — do not proceed to generation.
 
 ---
 
+**`--edit <file> <comment>`**: Run the Edit Procedure (E-1 through E-5). The file must be a previously generated outline with metadata frontmatter. Stop here — do not proceed to generation.
+
+---
+
+**`--review <file> [--preset <name>]`**: Run the Review Procedure (R-1 through R-6). Works with any structure file — no metadata required. Stop here — do not proceed to generation.
+
+---
+
 **`--learn=N [preset]`**: Run the Learn Procedure (L-1 through L-6). Parse N from the argument (e.g., `--learn=5`). Optional `preset` argument specifies which preset to train. Stop here — do not proceed to generation.
 
 ---
 
-**Otherwise** — this is a generation request. Parse `--preset`, `--format`, and extract the topic. Run the Generate Procedure (G-1 through G-7).
+**Otherwise** — this is a generation request. Parse `--preset`, `--format`, `--questions`, and extract the topic. Run the Generate Procedure (G-1 through G-7).
 
 ---
 
@@ -88,6 +99,7 @@ Extract from the user's input:
 - **Topic** — the presentation subject (everything that isn't a flag)
 - **`--preset <name>`** — optional, specific preset to use
 - **`--format <slidev|universal|custom>`** — optional, output format override
+- **`--questions`** — optional flag, enables interactive Q&A mode (see below)
 
 If no topic is provided, ask the user: "О чём будет презентация?"
 
@@ -174,7 +186,33 @@ current_draft = "" (empty initially)
 feedback      = "" (empty initially)
 iteration     = 1
 output_format = <constructed in G-3>
+questions_mode = true if --questions flag was set, false otherwise
 ```
+
+#### Interactive Q&A Mode (`--questions`)
+
+When `questions_mode` is active, **each agent** (generator, fixer, reviewer) may pause to ask the user clarifying questions before producing output. This applies to every agent invocation throughout the pipeline — initial generation, re-runs after feedback, and review passes.
+
+**How it works:**
+
+When dispatching an agent via the Agent tool, append this instruction to the agent's substituted prompt:
+
+```
+INTERACTIVE MODE: Before producing your output, consider whether you need
+any clarifications from the user to do a better job. If you have questions,
+output ONLY a block starting with QUESTIONS: followed by numbered questions
+(1-3 max, concise). If you have no questions, produce your output as normal.
+```
+
+After receiving the agent's response:
+1. If the response starts with `QUESTIONS:` — extract the questions, present them to the user, wait for answers, then re-dispatch the same agent with the answers appended to its prompt as `User answers: <answers>`
+2. If the response does NOT start with `QUESTIONS:` — proceed as normal (agent had no questions)
+
+An agent may ask questions **at most once per invocation** — after receiving answers, it must produce its output.
+
+**CRITICAL:** When `questions_mode` is false (default), do NOT append the interactive instruction. Agents run fully autonomously with no user interaction.
+
+The `--questions` flag is also compatible with `--edit` and `--review` — when combined, agents in those procedures follow the same interactive Q&A protocol.
 
 **Execute pipeline steps in order:**
 
@@ -247,7 +285,21 @@ If an optional agent fails (`optional: true`), log the failure and continue. Do 
 
 **Save location:** Current working directory.
 
-Write the final `current_draft` to the output file.
+**Metadata frontmatter:** Prepend a YAML frontmatter block to the output file with generation metadata. This is used by `--edit` to locate the original preset and agents.
+
+```yaml
+---
+topic: "<original topic>"
+preset: "<preset name>"
+preset_location: "<local|global|default>"
+format: "<active format>"
+---
+```
+
+- `preset_location`: `local` if from `.outline-presets/`, `global` if from `~/.claude/outline-presets/`, `default` if built-in default was used
+- The frontmatter is followed by a blank line, then the structure content
+
+Write the frontmatter + `current_draft` to the output file.
 
 ### G-7: Report
 
@@ -402,6 +454,178 @@ Print:
 
 Или просто /outline <тема> — авто-выбор подберёт этот пресет,
 если тема совпадёт с его ключевыми словами.
+```
+
+---
+
+## Edit Procedure
+
+### E-1: Parse Command
+
+Extract from the user's input:
+- **`<file>`** — path to an existing outline file
+- **`<comment>`** — edit instruction (what to change)
+
+If the file is missing or not provided, ask: "Какой файл отредактировать? Укажите путь к файлу outline-*.md"
+
+If the comment is missing, ask: "Что изменить в структуре?"
+
+### E-2: Read File and Extract Metadata
+
+1. Read the file content
+2. Parse the YAML frontmatter to extract `topic`, `preset`, `preset_location`, `format`
+3. Separate the frontmatter from the structure content (everything after the closing `---`)
+
+If the file has no frontmatter or is missing required fields:
+```
+Файл '<file>' не содержит метаданных outline.
+Он был создан с помощью /outline? Без метаданных невозможно определить пресет.
+```
+Stop here.
+
+### E-3: Load Preset and Agents
+
+Based on `preset` and `preset_location` from metadata:
+
+- `default` → load from `assets/default/` within the skill directory
+- `local` → load from `.outline-presets/<preset>/`
+- `global` → load from `~/.claude/outline-presets/<preset>/`
+
+If the preset directory no longer exists (deleted since generation):
+```
+Пресет '<preset>' (<preset_location>) не найден.
+Возможно, он был удалён после генерации этой структуры.
+```
+Stop here.
+
+Load and validate pipeline (same as G-3). Use the `format` from metadata as the active format.
+
+### E-4: Run Edit Pipeline
+
+Initialize context variables:
+```
+topic         = topic from metadata
+current_draft = structure content from file (without frontmatter)
+feedback      = user's edit comment
+iteration     = 1
+output_format = <constructed from format in metadata, same as G-3>
+```
+
+**CRITICAL:** The generator receives the existing structure as `current_draft` and the user's edit comment as `feedback`. This triggers the generator's **re-run behavior** (feedback present) — it will address the edit comment while preserving the rest of the structure.
+
+Run the pipeline cycle exactly as G-4:
+1. Generator re-runs with `current_draft` + `feedback` → produces updated structure
+2. Reviewer evaluates the updated structure
+3. Loop until `APPROVED` or `max_iterations` reached
+
+Then run post-loop agents (G-5) if any.
+
+### E-5: Save and Report
+
+Overwrite the **same file** with updated content:
+- Preserve the original frontmatter (same `topic`, `preset`, `preset_location`, `format`)
+- Replace the structure content with the new `current_draft`
+
+Print:
+```
+Структура отредактирована.
+
+  Файл:       <file path>
+  Изменение:  <user's comment, truncated to ~60 chars>
+  Итерации:   <number of iterations used> / <max_iterations>
+```
+
+---
+
+## Review Procedure
+
+### R-1: Parse Command
+
+Extract from the user's input:
+- **`<file>`** — path to a structure file (any markdown file with a presentation structure)
+- **`--preset <name>`** — optional, specific preset to use for review
+
+If the file is missing or not provided, ask: "Какой файл отревьюить? Укажите путь к файлу со структурой презентации."
+
+### R-2: Read File
+
+1. Read the file content
+2. If the file has a YAML frontmatter (e.g., created by `/outline`), strip it — extract only the structure content
+3. Infer the topic from the structure content (use the title or first heading)
+
+If the file is empty or unreadable:
+```
+Не удалось прочитать файл '<file>'.
+```
+Stop here.
+
+### R-3: Select Preset
+
+**Path A: `--preset <name>` specified**
+
+Look up the preset (local → global), same as G-2 Path A. Error if not found.
+
+**Path B: Auto-select**
+
+1. Scan for presets in both locations (same as G-2 Path B)
+2. If presets exist, auto-select based on the inferred topic and structure content
+3. If no presets exist or auto-selection returns "none" → use built-in default
+
+**Path C: File has metadata frontmatter**
+
+If the file was created by `/outline` and has `preset` + `preset_location` in frontmatter, prefer that preset (unless `--preset` flag overrides it).
+
+### R-4: Load Preset and Pipeline
+
+Load and validate the preset (same as G-3). Determine `output_format` from the preset's format field.
+
+### R-5: Run Review Cycle
+
+Initialize context variables:
+```
+topic         = inferred topic from R-2
+current_draft = structure content from file
+feedback      = "" (empty — no user comment, reviewer decides)
+iteration     = 1
+output_format = <constructed from preset format>
+```
+
+**CRITICAL:** Skip the initial generator step (`role: create`). The existing structure IS the first draft. Start directly with the reviewer.
+
+Run the review→fix cycle from the pipeline:
+1. Reviewer evaluates `current_draft`
+2. If `APPROVED` → structure is good, report to user and stop (no changes needed)
+3. If `NEEDS_REVISION`:
+   - Fixer (or generator in no-fixer pattern) revises based on feedback → updates `current_draft`
+   - Reviewer evaluates again
+   - Loop until `APPROVED` or `max_iterations` reached
+
+Then run post-loop agents (G-5) if any.
+
+### R-6: Save and Report
+
+If the structure was modified (reviewer did NOT approve on first pass):
+
+Save the improved structure to a new file: `<original-filename>-reviewed.md`
+- Add metadata frontmatter with `topic`, `preset`, `preset_location`, `format`
+- Original file is NOT overwritten (user brought it, we don't touch it)
+
+Print:
+```
+Ревью завершено.
+
+  Исходный файл:  <original file>
+  Пресет:         <preset name or "по умолчанию">
+  Итерации:       <number of iterations used> / <max_iterations>
+  Результат:      <file path of reviewed version>
+```
+
+If the structure was approved on first pass (no changes):
+```
+Ревью завершено — структура одобрена без изменений.
+
+  Файл:    <original file>
+  Пресет:  <preset name or "по умолчанию">
 ```
 
 ---

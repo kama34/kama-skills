@@ -127,3 +127,4 @@ These variables are available for substitution in agent prompts:
 | `{{feedback}}` | Reviewer's feedback text (after `NEEDS_REVISION:`) | fix agents (or create agents in no-fixer pattern) |
 | `{{iteration}}` | Current iteration number (1-based) | All agents |
 | `{{output_format}}` | Format instructions for the output | create, fix agents |
+| `{{questions_mode}}` | Whether interactive Q&A is active (`true`/`false`) | All agents (used by orchestrator, not in agent prompts) |
