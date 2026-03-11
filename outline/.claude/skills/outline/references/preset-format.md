@@ -1,12 +1,12 @@
-# Template Directory Format
+# Preset Directory Format
 
-A template is a directory containing agent definitions and pipeline configuration for a specific presentation type.
+A preset is a directory containing agent definitions and pipeline configuration for a specific presentation type.
 
 ## Directory Layout
 
 ```
-<template-name>/
-  ├── template.md              # Metadata: name, description, keywords, format
+<preset-name>/
+  ├── preset.md                # Metadata: name, description, keywords, format
   ├── pipeline.md              # Agent execution order, loops, stop criteria
   └── agents/
       ├── <generator>.md       # Agent with role: create
@@ -15,9 +15,9 @@ A template is a directory containing agent definitions and pipeline configuratio
       └── <enhancer>.md        # Agent with role: enhance (optional)
 ```
 
-All three components are required: `template.md`, `pipeline.md`, and at least one agent file in `agents/`.
+All three components are required: `preset.md`, `pipeline.md`, and at least one agent file in `agents/`.
 
-## template.md — Metadata File
+## preset.md — Metadata File
 
 YAML frontmatter followed by optional description text.
 
@@ -25,8 +25,8 @@ YAML frontmatter followed by optional description text.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `name` | string | Template identifier. **MUST** be kebab-case (lowercase, hyphens only). |
-| `description` | string | What this template is for. Used for auto-selection matching. |
+| `name` | string | Preset identifier. **MUST** be kebab-case (lowercase, hyphens only). |
+| `description` | string | What this preset is for. Used for auto-selection matching. |
 | `keywords` | list | Terms for auto-selection. Include synonyms and related concepts. |
 
 ### Optional Fields
@@ -48,7 +48,7 @@ format: slidev
 max_iterations: 3
 ---
 
-This template designs presentation structures for startup pitches
+This preset designs presentation structures for startup pitches
 targeting seed and series A investors. The reviewer agent evaluates
 from the investor's perspective, checking for clear problem/solution
 framing, market sizing, and ask clarity.
@@ -56,22 +56,22 @@ framing, market sizing, and ask clarity.
 
 ## Storage Locations
 
-Templates are stored in one of two locations:
+Presets are stored in one of two locations:
 
 | Location | Path | Scope |
 |----------|------|-------|
-| **Local** | `.outline-templates/<name>/` | Project-specific, relative to CWD |
-| **Global** | `~/.claude/outline-templates/<name>/` | Available across all projects |
+| **Local** | `.outline-presets/<name>/` | Project-specific, relative to CWD |
+| **Global** | `~/.claude/outline-presets/<name>/` | Available across all projects |
 
 ### Lookup Order
 
-When resolving a template by name: **local first, then global**. The first match wins.
+When resolving a preset by name: **local first, then global**. The first match wins.
 
-### Default Template
+### Default Preset
 
-The built-in default template is stored at `assets/default/` within the skill directory. It is used when:
-- No templates exist in local or global storage
-- Auto-selection returns "none" (no template matches the topic)
+The built-in default preset is stored at `assets/default/` within the skill directory. It is used when:
+- No presets exist in local or global storage
+- Auto-selection returns "none" (no preset matches the topic)
 
 ## Naming Rules
 
@@ -81,8 +81,8 @@ The built-in default template is stored at `assets/default/` within the skill di
 
 ## Collision Rules
 
-A collision occurs when a template with the **same name** exists in the **same storage location**. A template with the same name in the other location is NOT a collision.
+A collision occurs when a preset with the **same name** exists in the **same storage location**. A preset with the same name in the other location is NOT a collision.
 
-When a collision is detected during `--create-template`:
+When a collision is detected during `--new-preset`:
 1. Warn the user
 2. Offer three options: **overwrite**, **rename**, or **abort**

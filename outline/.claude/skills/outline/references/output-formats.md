@@ -4,9 +4,9 @@ Outline supports three output formats for generated presentation structures.
 
 ## Format Precedence
 
-**`--format` flag > template's `format` field > default (`slidev`)**
+**`--format` flag > preset's `format` field > default (`slidev`)**
 
-The `--format` command-line flag always wins. If not specified, the template's `format` field is used. If the template has no format field, `slidev` is the default.
+The `--format` command-line flag always wins. If not specified, the preset's `format` field is used. If the preset has no format field, `slidev` is the default.
 
 ## Format: `slidev`
 
@@ -78,15 +78,15 @@ Key points:
 
 ## Format: `custom`
 
-Template-defined format. The format is described by the `custom_format_description` field in `template.md`.
+Preset-defined format. The format is described by the `custom_format_description` field in `preset.md`.
 
 ### How It Works
 
-1. The template author writes a `custom_format_description` in `template.md`
+1. The preset author writes a `custom_format_description` in `preset.md`
 2. This description is injected into the `{{output_format}}` variable
 3. Generator agents use it to structure their output accordingly
 
-### Example template.md
+### Example preset.md
 
 ```yaml
 ---
@@ -135,4 +135,4 @@ The orchestrator builds the `{{output_format}}` variable based on the active for
 |--------|---------------------------|
 | `slidev` | `"Используй формат slidev-аутлайна: ## Slide N: Заголовок, затем буллиты. Целься на 8-12 слайдов. Весь контент на русском языке."` |
 | `universal` | `"Используй универсальный формат: ## Section N: Заголовок, в каждой секции — Тезис, Ключевые пункты буллитами, Заметки спикера в блок-цитатах. Весь контент на русском языке."` |
-| `custom` | The literal `custom_format_description` text from `template.md` |
+| `custom` | The literal `custom_format_description` text from `preset.md` |

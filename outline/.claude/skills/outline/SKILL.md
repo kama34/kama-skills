@@ -1,7 +1,7 @@
 ---
 name: outline
-description: "Use when creating presentation outlines/structures. Supports agent pipeline templates, auto-selection, template creation, and agent training. Handles --template, --format, --create-template, --learn=N, and --help."
-argument-hint: "[--help | --template <name> | --format <fmt> | --create-template | --learn=N [template]] [<topic>]"
+description: "Use when creating presentation outlines/structures. Supports agent pipeline presets, auto-selection, preset creation, and agent training. Handles --preset, --format, --new-preset, --learn=N, and --help."
+argument-hint: "[--help | --preset <name> | --format <fmt> | --new-preset | --learn=N [preset]] [<topic>]"
 ---
 
 # Outline — Presentation Structure Generator
@@ -21,7 +21,7 @@ Internal skill logic, variable names, file names, and YAML fields remain in Engl
 ## References
 
 Before executing, internalize these references:
-- `references/template-format.md` — **CRITICAL**: Template directory specification (metadata, storage, naming, collisions)
+- `references/preset-format.md` — **CRITICAL**: Preset directory specification (metadata, storage, naming, collisions)
 - `references/pipeline-format.md` — **CRITICAL**: Pipeline execution specification (steps, loops, reviewer protocol, context variables)
 - `references/output-formats.md` — Output format specs (slidev, universal, custom)
 
@@ -37,30 +37,30 @@ Parse the user's input to determine the subcommand or mode:
 Outline — Генератор структуры презентаций
 
 Использование:
-  /outline <тема>                               Сгенерировать структуру (авто-выбор шаблона)
-  /outline --template <имя> <тема>              Использовать конкретный шаблон
+  /outline <тема>                               Сгенерировать структуру (авто-выбор пресета)
+  /outline --preset <имя> <тема>                Использовать конкретный пресет
   /outline --format <slidev|universal|custom>   Переопределить формат вывода
-  /outline --create-template                    Создать новый шаблон агентного пайплайна
-  /outline --learn=N [шаблон]                   Обучить агентов на N тестовых прогонах
+  /outline --new-preset                         Создать новый пресет агентного пайплайна
+  /outline --learn=N [пресет]                   Обучить агентов на N тестовых прогонах
   /outline --help                               Эта справка
 
 Как это работает:
   Outline использует агентные пайплайны для итеративного создания, рецензирования
-  и улучшения структур презентаций. Каждый шаблон — это набор специализированных
+  и улучшения структур презентаций. Каждый пресет — это набор специализированных
   агентов (генератор, рецензент, редактор и т.д.), настроенных под конкретный тип
   презентации.
 
-  Если шаблон не указан, скилл автоматически выбирает подходящий
+  Если пресет не указан, скилл автоматически выбирает подходящий
   или использует агентов по умолчанию (универсальный генератор + рецензент).
 
 Форматы вывода:
   slidev      (по умолчанию) ## Слайд N: Заголовок + буллиты — совместим с /slidev
   universal   Секции, тезисы, заметки спикера — не привязан к инструменту
-  custom      Определяется шаблоном
+  custom      Определяется пресетом
 
-Хранение шаблонов:
-  Локально:  .outline-templates/<имя>/
-  Глобально: ~/.claude/outline-templates/<имя>/
+Хранение пресетов:
+  Локально:  .outline-presets/<имя>/
+  Глобально: ~/.claude/outline-presets/<имя>/
   Поиск:     сначала локально, потом глобально
 ```
 
@@ -68,15 +68,15 @@ Stop here — do not proceed to generation.
 
 ---
 
-**`--create-template`**: Run the Create Template Procedure (CT-1 through CT-8). Stop here — do not proceed to generation.
+**`--new-preset`**: Run the Create Preset Procedure (CP-1 through CP-8). Stop here — do not proceed to generation.
 
 ---
 
-**`--learn=N [template]`**: Run the Learn Procedure (L-1 through L-6). Parse N from the argument (e.g., `--learn=5`). Optional `template` argument specifies which template to train. Stop here — do not proceed to generation.
+**`--learn=N [preset]`**: Run the Learn Procedure (L-1 through L-6). Parse N from the argument (e.g., `--learn=5`). Optional `preset` argument specifies which preset to train. Stop here — do not proceed to generation.
 
 ---
 
-**Otherwise** — this is a generation request. Parse `--template`, `--format`, and extract the topic. Run the Generate Procedure (G-1 through G-7).
+**Otherwise** — this is a generation request. Parse `--preset`, `--format`, and extract the topic. Run the Generate Procedure (G-1 through G-7).
 
 ---
 
@@ -86,60 +86,60 @@ Stop here — do not proceed to generation.
 
 Extract from the user's input:
 - **Topic** — the presentation subject (everything that isn't a flag)
-- **`--template <name>`** — optional, specific template to use
+- **`--preset <name>`** — optional, specific preset to use
 - **`--format <slidev|universal|custom>`** — optional, output format override
 
 If no topic is provided, ask the user: "О чём будет презентация?"
 
-### G-2: Select Template
+### G-2: Select Preset
 
 Three paths, in priority order:
 
-**Path A: `--template <name>` specified**
+**Path A: `--preset <name>` specified**
 
-1. Look up `<name>` in local storage: `.outline-templates/<name>/`
-2. If not found, look up in global storage: `~/.claude/outline-templates/<name>/`
+1. Look up `<name>` in local storage: `.outline-presets/<name>/`
+2. If not found, look up in global storage: `~/.claude/outline-presets/<name>/`
 3. If not found in either, error:
    ```
-   Шаблон '<name>' не найден.
-   Искали в: .outline-templates/<name>/, ~/.claude/outline-templates/<name>/
-   Доступные шаблоны: <list all found templates, or "нет">
+   Пресет '<name>' не найден.
+   Искали в: .outline-presets/<name>/, ~/.claude/outline-presets/<name>/
+   Доступные пресеты: <list all found presets, or "нет">
    ```
    Stop here.
 
-**Path B: Auto-select from available templates**
+**Path B: Auto-select from available presets**
 
-1. Scan for templates in both locations:
-   - `.outline-templates/*/template.md`
-   - `~/.claude/outline-templates/*/template.md`
-2. If templates exist, read each `template.md` to extract `name`, `description`, `keywords`
-3. Make a single LLM call (use the Agent tool) with the user's topic and all template metadata:
+1. Scan for presets in both locations:
+   - `.outline-presets/*/preset.md`
+   - `~/.claude/outline-presets/*/preset.md`
+2. If presets exist, read each `preset.md` to extract `name`, `description`, `keywords`
+3. Make a single LLM call (use the Agent tool) with the user's topic and all preset metadata:
 
    ```
    Given the presentation topic: "<topic>"
 
-   Available templates:
+   Available presets:
    1. <name>: <description> (keywords: <keywords>)
    2. <name>: <description> (keywords: <keywords>)
    ...
 
-   Which template best matches this topic? Reply with ONLY the template name,
-   or "none" if no template is a good match.
+   Which preset best matches this topic? Reply with ONLY the preset name,
+   or "none" if no preset is a good match.
    ```
 
-4. If the agent responds with a template name → use that template
+4. If the agent responds with a preset name → use that preset
 5. If the agent responds "none" → use default (Path C)
 
 **Path C: Use built-in default**
 
-Use the default template from `assets/default/` within the skill directory. This path is used when:
-- No templates exist in local or global storage
+Use the default preset from `assets/default/` within the skill directory. This path is used when:
+- No presets exist in local or global storage
 - Auto-selection returns "none"
 
 ### G-3: Load & Validate Pipeline
 
-1. Read the template directory:
-   - `template.md` — extract frontmatter fields
+1. Read the preset directory:
+   - `preset.md` — extract frontmatter fields
    - `pipeline.md` — extract `steps` array
    - `agents/*.md` — read all agent files
 
@@ -158,12 +158,12 @@ Use the default template from `assets/default/` within the skill directory. This
    Stop here.
 
 3. **Determine active settings:**
-   - `max_iterations` — from template.md (default: 3)
-   - **Active format** — `--format` flag > template `format` field > `slidev`
+   - `max_iterations` — from preset.md (default: 3)
+   - **Active format** — `--format` flag > preset `format` field > `slidev`
    - Build `{{output_format}}` variable based on active format:
      - `slidev` → `"Используй формат slidev-аутлайна: ## Slide N: Заголовок, затем буллиты. Целься на 8-12 слайдов. Весь контент на русском языке."`
      - `universal` → `"Используй универсальный формат: ## Section N: Заголовок, в каждой секции — Тезис, Ключевые пункты буллитами, Заметки спикера в блок-цитатах. Весь контент на русском языке."`
-     - `custom` → use the literal `custom_format_description` text from template.md
+     - `custom` → use the literal `custom_format_description` text from preset.md
 
 ### G-4: Run Pipeline Cycle
 
@@ -255,7 +255,7 @@ Print a summary:
 ```
 Структура презентации готова.
 
-  Шаблон:     <template name or "по умолчанию">
+  Пресет:     <preset name or "по умолчанию">
   Формат:     <active format>
   Итерации:   <number of iterations used> / <max_iterations>
   Файл:       <file path>
@@ -266,32 +266,32 @@ Print a summary:
 
 ---
 
-## Create Template Procedure
+## Create Preset Procedure
 
-### CT-1: Ask Template Name
+### CP-1: Ask Preset Name
 
 Ask the user:
 ```
-Как назвать шаблон? (kebab-case, например: investor-pitch, tech-talk)
+Как назвать пресет? (kebab-case, например: investor-pitch, tech-talk)
 ```
 
 Validate: must be kebab-case (lowercase letters, numbers, hyphens only). If invalid, explain and ask again.
 
-### CT-2: Ask Description
+### CP-2: Ask Description
 
 Ask the user:
 ```
-Для чего этот шаблон? (краткое описание)
+Для чего этот пресет? (краткое описание)
 ```
 
-### CT-3: Ask Target Audience
+### CP-3: Ask Target Audience
 
 Ask the user:
 ```
 Кто целевая аудитория? (например: инвесторы, студенты, команда разработки, широкая публика)
 ```
 
-### CT-4: Ask Output Format
+### CP-4: Ask Output Format
 
 Ask the user:
 ```
@@ -308,38 +308,38 @@ If the user chooses "custom" (3), follow up:
 Опишите формат, в котором генератор должен выдавать структуру:
 ```
 
-### CT-5: Ask Storage Location
+### CP-5: Ask Storage Location
 
 Ask the user:
 ```
-Где сохранить шаблон?
-  1. глобально — ~/.claude/outline-templates/ (доступен везде)
-  2. локально — .outline-templates/ (только в этом проекте)
+Где сохранить пресет?
+  1. глобально — ~/.claude/outline-presets/ (доступен везде)
+  2. локально — .outline-presets/ (только в этом проекте)
 
 Выбор (1/2):
 ```
 
-### CT-6: Ask Additional Context (Optional)
+### CP-6: Ask Additional Context (Optional)
 
 Ask the user:
 ```
 Дополнительный контекст или ограничения? (необязательно — нажмите Enter, чтобы пропустить)
 ```
 
-### CT-6.5: Collision Check
+### CP-6.5: Collision Check
 
-Now that the storage location is known, check if a template with this name already exists:
+Now that the storage location is known, check if a preset with this name already exists:
 
-- If global: check `~/.claude/outline-templates/<name>/`
-- If local: check `.outline-templates/<name>/`
+- If global: check `~/.claude/outline-presets/<name>/`
+- If local: check `.outline-presets/<name>/`
 
-**CRITICAL:** A template with the same name in the OTHER location is NOT a collision.
+**CRITICAL:** A preset with the same name in the OTHER location is NOT a collision.
 
 If collision detected:
 ```
-Шаблон с именем '<name>' уже существует: <path>
+Пресет с именем '<name>' уже существует: <path>
 
-  1. Перезаписать — заменить существующий шаблон
+  1. Перезаписать — заменить существующий пресет
   2. Переименовать — выбрать другое имя
   3. Отмена — прекратить создание
 
@@ -347,10 +347,10 @@ If collision detected:
 ```
 
 - Перезаписать → continue, files will be replaced
-- Переименовать → go back to CT-1
+- Переименовать → go back to CP-1
 - Отмена → stop here
 
-### CT-7: Autonomous Pipeline Design
+### CP-7: Autonomous Pipeline Design
 
 Using the collected information, autonomously design the agent pipeline. Do NOT ask the user for agent details — design everything yourself.
 
@@ -362,7 +362,7 @@ Using the collected information, autonomously design the agent pipeline. Do NOT 
    - Name (kebab-case, descriptive)
    - Role (`create`, `review`, `fix`, `enhance`)
    - Input variables it needs
-   - A detailed prompt tailored to the template's audience, goals, and format
+   - A detailed prompt tailored to the preset's audience, goals, and format
 
 3. **Pipeline design:** Define the `steps` array in `pipeline.md`:
    - Execution order
@@ -370,13 +370,13 @@ Using the collected information, autonomously design the agent pipeline. Do NOT 
    - Stop conditions
    - Optional post-loop agents
 
-4. **Keywords:** Generate comprehensive keywords for `template.md` based on the description and audience
+4. **Keywords:** Generate comprehensive keywords for `preset.md` based on the description and audience
 
 **Write files to the storage location:**
 
 ```
 <storage-path>/<name>/
-  ├── template.md
+  ├── preset.md
   ├── pipeline.md
   └── agents/
       ├── <agent-1>.md
@@ -384,23 +384,23 @@ Using the collected information, autonomously design the agent pipeline. Do NOT 
       └── ...
 ```
 
-Use `max_iterations: 3` unless the template type clearly benefits from more or fewer iterations.
+Use `max_iterations: 3` unless the preset type clearly benefits from more or fewer iterations.
 
-### CT-8: Confirmation Summary
+### CP-8: Confirmation Summary
 
 Print:
 ```
-Шаблон '<name>' создан.
+Пресет '<name>' создан.
 
-  Путь:       <full path to template directory>
+  Путь:       <full path to preset directory>
   Агенты:     <list of agent names and roles>
   Пайплайн:   <brief flow description>
   Формат:     <format>
 
 Использование:
-  /outline --template <name> <тема>
+  /outline --preset <name> <тема>
 
-Или просто /outline <тема> — авто-выбор подберёт этот шаблон,
+Или просто /outline <тема> — авто-выбор подберёт этот пресет,
 если тема совпадёт с его ключевыми словами.
 ```
 
@@ -410,36 +410,36 @@ Print:
 
 ### L-1: Parse Arguments
 
-- If `template` is specified:
-  1. Look up by name: local (`.outline-templates/<name>/`) → global (`~/.claude/outline-templates/<name>/`)
+- If `preset` is specified:
+  1. Look up by name: local (`.outline-presets/<name>/`) → global (`~/.claude/outline-presets/<name>/`)
   2. If not found, error:
      ```
-     Шаблон '<name>' не найден.
-     Искали в: .outline-templates/<name>/, ~/.claude/outline-templates/<name>/
+     Пресет '<name>' не найден.
+     Искали в: .outline-presets/<name>/, ~/.claude/outline-presets/<name>/
      ```
      Stop here.
-  3. Train only this template.
+  3. Train only this preset.
 
-- If no template specified:
-  - Scan both local and global storage for all templates
-  - If no templates found:
+- If no preset specified:
+  - Scan both local and global storage for all presets
+  - If no presets found:
     ```
-    Шаблонов для обучения не найдено. Сначала создайте шаблон:
-      /outline --create-template
+    Пресетов для обучения не найдено. Сначала создайте пресет:
+      /outline --new-preset
     ```
     Stop here.
-  - Train all found templates.
+  - Train all found presets.
 
 ### L-2: Generate Test Topics and Run Pipelines
 
-For each template being trained:
+For each preset being trained:
 
-1. Generate N test topics that match the template's description and keywords. Topics should be diverse — vary industry, scope, and complexity.
+1. Generate N test topics that match the preset's description and keywords. Topics should be diverse — vary industry, scope, and complexity.
 
 2. For each test topic (i = 1 to N):
-   a. Run the full Generate Procedure (G-1 through G-7) using this template and topic
-   b. Save the output to `learn-<template-name>/run-<i>/outline.md`
-   c. Save metadata (topic, iterations used, final verdict) to `learn-<template-name>/run-<i>/meta.md`
+   a. Run the full Generate Procedure (G-1 through G-7) using this preset and topic
+   b. Save the output to `learn-<preset-name>/run-<i>/outline.md`
+   c. Save metadata (topic, iterations used, final verdict) to `learn-<preset-name>/run-<i>/meta.md`
 
 ### L-3: Critic Analysis
 
@@ -450,7 +450,7 @@ You are a demanding presentation structure critic. Analyze N generated
 presentation outlines and evaluate the agent pipeline that produced them.
 
 INPUTS:
-- Template metadata: <template.md content>
+- Preset metadata: <preset.md content>
 - Pipeline: <pipeline.md content>
 - Agent prompts: <all agents/*.md contents>
 - Generated outlines: <all N outline outputs>
@@ -471,7 +471,7 @@ ANALYSIS:
 
 OUTPUT FORMAT:
 
-# Critic Report: <template-name>
+# Critic Report: <preset-name>
 
 ## Overall Quality: X/10
 
@@ -498,7 +498,7 @@ Based on the critic's report:
 
 1. Generate a diff-style summary of all proposed changes:
    ```
-   Предлагаемые изменения для шаблона '<name>':
+   Предлагаемые изменения для пресета '<name>':
 
    1. [agent-name.md] — <brief description of change>
       - Было: "<relevant excerpt>"
@@ -533,7 +533,7 @@ For each approved change:
 
 Print a final summary:
 ```
-Обучение завершено для шаблона '<name>'.
+Обучение завершено для пресета '<name>'.
 
   Прогоны:       N всего, M успешных
   Изменения:     X применено, Y отложено, Z пропущено (критически сломанные агенты)
@@ -545,7 +545,7 @@ Print a final summary:
     - <agent-name> — <reason>
 ```
 
-Clean up: the `learn-<template-name>/` directory with test outputs can be kept for reference or deleted — ask the user: "Удалить директорию с тестовыми результатами learn-<template-name>/? (да/нет)"
+Clean up: the `learn-<preset-name>/` directory with test outputs can be kept for reference or deleted — ask the user: "Удалить директорию с тестовыми результатами learn-<preset-name>/? (да/нет)"
 
 ---
 
