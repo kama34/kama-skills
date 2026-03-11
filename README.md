@@ -1,5 +1,7 @@
 # Kama Skills (Claude Code Skills)
 
+[![en](https://img.shields.io/badge/lang-English-blue)](README.md) [![ru](https://img.shields.io/badge/lang-Русский-green)](README.ru.md)
+
 Community-driven collection of **skills** for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) — drop-in prompt modules that give Claude new capabilities.
 
 > A skill is a markdown file that teaches Claude Code how to do something it couldn't do before: generate presentations, scaffold projects, run complex workflows, and more.
