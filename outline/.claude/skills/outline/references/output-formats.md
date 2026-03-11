@@ -133,6 +133,6 @@ The orchestrator builds the `{{output_format}}` variable based on the active for
 
 | Format | `{{output_format}}` content |
 |--------|---------------------------|
-| `slidev` | `"Use slidev outline format: ## Slide N: Title followed by bullet points. Aim for 8-12 slides."` |
-| `universal` | `"Use universal format: ## Section N: Title, each with a Thesis statement, Key points as bullets, and Speaker notes in blockquotes."` |
+| `slidev` | `"Используй формат slidev-аутлайна: ## Slide N: Заголовок, затем буллиты. Целься на 8-12 слайдов. Весь контент на русском языке."` |
+| `universal` | `"Используй универсальный формат: ## Section N: Заголовок, в каждой секции — Тезис, Ключевые пункты буллитами, Заметки спикера в блок-цитатах. Весь контент на русском языке."` |
 | `custom` | The literal `custom_format_description` text from `template.md` |

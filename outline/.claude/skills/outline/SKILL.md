@@ -8,6 +8,16 @@ argument-hint: "[--help | --template <name> | --format <fmt> | --create-template
 
 You generate presentation structures using agent pipelines. Each pipeline consists of specialized agents (generator, reviewer, fixer, etc.) that iteratively create, review, and refine a presentation outline.
 
+## Language Rule
+
+**CRITICAL:** All user-facing output MUST be in Russian. This includes:
+- Help text, prompts, error messages, reports, summaries
+- Generated presentation structures (slide titles, bullet points, speaker notes)
+- Wizard questions and confirmations
+- Agent-generated content (structures, reviews, feedback)
+
+Internal skill logic, variable names, file names, and YAML fields remain in English.
+
 ## References
 
 Before executing, internalize these references:
@@ -24,33 +34,34 @@ Parse the user's input to determine the subcommand or mode:
 **`--help`**: Display usage help and stop. Show:
 
 ```
-Outline — Presentation Structure Generator
+Outline — Генератор структуры презентаций
 
-Usage:
-  /outline <topic>                              Generate structure (auto-select template)
-  /outline --template <name> <topic>            Use specific template
-  /outline --format <slidev|universal|custom>   Override output format
-  /outline --create-template                    Create new agent pipeline template
-  /outline --learn=N [template]                 Train agents with N test runs
-  /outline --help                               This help text
+Использование:
+  /outline <тема>                               Сгенерировать структуру (авто-выбор шаблона)
+  /outline --template <имя> <тема>              Использовать конкретный шаблон
+  /outline --format <slidev|universal|custom>   Переопределить формат вывода
+  /outline --create-template                    Создать новый шаблон агентного пайплайна
+  /outline --learn=N [шаблон]                   Обучить агентов на N тестовых прогонах
+  /outline --help                               Эта справка
 
-How it works:
-  Outline uses agent pipelines to iteratively create, review, and refine
-  presentation structures. Each template is a set of specialized agents
-  (generator, reviewer, fixer, etc.) tailored to a specific presentation type.
+Как это работает:
+  Outline использует агентные пайплайны для итеративного создания, рецензирования
+  и улучшения структур презентаций. Каждый шаблон — это набор специализированных
+  агентов (генератор, рецензент, редактор и т.д.), настроенных под конкретный тип
+  презентации.
 
-  When no template is specified, the skill auto-selects the best match
-  or falls back to default agents (universal generator + reviewer).
+  Если шаблон не указан, скилл автоматически выбирает подходящий
+  или использует агентов по умолчанию (универсальный генератор + рецензент).
 
-Output formats:
-  slidev      (default) ## Slide N: Title + bullets — compatible with /slidev
-  universal   Sections, theses, speaker notes — tool-agnostic
-  custom      Defined by the template
+Форматы вывода:
+  slidev      (по умолчанию) ## Слайд N: Заголовок + буллиты — совместим с /slidev
+  universal   Секции, тезисы, заметки спикера — не привязан к инструменту
+  custom      Определяется шаблоном
 
-Templates stored at:
-  Local:   .outline-templates/<name>/
-  Global:  ~/.claude/outline-templates/<name>/
-  Lookup:  local first, then global
+Хранение шаблонов:
+  Локально:  .outline-templates/<имя>/
+  Глобально: ~/.claude/outline-templates/<имя>/
+  Поиск:     сначала локально, потом глобально
 ```
 
 Stop here — do not proceed to generation.
@@ -78,7 +89,7 @@ Extract from the user's input:
 - **`--template <name>`** — optional, specific template to use
 - **`--format <slidev|universal|custom>`** — optional, output format override
 
-If no topic is provided, ask the user: "What is the presentation about?"
+If no topic is provided, ask the user: "О чём будет презентация?"
 
 ### G-2: Select Template
 
@@ -90,9 +101,9 @@ Three paths, in priority order:
 2. If not found, look up in global storage: `~/.claude/outline-templates/<name>/`
 3. If not found in either, error:
    ```
-   Template '<name>' not found.
-   Searched: .outline-templates/<name>/, ~/.claude/outline-templates/<name>/
-   Available templates: <list all found templates, or "none">
+   Шаблон '<name>' не найден.
+   Искали в: .outline-templates/<name>/, ~/.claude/outline-templates/<name>/
+   Доступные шаблоны: <list all found templates, or "нет">
    ```
    Stop here.
 
@@ -141,8 +152,8 @@ Use the default template from `assets/default/` within the skill directory. This
 
    If validation fails:
    ```
-   Pipeline validation error: <specific issue>
-   Example: Agent 'investor-reviewer' referenced in pipeline.md but no file agents/investor-reviewer.md found.
+   Ошибка валидации пайплайна: <specific issue>
+   Пример: Агент 'investor-reviewer' указан в pipeline.md, но файл agents/investor-reviewer.md не найден.
    ```
    Stop here.
 
@@ -150,8 +161,8 @@ Use the default template from `assets/default/` within the skill directory. This
    - `max_iterations` — from template.md (default: 3)
    - **Active format** — `--format` flag > template `format` field > `slidev`
    - Build `{{output_format}}` variable based on active format:
-     - `slidev` → `"Use slidev outline format: ## Slide N: Title followed by bullet points. Aim for 8-12 slides."`
-     - `universal` → `"Use universal format: ## Section N: Title, each with a Thesis statement, Key points as bullets, and Speaker notes in blockquotes."`
+     - `slidev` → `"Используй формат slidev-аутлайна: ## Slide N: Заголовок, затем буллиты. Целься на 8-12 слайдов. Весь контент на русском языке."`
+     - `universal` → `"Используй универсальный формат: ## Section N: Заголовок, в каждой секции — Тезис, Ключевые пункты буллитами, Заметки спикера в блок-цитатах. Весь контент на русском языке."`
      - `custom` → use the literal `custom_format_description` text from template.md
 
 ### G-4: Run Pipeline Cycle
@@ -199,7 +210,7 @@ This step initiates the review→fix cycle:
    - Go back to step 1 (re-run reviewer)
 
 6. If `NEEDS_REVISION` and `iteration >= max_iterations`:
-   - Log: "Reached maximum iterations (N). Using latest draft."
+   - Log: "Достигнут лимит итераций (N). Используем последний черновик."
    - Exit loop with current draft
 
 #### Step with `role: review` WITHOUT `loop_with`
@@ -242,14 +253,14 @@ Write the final `current_draft` to the output file.
 
 Print a summary:
 ```
-Outline generated successfully.
+Структура презентации готова.
 
-  Template:   <template name or "default">
-  Format:     <active format>
-  Iterations: <number of iterations used> / <max_iterations>
-  Output:     <file path>
+  Шаблон:     <template name or "по умолчанию">
+  Формат:     <active format>
+  Итерации:   <number of iterations used> / <max_iterations>
+  Файл:       <file path>
 
-To use with /slidev (if format is slidev):
+Для использования с /slidev (если формат slidev):
   /slidev <file path>
 ```
 
@@ -261,7 +272,7 @@ To use with /slidev (if format is slidev):
 
 Ask the user:
 ```
-What name for this template? (kebab-case, e.g., investor-pitch, tech-talk)
+Как назвать шаблон? (kebab-case, например: investor-pitch, tech-talk)
 ```
 
 Validate: must be kebab-case (lowercase letters, numbers, hyphens only). If invalid, explain and ask again.
@@ -270,49 +281,49 @@ Validate: must be kebab-case (lowercase letters, numbers, hyphens only). If inva
 
 Ask the user:
 ```
-What is this template for? (brief description)
+Для чего этот шаблон? (краткое описание)
 ```
 
 ### CT-3: Ask Target Audience
 
 Ask the user:
 ```
-Who is the target audience? (e.g., investors, students, engineering team, general public)
+Кто целевая аудитория? (например: инвесторы, студенты, команда разработки, широкая публика)
 ```
 
 ### CT-4: Ask Output Format
 
 Ask the user:
 ```
-Output format?
-  1. slidev — ## Slide N: Title + bullets (compatible with /slidev)
-  2. universal — Sections, theses, speaker notes
-  3. custom — You describe the format
+Формат вывода?
+  1. slidev — ## Слайд N: Заголовок + буллиты (совместим с /slidev)
+  2. universal — Секции, тезисы, заметки спикера
+  3. custom — Вы опишете формат сами
 
-Choice (1/2/3):
+Выбор (1/2/3):
 ```
 
 If the user chooses "custom" (3), follow up:
 ```
-Describe the output format the generator should produce:
+Опишите формат, в котором генератор должен выдавать структуру:
 ```
 
 ### CT-5: Ask Storage Location
 
 Ask the user:
 ```
-Where to save this template?
-  1. global — ~/.claude/outline-templates/ (available everywhere)
-  2. local — .outline-templates/ (this project only)
+Где сохранить шаблон?
+  1. глобально — ~/.claude/outline-templates/ (доступен везде)
+  2. локально — .outline-templates/ (только в этом проекте)
 
-Choice (1/2):
+Выбор (1/2):
 ```
 
 ### CT-6: Ask Additional Context (Optional)
 
 Ask the user:
 ```
-Any additional context or constraints? (optional — press Enter to skip)
+Дополнительный контекст или ограничения? (необязательно — нажмите Enter, чтобы пропустить)
 ```
 
 ### CT-6.5: Collision Check
@@ -326,18 +337,18 @@ Now that the storage location is known, check if a template with this name alrea
 
 If collision detected:
 ```
-A template named '<name>' already exists at <path>.
+Шаблон с именем '<name>' уже существует: <path>
 
-  1. Overwrite — replace the existing template
-  2. Rename — choose a different name
-  3. Abort — cancel template creation
+  1. Перезаписать — заменить существующий шаблон
+  2. Переименовать — выбрать другое имя
+  3. Отмена — прекратить создание
 
-Choice (1/2/3):
+Выбор (1/2/3):
 ```
 
-- Overwrite → continue, files will be replaced
-- Rename → go back to CT-1
-- Abort → stop here
+- Перезаписать → continue, files will be replaced
+- Переименовать → go back to CT-1
+- Отмена → stop here
 
 ### CT-7: Autonomous Pipeline Design
 
@@ -379,18 +390,18 @@ Use `max_iterations: 3` unless the template type clearly benefits from more or f
 
 Print:
 ```
-Template '<name>' created successfully.
+Шаблон '<name>' создан.
 
-  Path:     <full path to template directory>
-  Agents:   <list of agent names and roles>
-  Pipeline: <brief flow description>
-  Format:   <format>
+  Путь:       <full path to template directory>
+  Агенты:     <list of agent names and roles>
+  Пайплайн:   <brief flow description>
+  Формат:     <format>
 
-Usage:
-  /outline --template <name> <topic>
+Использование:
+  /outline --template <name> <тема>
 
-Or just use /outline <topic> — auto-selection will pick this template
-when the topic matches its keywords.
+Или просто /outline <тема> — авто-выбор подберёт этот шаблон,
+если тема совпадёт с его ключевыми словами.
 ```
 
 ---
@@ -403,8 +414,8 @@ when the topic matches its keywords.
   1. Look up by name: local (`.outline-templates/<name>/`) → global (`~/.claude/outline-templates/<name>/`)
   2. If not found, error:
      ```
-     Template '<name>' not found.
-     Searched: .outline-templates/<name>/, ~/.claude/outline-templates/<name>/
+     Шаблон '<name>' не найден.
+     Искали в: .outline-templates/<name>/, ~/.claude/outline-templates/<name>/
      ```
      Stop here.
   3. Train only this template.
@@ -413,7 +424,7 @@ when the topic matches its keywords.
   - Scan both local and global storage for all templates
   - If no templates found:
     ```
-    No templates found to train. Create one first:
+    Шаблонов для обучения не найдено. Сначала создайте шаблон:
       /outline --create-template
     ```
     Stop here.
@@ -487,22 +498,22 @@ Based on the critic's report:
 
 1. Generate a diff-style summary of all proposed changes:
    ```
-   Proposed changes for template '<name>':
+   Предлагаемые изменения для шаблона '<name>':
 
    1. [agent-name.md] — <brief description of change>
-      - Before: "<relevant excerpt>"
-      - After: "<proposed text>"
+      - Было: "<relevant excerpt>"
+      - Стало: "<proposed text>"
 
    2. [pipeline.md] — <brief description of change>
       - <details>
 
-   Apply these changes? (yes / no / select)
+   Применить изменения? (да / нет / выбрать)
    ```
 
 2. Wait for user confirmation:
-   - **yes** → apply all changes
-   - **no** → discard all changes
-   - **select** → let user pick which changes to apply (number them)
+   - **да** → apply all changes
+   - **нет** → discard all changes
+   - **выбрать** → let user pick which changes to apply (number them)
 
 **CRITICAL:** Do NOT apply changes without user confirmation. Always show the diff summary and wait for explicit approval.
 
@@ -522,19 +533,19 @@ For each approved change:
 
 Print a final summary:
 ```
-Learning complete for template '<name>'.
+Обучение завершено для шаблона '<name>'.
 
-  Runs:     N total, M successful
-  Changes:  X applied, Y deferred, Z skipped (critically broken agents)
-  Files modified:
+  Прогоны:       N всего, M успешных
+  Изменения:     X применено, Y отложено, Z пропущено (критически сломанные агенты)
+  Изменённые файлы:
     - agents/<agent>.md — <what changed>
     - pipeline.md — <what changed> (if applicable)
 
-  Agents needing manual attention:
+  Агенты, требующие внимания:
     - <agent-name> — <reason>
 ```
 
-Clean up: the `learn-<template-name>/` directory with test outputs can be kept for reference or deleted — ask the user.
+Clean up: the `learn-<template-name>/` directory with test outputs can be kept for reference or deleted — ask the user: "Удалить директорию с тестовыми результатами learn-<template-name>/? (да/нет)"
 
 ---
 
