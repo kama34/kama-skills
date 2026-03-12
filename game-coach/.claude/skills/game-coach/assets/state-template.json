@@ -1,0 +1,24 @@
+{
+  "profile": {
+    "level": 1,
+    "xp": 0,
+    "title": "Startup Dreamer"
+  },
+  "streak": {
+    "current": 0,
+    "best": 0,
+    "last_checkin": null
+  },
+  "badges": [],
+  "quests": {
+    "weekly": null,
+    "monthly": null
+  },
+  "goals": [],
+  "woop": [],
+  "history": {
+    "checkins": 0,
+    "mentors": 0,
+    "tasks_done": 0
+  }
+}
