@@ -21,6 +21,8 @@ Before generating, internalize these references:
 - `references/content-review-subroutine.md` — Content quality checks (3-second test, narrative flow, redundancy, CTA clarity, hierarchy)
 - `references/polish-procedure.md` — `--polish=N` iterative improvement cycle
 - `references/ab-testing.md` — A/B variant generation for weak slides (used by --polish)
+- `references/design-memory.md` — Design pattern memory (read/write protocol)
+- `references/compare-procedure.md` — `--compare` side-by-side scoring
 
 ## Input Parsing
 
@@ -90,6 +92,8 @@ After generation:
 **`--learn=N`**: Self-improving learning loop. Parse N from the argument (e.g., `--learn=5`). Follow the Learning Loop Procedure (L-1 through L-5). Stop here — do not proceed to generation.
 
 **`--polish=N [dir]`**: Iterative design improvement cycle. Runs N rounds (default 3, max 5) of score → redesign weak slides → re-score. Includes A/B testing for weak slides and content review. Follow the Polish Procedure in `references/polish-procedure.md`. Stop here — do not proceed to generation.
+
+**`--compare <dir1> <dir2>`**: Compare two presentations side-by-side with scoring. Follow the Compare Procedure in `references/compare-procedure.md`. Stop here — do not proceed to generation.
 
 **`--dev [dir]`**: Launch the Slidev dev server for an existing presentation.
 
@@ -335,12 +339,16 @@ INPUTS:
 - Exported slide images: <edu_dir>/learn_<i>/slides/*.png (read ALL of them visually)
 - Current skill rules: .claude/skills/slidev/SKILL.md
 - Design principles: .claude/skills/slidev/references/design-principles.md
+- Scoring Subroutine: .claude/skills/slidev/references/scoring-subroutine.md
+- Content Review Subroutine: .claude/skills/slidev/references/content-review-subroutine.md
 
 ANALYSIS PROCESS:
 1. Read slides.md — check compliance with ALL Slide Authoring Rules and Design Quality Rules
 2. Read EVERY exported PNG — apply the full QA-4 visual checklist + QA-8 critic checklist
 3. Cross-reference: do the rules in SKILL.md and design-principles.md actually produce good results? Are there gaps?
 4. Look for SYSTEMIC issues — patterns that appear across multiple slides, not just one-off problems
+5. Run the Scoring Subroutine — score each slide on 6 axes (visual impact, layout uniqueness, typography drama, color conviction, content clarity, decorative quality)
+6. Run the Content Review Subroutine — check 3-second test, narrative flow, redundancy, CTA clarity, information hierarchy
 
 OUTPUT FORMAT — write to <edu_dir>/learn_<i>/critique.md:
 
@@ -367,7 +375,17 @@ OUTPUT FORMAT — write to <edu_dir>/learn_<i>/critique.md:
 
 ## What Worked Well
 - List things the skill got right — these rules should be preserved
+
+## Design Summary
+- **Palette type**: dark | light | mixed
+- **Palette mood**: [short description, e.g., "warm gold on deep navy"]
+- **Font character**: serif-heavy | geometric-sans | humanist | monospace-accent
+- **Decoration style**: geometric | organic | linear | pattern | minimal
+- **Strongest axis**: [which scoring axis scored highest on average]
+- **Weakest axis**: [which scoring axis scored lowest on average]
 ```
+
+**L-3c2: A/B on weakest slides** — After critique, if any slide scores < 6, run the A/B Testing Subroutine (`references/ab-testing.md`) on the 2 weakest slides. Include the variant comparison in `critique.md` under a "## A/B Alternatives" section showing what could have been done differently. This provides concrete before/after examples for the improvement spec.
 
 **L-3d: Generate improvement spec** — Based on the critique, create `<edu_dir>/learn_<i>/improvements.md`:
 
@@ -394,6 +412,8 @@ OUTPUT FORMAT — write to <edu_dir>/learn_<i>/critique.md:
 - Before applying, verify the change doesn't contradict an existing rule
 - If a contradiction is detected, note it in improvements.md and skip that change
 - Use the Edit tool for surgical modifications
+
+After applying improvements, write the iteration's design pattern to Design Memory using the overall score from `critique.md`. Follow the Write Protocol in `references/design-memory.md`. Only write if score >= 8 (type "high") or score < 6 (type "low"). Skip write for scores 6-8 (not distinctive enough to learn from).
 
 **L-3f: Git commit** — Stage and commit only the learning artifacts + skill changes:
 
@@ -446,6 +466,18 @@ git commit -m "learn(<i>/<N>): [outline topic] — [brief summary of improvement
 ## Recommendations
 - [patterns observed across iterations]
 - [suggested areas for manual improvement]
+
+## Score Progression
+```
+Learn 1: ██████░░░░ 5.8  (topic, palette mood from Design Summary)
+Learn 2: ████████░░ 7.5  (topic, palette mood)
+...
+```
+
+## Patterns Observed
+Synthesize across all critique.md Design Summary blocks:
+- [pattern 1 with delta, e.g., "Dark themes score +1.2 avg on decoration visibility"]
+- [pattern 2 with delta]
 ```
 
 Commit the summary:
@@ -594,6 +626,8 @@ After all visual issues are resolved (or max iterations reached), perform a fina
 
 **QA-10: Cleanup** — `rm -rf <dir>/slides-qa`
 
+**QA-10b: Design Memory Write (conditional)** — If Scoring Subroutine was run during this session (e.g., as part of `--polish`), write the result to Design Memory. Follow the Write Protocol in `references/design-memory.md`.
+
 **QA-11: Report** — Include all phases:
 ```
 Visual QA Results:
@@ -677,6 +711,10 @@ During Design Thinking, you MUST also decide:
 6. **Typography scales**: Define hero (4-8em), heading (1.8-2.5em), and body (0.85-1.1em) scales.
 7. **Card styles**: Which 2-3 card variations will you use and where?
 8. **Icon approach**: outlined or filled SVG style? What stroke width?
+
+### Design Memory Consultation
+
+Before finalizing design decisions in Unique and Custom Style modes, read `~/.claude/slidev-design-memory.json` (if it exists). Follow the Read Protocol in `references/design-memory.md`. Use high-scoring patterns as inspiration (not templates) and avoid low-scoring patterns.
 
 ## Mode: Unique
 
