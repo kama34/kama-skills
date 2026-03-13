@@ -23,6 +23,8 @@ Before generating, internalize these references:
 - `references/ab-testing.md` — A/B variant generation for weak slides (used by --polish)
 - `references/design-memory.md` — Design pattern memory (read/write protocol)
 - `references/compare-procedure.md` — `--compare` side-by-side scoring
+- `references/notes-procedure.md` — `--notes` speaker notes generation
+- `references/responsive-check.md` — `--responsive` aspect ratio check
 
 ## Input Parsing
 
@@ -36,36 +38,21 @@ Parse the user's input to determine the subcommand or mode:
 Slidev Presentation Generator
 
 Usage:
-  /slidev <outline>                        Unique design (auto-generated)
-  /slidev --preset <name> <outline>        Apply a saved preset
-  /slidev style: <description> <outline>   Design from style description
-  /slidev --create-preset <name>           Interactive preset creation
-  /slidev --edit [dir] <comment>            Edit existing presentation per comment
-  /slidev --picture auto [dir]             Add images to slides (auto-search from web)
-  /slidev --picture <paths...> [dir]       Add images to slides (user-provided files)
-  /slidev --preset X --picture auto <outline>  Generate with auto images
-  /slidev --dev [dir]                      Launch dev server (default: auto-detect)
-  /slidev --export <format> [dir]          Export presentation (html, pdf, png2pdf, pngs, png_N)
-  /slidev --learn=N                         Self-improving loop: N cycles of generate→critique→improve
-  /slidev --help                           This help text
-
-Outline format:
-  # Presentation Title
-  ## Slide 1: Title
-  - Point 1
-  ## Slide 2: Another Title
-  - Content here
-
-The outline can be inline text or a file path (e.g. ./my-outline.md).
-Each "## Slide N:" becomes one slide. Exact count and order preserved.
-
-Presets saved to:
-  Global: ~/.claude/slidev-presets/<name>.preset.md
-  Local:  ./.slidev-presets/<name>.preset.md
-Preset lookup: file path → local .slidev-presets/ → ~/.claude/slidev-presets.json registry → global convention
-
-After generation:
-  cd <project-dir> && npm install && npm run dev
+  /slidev <outline or file>                     Generate with unique design
+  /slidev --preset <name> <outline>              Generate with preset style
+  /slidev style: <desc> <outline>                Generate with custom style
+  /slidev --theme <name> <outline>               Generate with specific theme
+  /slidev --polish=N [dir]                       Iterative quality improvement (N cycles)
+  /slidev --edit [dir] <comment>                 Edit existing presentation
+  /slidev --picture [auto|paths...] [dir]        Add images to slides
+  /slidev --compare <dir1> <dir2>                Compare two presentations
+  /slidev --notes [dir]                          Generate speaker notes
+  /slidev --responsive [dir]                     Check 4:3 rendering
+  /slidev --export <format> [dir]                Export (html|pdf|png2pdf|pngs|png_N)
+  /slidev --dev [dir]                            Launch dev server
+  /slidev --create-preset <name>                 Create a new preset
+  /slidev --learn=N                              Self-improving loop (N cycles)
+  /slidev --help                                 Show this help
 ```
 
 **`--create-preset <name>`**: Interactive preset creation wizard.
@@ -94,6 +81,10 @@ After generation:
 **`--polish=N [dir]`**: Iterative design improvement cycle. Runs N rounds (default 3, max 5) of score → redesign weak slides → re-score. Includes A/B testing for weak slides and content review. Follow the Polish Procedure in `references/polish-procedure.md`. Stop here — do not proceed to generation.
 
 **`--compare <dir1> <dir2>`**: Compare two presentations side-by-side with scoring. Follow the Compare Procedure in `references/compare-procedure.md`. Stop here — do not proceed to generation.
+
+**`--notes [dir]`**: Generate speaker notes for slides that don't have them. Follow the Notes Procedure in `references/notes-procedure.md`. Stop here — do not proceed to generation.
+
+**`--responsive [dir]`**: Check presentation rendering at 4:3 aspect ratio. Follow the Responsive Check in `references/responsive-check.md`. Stop here — do not proceed to generation.
 
 **`--dev [dir]`**: Launch the Slidev dev server for an existing presentation.
 
@@ -767,6 +758,37 @@ Parse the style description after `style:`. Apply `/frontend-design` thinking to
 - Interpret creatively — don't just map keywords literally, build a complete visual identity
 - Then follow the same generation procedure as Unique mode
 
+## Theme Support
+
+**`--theme <name>`**: Use a non-default Slidev theme. This is a modifier — combine with generation modes (unique, preset, custom style). Example: `/slidev --theme seriph <outline>`.
+
+### Supported Themes
+- **Primary**: `default` (current behavior), `seriph`, `apple-basic`
+- **Experimental**: `bricks`, `shibainu`, `penguin`, `dracula`
+- **Unknown**: print warning, attempt best-effort generation
+
+### Generation Changes
+
+**Step 2 (package.json)**: If `--theme` is not `default`, replace `"@slidev/theme-default": "latest"` with `"@slidev/theme-<name>": "latest"`.
+
+**Step 5 (slides.md headmatter)**: Set `theme: <name>`.
+
+**Step 4 (styles/index.css)**: For non-default themes, skip theme-default-specific CSS overrides (blockquote reset, explicit text-align for centered layouts). Instead add:
+```css
+/* Theme: <name> — theme-specific overrides may be needed.
+   Check exported PNGs for CSS specificity issues. */
+```
+
+### Visual QA Theme Conditioning
+
+Rules about `@slidev/theme-default` CSS specificity (Rules 9, 10, 24, 29, 32) become conditional:
+- If `theme == "default"`: apply these rules as written
+- If `theme != "default"`: skip these rules. Instead, during QA-4 visual review, pay extra attention to text alignment, background rendering, and blockquote styling — flag any visual issues that suggest theme CSS conflicts.
+
+### Theme Detection in Post-Generation Operations
+
+`--polish`, `--edit`, `--compare` and other post-generation subcommands detect the current theme by reading `theme:` from `slides.md` headmatter. This theme context is passed to Visual QA and A/B testing steps.
+
 ## Generation Procedure
 
 ### Step 1: Resolve Design Parameters
@@ -1041,6 +1063,9 @@ To run:
     For full-HTML custom slides using `layout: none`, consolidate the separator and frontmatter into a single block with the HTML content immediately following.
 
 32. **CRITICAL — statement/fact layout CSS override limitation**: The `@slidev/theme-default` `statement` and `fact` layouts apply font sizes, text alignment, and colors with high-specificity CSS selectors that per-slide `<style>` blocks cannot reliably override. Symptoms: setting `h1 { font-size: 2.5em }` in a per-slide style for a `statement` slide renders at the theme default (~1em) instead. **Fix**: For any `statement` or `fact` slide requiring custom typography or visual treatment beyond what the theme provides, use `layout: none` with a full custom HTML div using inline styles. Reserve `layout: statement` and `layout: fact` ONLY when the theme's default rendering is acceptable.
+
+33. **Non-default theme exploratory render**: For non-default themes, perform an exploratory render before full generation. Write a minimal 2-slide test (`cover` + `default` layout), export PNGs, check for unexpected styling. If the theme applies unusual defaults (different font rendering, unexpected background colors, unusual spacing), note them and adapt the generation accordingly. This prevents wasting a full generation on a theme that behaves unexpectedly.
+34. **Theme + preset interaction**: When using `--theme` with `--preset`, the preset's CSS block takes precedence over theme defaults. Theme provides base styling; preset provides customization layer on top. If the preset was designed for `theme: default`, it may not work correctly with other themes — warn the user if the preset's `theme` field doesn't match the `--theme` flag.
 
 ## Design Quality Rules (powered by /frontend-design + Design Principles)
 
