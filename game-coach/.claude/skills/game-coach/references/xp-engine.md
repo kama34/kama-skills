@@ -14,6 +14,7 @@
 | quest_weekly | 100-150 |
 | quest_monthly | 200-300 |
 | okr_created | 50 |
+| daily_task_done | by priority (P0=80..P3=15) — checkin only |
 
 ---
 
@@ -90,6 +91,9 @@ After any state change:
 | Close 3 P1 tasks | tasks_p1 >= 3 | 100 |
 | Run a mentor session | mentors_this_week >= 1 | 100 |
 | 5 checkins in a row | streak >= 5 (within week) | 150 |
+
+### Quest Exclusions
+- Daily task completions do NOT count toward quests (quests only track one-time tasks)
 
 ### Goal-Linked Quest Assignment
 ```

@@ -55,7 +55,8 @@ Unknown argument: "Unknown command. Use `/game --help` for help."
       "task_list": "Goal Name",
       "task_list_id": "google-tasks-list-id",
       "progress_tasks": { "done": 0, "total": 0, "pct": 0 },
-      "next_tasks": []
+      "next_tasks": [],
+      "daily_tasks": []
     }
   ],
   "woop": [
@@ -91,7 +92,47 @@ Unknown argument: "Unknown command. Use `/game --help` for help."
 - Each goal from a mentor session creates its OWN Google Tasks list
 - ALL tasks in this list = goal's tasks (no prefix filtering needed)
 - When goal is complete (all tasks done): offer to delete the list, mark goal completed
-- Progress = done/total tasks in this list
+- Progress = done/total NON-DAILY tasks in this list
+
+### Daily Tasks (Recurring Habits)
+
+Daily tasks are recurring habits that reset every checkin. They live in the same dedicated list as one-time tasks but are tracked separately.
+
+**Schema** — new field `daily_tasks` in each goal:
+```json
+{
+  "daily_tasks": [
+    {
+      "task_id": "google-tasks-id",
+      "tasklist_id": "parent-list-id",
+      "title": "🔄 [P1] Run autopilot + review",
+      "priority": "P1",
+      "history": {
+        "2026-03-12": "done",
+        "2026-03-11": "missed"
+      },
+      "current_streak": 1,
+      "best_streak": 3,
+      "last_reset_date": "2026-03-13"
+    }
+  ]
+}
+```
+
+**Detection** — a task is daily if ANY marker is present:
+```
+is_daily(task) =
+  "🔄" in task.title
+  OR "type: daily" in task.notes
+  OR task.id in goal.daily_tasks[].task_id
+```
+
+**Key rules:**
+- Daily tasks are EXCLUDED from `progress_tasks` (goal progress counts only one-time tasks)
+- Daily tasks are EXCLUDED from quest progress counting
+- XP for daily tasks is awarded ONLY during checkin (for yesterday's completions), never at completion time
+- `last_reset_date` is an idempotency guard: if == today, skip reset (prevents double-processing)
+- All date comparisons use LOCAL timezone
 
 ---
 
@@ -135,27 +176,51 @@ Built on Octalysis (White Hat) + GROW/WOOP methodologies.
    - Otherwise: streak = 1 (reset)
 3. Award XP: 25 (checkin) + streak x 5 (bonus)
 4. Increment `history.checkins`
-5. Show dashboard
-6. Ask: "What went well yesterday?" -> celebration
-7. **REQUIRED — Load goal progress from Google Tasks:**
+5. **RESET DAILY TASKS** — for each goal with `daily_tasks[]`:
+   a. `list-tasks(goal.task_list_id, showCompleted=true)`
+   b. For each daily_task:
+      - If `last_reset_date == today` -> skip (already processed)
+      - Find task in Google Tasks by `task_id`
+      - If task is `completed`:
+        - `completed_date` = completion date (local TZ)
+        - If `completed_date == today` -> leave as-is, set `last_reset_date = today`
+        - If `completed_date == yesterday` -> `history[yesterday] = "done"`, award XP by priority (P0=80, P1=50, P2=30, P3=15), `update-task(status: "needsAction")`, streak += 1, best_streak = max(best_streak, current_streak)
+        - If `completed_date < yesterday` -> `history[completed_date] = "done"`, fill "missed" for gap days, `history[yesterday] = "missed"`, `update-task(status: "needsAction")`, streak = 0
+      - If task is `needsAction`:
+        - If `yesterday` not in history -> `history[yesterday] = "missed"`, streak = 0
+        - Else -> skip (already recorded)
+      - Set `last_reset_date = today`
+   c. **Fallback**: if `update-task` fails -> delete task + recreate with same text, update `task_id`
+5a. **Migration (first run)**: if goal has empty `daily_tasks` but its dedicated list contains tasks with "daily" in title -> offer: "Found task '{title}' with 'daily'. Convert to daily habit 🔄?"
+   On conversion: add 🔄 to title, `type: daily` to notes, reset to needsAction if completed, register in daily_tasks[]
+6. Show dashboard
+6a. **"Daily habits (yesterday)" section** (show only if any goal has daily_tasks):
+   ```
+   **Daily habits** (yesterday):
+   ✅ 🔄 Run autopilot + review (🔥3d)  +50 XP
+   ❌ 🔄 Launch TG automation
+   ```
+7. Ask: "What went well yesterday?" -> celebration
+8. **REQUIRED — Load goal progress from Google Tasks:**
    For each goal in state.goals[]:
    - Find goal's DEDICATED list by name goal.task_list via list-tasklists
-   - list-tasks(tasklist_id, showCompleted=true)
-   - ALL tasks in list = goal's tasks (dedicated list, no filtering)
-   - Compute done/total/pct, update state.goals[].progress_tasks
-   - Find next_tasks (first 3 incomplete, sorted by priority [P0]>[P1]>[P2]>[P3])
-7a. Show "Next Step" — first task from next_tasks of the P0 goal
-7b. Ask: "Taking this or something else?" (instead of open-ended question)
-7c. If confirms: task already in Google Tasks, proceed
+   - list-tasks(tasklist_id, showCompleted=true) — can reuse data from step 5
+   - Compute done/total/pct — **EXCLUDE daily tasks** (is_daily: 🔄 in title OR type: daily in notes OR task_id in daily_tasks[])
+   - Update state.goals[].progress_tasks
+   - Find next_tasks (first 3 incomplete NON-DAILY, sorted by priority [P0]>[P1]>[P2]>[P3])
+8a. **Daily check-in question** (show only if daily tasks in needsAction): "Today {N} daily tasks. Which ones are you planning to do?"
+8b. Show "Next Step" — first NON-DAILY task from next_tasks of the P0 goal
+8c. Ask: "Taking this or something else?" (instead of open-ended question)
+8d. If confirms: task already in Google Tasks, proceed
     If names something else: offer to create it in goal's dedicated list
-8. Show quest progress (if any)
-8a. If active weekly quest is goal-linked:
-    - Count completed tasks in goal's dedicated list since Monday
+9. Show quest progress (if any)
+9a. If active weekly quest is goal-linked:
+    - Count completed NON-DAILY tasks in goal's dedicated list since Monday
     - Update quest.progress
     - If progress >= target: celebrate + award XP + assign new quest
-9. Check badges (first_checkin, streak_3/7/14/30, perfect_week)
-10. Check level up
-11. Save state.json
+10. Check badges (first_checkin, streak_3/7/14/30, perfect_week)
+11. Check level up
+12. Save state.json
 
 ---
 
@@ -166,6 +231,10 @@ Built on Octalysis (White Hat) + GROW/WOOP methodologies.
 3. **R (Reality)**: "Where are you now?" + goal-tracking data
 4. **O (Options + Obstacles)**: "What's in the way?" -> WOOP Obstacle
 5. **W (Will + Plan)**: "If [obstacle] then [action]" -> tasks in Google Tasks
+5a. **Daily task detection**: If a task from the WOOP plan is a daily habit (user says "every day", "daily", or task is inherently recurring):
+   - Ask: "Is this a daily habit? Make it a 🔄 daily task?"
+   - If yes -> create task with `🔄` prefix in title + `type: daily` in notes
+   - Register in `goals[goal_id].daily_tasks[]` with fields: task_id, tasklist_id, title, priority, history:{}, current_streak:0, best_streak:0, last_reset_date:null
 
 **Task Creation from WOOP Plan:**
   1. Extract 3-5 concrete tasks from the If-Then plan steps
@@ -206,8 +275,8 @@ Built on Octalysis (White Hat) + GROW/WOOP methodologies.
    For EACH goal in state.goals[]:
    a. `list-tasklists` -> find DEDICATED list by name goal.task_list
    b. `list-tasks(tasklist_id, showCompleted=true)`
-   c. ALL tasks in list = goal's tasks (dedicated list, no filtering needed)
-   d. total = all tasks, done = completed
+   c. Goal tasks = ALL tasks in list, **EXCLUDING daily** (is_daily: 🔄 in title OR type: daily in notes OR task_id in daily_tasks[])
+   d. total = non-daily tasks, done = completed non-daily
    e. pct = done/total*100 (if total=0 -> 0%)
    f. next_tasks = first 3 INCOMPLETE (priority: [P0]>[P1]>[P2]>[P3])
    g. Update state: progress_tasks, next_tasks (array up to 3), progress
@@ -234,6 +303,7 @@ Built on Octalysis (White Hat) + GROW/WOOP methodologies.
 └ {task1_1}
 └ {task1_2}
 └ {task1_3}
+└ 🔄 {daily_title} (🔥{streak}d) — today: {☐/☑}
 
 ---
 
@@ -241,6 +311,7 @@ Built on Octalysis (White Hat) + GROW/WOOP methodologies.
 └ {task2_1}
 └ {task2_2}
 └ {task2_3}
+└ 🔄 {daily_title} (🔥{streak}d) — today: {☐/☑}
 
 ---
 
@@ -254,8 +325,9 @@ To level {next_level}: {remaining} XP
 ```
 
 **Progress bar**: `[████████░░]`
-**Tasks under goal**: show up to 3 incomplete from next_tasks, each with `└` prefix. If 0 tasks — "No tasks. `/game mentor`"
-**Next Action**: first task from next_tasks of P0 goal. If none — "No tasks. `/game mentor`"
+**Tasks under goal**: show up to 3 incomplete NON-DAILY from next_tasks, each with `└` prefix. If 0 tasks — "No tasks. `/game mentor`"
+**Daily tasks under goal**: after regular tasks, show each daily_task from goal.daily_tasks[]. Format: `└ 🔄 {title_without_🔄} (🔥{current_streak}d) — today: ☐` (if needsAction) or `☑` (if completed). Daily tasks do NOT count toward done/total progress.
+**Next Action**: first NON-DAILY task from next_tasks of P0 goal. If none — "No tasks. `/game mentor`"
 **Goal separation**: between goal blocks insert empty markdown `---` for clear visual separation. Do NOT use `&nbsp;` — CLI doesn't render it.
 
 5. Recent achievements (last 3 badges/level ups)
@@ -296,6 +368,7 @@ See `references/analyze-mode.md` for the full 7-block analysis procedure.
 ```
 When task completed:
 1. Load state.json
+1a. Check is_daily(task): if daily -> SKIP entire hook (daily XP is awarded only during checkin)
 2. Determine task priority -> XP amount
 3. Award XP
 4. Increment history.tasks_done

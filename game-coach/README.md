@@ -6,9 +6,9 @@ Gamified goal coaching system that turns goal management into a game with XP, le
 
 ## What It Does
 
-- **Daily check-in** (5 min) — streak tracking, XP rewards, focus for the day
-- **Mentor session** — deep GROW+WOOP coaching for goal clarity and planning
-- **Dashboard** — full progress visualization with goals, quests, badges
+- **Daily check-in** (5 min) — streak tracking, XP rewards, daily habit reset, focus for the day
+- **Mentor session** — deep GROW+WOOP coaching for goal clarity and planning (supports daily habit creation)
+- **Dashboard** — full progress visualization with goals, daily habits, quests, badges
 - **Status** — one-line quick status
 - **Analyze** — retrospective activity analysis over N days (7 metrics)
 
@@ -67,6 +67,9 @@ Register in `.claude/settings.json`:
 | P3 task completed | 15 |
 | Mentor session | 75 |
 | Quest completion | 100-300 |
+| 🔄 Daily habit (at checkin) | by priority (P0=80..P3=15) |
+
+**🔄 Daily tasks** are recurring habits that reset every checkin. XP is awarded for yesterday's completions. Each daily task tracks its own streak.
 
 ## 10 Levels
 
