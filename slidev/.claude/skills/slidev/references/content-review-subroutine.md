@@ -1,0 +1,87 @@
+# Content Review Subroutine
+
+A reusable subroutine for reviewing presentation content quality. Input: `<dir>` (project directory). Called by `--polish`, Visual QA (as optional enhancement), and `--learn` critic.
+
+## Process
+
+Read `<dir>/slides.md` and exported PNGs from `<dir>/slides-qa/`. Check these 5 aspects:
+
+### 1. Three-Second Test
+
+For EACH slide: can you understand the main message in 3 seconds?
+
+Flag if:
+- Slide has too much text (more than 4-5 visual blocks)
+- Multiple elements compete for attention with equal visual weight
+- No clear focal point or hierarchy
+- The "main message" requires reading body text to discover
+
+### 2. Narrative Flow
+
+Read slides in sequence. Check for logical progression:
+- Problem → Solution → Evidence → CTA
+- Each slide should build on the previous one
+
+Flag:
+- **Gaps**: "Slide N introduces a solution but slide N-1 doesn't establish a problem"
+- **Jumps**: "Slide N shows traction data but the product hasn't been explained yet"
+- **Missing setup**: data/metrics presented without context for why they matter
+
+### 3. Redundancy
+
+Check for repeated information across slides.
+
+Flag:
+- Same metric appearing on multiple slides (e.g., "$1.5M ARR" on slides 4 and 7)
+- Same concept explained twice with different wording
+- Recommend: show data once on the stronger slide, replace on the other
+
+### 4. CTA Clarity
+
+On the Ask/CTA slide (usually near the end):
+- Is the ask unambiguous? (amount, timeline, next step)
+- Can the audience act on it immediately?
+
+Flag:
+- Vague CTAs: "Let's talk" without specifying what about
+- Missing specifics: no amount, no timeline, no contact info
+- Multiple competing asks on one slide
+
+### 5. Information Hierarchy
+
+On each slide: is there ONE clear focal element?
+
+Flag:
+- All elements equal size/weight (e.g., 5 identical cards)
+- Hero metric smaller than or equal to heading text
+- No visual distinction between primary and supporting content
+
+## Output
+
+Write structured issue list:
+
+```
+# Content Review
+
+## Issues Found
+
+### CRITICAL: Slide N — [aspect that failed]
+- [what's wrong]
+- Fix: [specific action]
+
+### MAJOR: Slides N→M — [aspect that failed]
+- [what's wrong]
+- Fix: [specific action]
+
+### MINOR: Slide N — [aspect that failed]
+- [what's wrong]
+- Fix: [specific action]
+
+## No Issues
+- [list aspects that passed cleanly]
+```
+
+Severity guide:
+- **CRITICAL**: Audience will be confused or lost (fails 3-second test, narrative gap before CTA)
+- **MAJOR**: Quality degraded but message still comes through (redundancy, weak hierarchy)
+- **MINOR**: Polish issue, not a comprehension problem (slightly verbose, minor redundancy)

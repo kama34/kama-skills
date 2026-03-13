@@ -17,6 +17,10 @@ Before generating, internalize these references:
 - `references/preset-format.md` — Preset file specification
 - `references/layout-css-patterns.md` — **CRITICAL**: Battle-tested CSS patterns for each layout type (alignment, backgrounds, overlays)
 - `references/design-principles.md` — **CRITICAL**: Gamma-level design quality principles (visual rhythm, layout diversity, typography drama, icon system, card variation, decorative layer, visual arc, data viz, mockups, SVG diagrams, spacing, accent hierarchy). Apply in ALL modes: generation, editing, presets, Visual QA.
+- `references/scoring-subroutine.md` — Slide scoring (1-10 on 6 axes), used by --polish, --learn, --compare
+- `references/content-review-subroutine.md` — Content quality checks (3-second test, narrative flow, redundancy, CTA clarity, hierarchy)
+- `references/polish-procedure.md` — `--polish=N` iterative improvement cycle
+- `references/ab-testing.md` — A/B variant generation for weak slides (used by --polish)
 
 ## Input Parsing
 
@@ -84,6 +88,8 @@ After generation:
 7. Print summary: preset path (noting global vs local), demo path, Visual QA results, how to preview, how to use.
 
 **`--learn=N`**: Self-improving learning loop. Parse N from the argument (e.g., `--learn=5`). Follow the Learning Loop Procedure (L-1 through L-5). Stop here — do not proceed to generation.
+
+**`--polish=N [dir]`**: Iterative design improvement cycle. Runs N rounds (default 3, max 5) of score → redesign weak slides → re-score. Includes A/B testing for weak slides and content review. Follow the Polish Procedure in `references/polish-procedure.md`. Stop here — do not proceed to generation.
 
 **`--dev [dir]`**: Launch the Slidev dev server for an existing presentation.
 
