@@ -575,8 +575,13 @@ Determine generation mode:
 
    Higher total score wins. Tie → slide 2 wins. Record anchor index in `meta.json`.
 
-4. **Generate slides 3..N** — for each remaining slide:
+4. **Describe anchor palette in text** — after selecting the anchor, analyze its visual characteristics and write an **anchor palette description** (3-4 sentences): dominant colors with hex values, background treatment, decoration style, overall mood. This description is prepended to every subsequent slide prompt to reinforce consistency even when the reference image alone is insufficient.
+
+   Example: `"STYLE CONSISTENCY: This presentation uses a dark navy (#0d1b2a) to deep teal (#1b3a4b) gradient background with cyan (#00f0ff) accent elements. Decorative motifs are geometric hexagons and circuit-board traces, positioned in the right 30-40% of slides. The mood is tech-forward and professional. ALL slides MUST maintain this exact palette and decoration style — do not introduce new colors, warm tones, or different decoration styles."`
+
+5. **Generate slides 3..N** — for each remaining slide:
    - Read the style anchor PNG as base64
+   - **Prepend the anchor palette description** to the slide prompt (before zone instructions)
    - Call provider API with slide prompt + anchor image as reference
    - Save to `<output-dir>/slides/slide-NN.png`
    - Print: "Generated slide N/<total>"
@@ -597,9 +602,14 @@ Read each generated PNG and verify:
 1. **Zone emptiness**: Are the specified zone areas actually empty? No text, no decorative elements crossing into zones?
 2. **Zone background uniformity**: Is the background in each zone uniform enough for text overlay? (No visible pattern variation, gradient discontinuity, or decorative element edges within the zone area — should read as a single flat or smoothly graduated color region at presentation scale.)
 3. **Zone contrast**: Is the zone background the right tone (dark for white text, light for dark text)?
-4. **Stylistic consistency**: Does this slide visually match the style anchor?
+4. **Stylistic consistency**: Does this slide visually match the style anchor? Check:
+   - Same color palette (dominant + accent colors match within the same hue family)?
+   - Same decoration style (geometric shapes, organic blobs, etc. — same motif type)?
+   - Same background treatment (gradient direction, texture type)?
+   - **If ANY of these differ significantly** (e.g., teal palette vs orange palette, or geometric vs organic decorations), the slide MUST be regenerated with the anchor palette description reinforced: prepend `"CRITICAL STYLE CONSISTENCY: You MUST use EXACTLY the same color palette as the reference image. Dominant color: [hex], accent: [hex]. Do NOT introduce any new colors, warm tones, or different decoration styles. Match the reference image's visual style precisely."`
+   - **Exception for "peak intensity" slides** (typically the Ask/CTA/investment slide): a subtle hue shift toward warm/gold is acceptable to create emphasis, but the overall decoration style and composition approach must remain consistent. The shift should be an accent intensification, not a complete palette change.
 
-**If zone not empty → regenerate** with reinforced prompt: prepend `"CRITICAL: the area at X% to X+W% horizontally, Y% to Y+H% vertically MUST BE COMPLETELY EMPTY — no text, no decorations, no elements of any kind."`
+**If zone not empty → regenerate** with reinforced prompt: prepend `"CRITICAL: the area at X% to X+W% horizontally, Y% to Y+H% vertically MUST BE COMPLETELY EMPTY — no text, no decorations, no elements of any kind. The zone must blend seamlessly into the background — do NOT draw visible rectangles or borders around it."`
 
 **If zone background mismatches planned contrast** (e.g., planned dark but AI generated light): update the text color in `layout-plan.json` for that zone before proceeding to Step 6 assembly. Switch white text to dark text (or vice versa) to match actual background.
 
@@ -1004,9 +1014,9 @@ SlideCraft complete!
 
 2. **Always specify empty zones explicitly.** Every prompt MUST include the full `prompt_hint` from `layout-plan.json`. Zone instructions come first in the prompt, before visual descriptions.
 
-3. **Zones must have uniform backgrounds.** Explicitly require: "The background in the zone area must be uniform [dark/light] — no texture variation, no decorative elements, no gradient discontinuity within this area."
+3. **Zones must blend seamlessly into the background.** Do NOT draw visible rectangles, borders, boxes, or panels to mark empty zones. The zone area should be an organic, natural part of the overall background — the same base color/gradient continuing smoothly through the zone. Explicitly require: "The empty zone area must blend seamlessly into the surrounding background — do NOT draw visible borders, rectangles, panels, or any visual markers around the empty area. The zone should simply be a calm region of the same background color/gradient, free of decorative elements."
 
-4. **Keep visual elements outside zones.** State explicitly where decorative elements should go: "Place all geometric shapes, icons, and decorative elements ONLY in the areas outside the text zones."
+4. **Keep visual elements outside zones.** State explicitly where decorative elements should go: "Place all geometric shapes, icons, and decorative elements ONLY in the areas outside the text zones. Decorative elements should frame the empty zones naturally, not border them."
 
 5. **Specify "16:9 aspect ratio presentation background slide"** at the start of every prompt.
 
@@ -1033,15 +1043,23 @@ SlideCraft complete!
     ```
     16:9 aspect ratio presentation background slide. [Role description.]
 
-    CRITICAL empty zones: [prompt_hint from layout-plan.json — list all zones]
+    [STYLE CONSISTENCY anchor palette description — for slides 3+ in reference mode]
 
-    Visual elements (placed ONLY outside the empty zones): [decoration description,
-    color palette, background treatment, atmospheric elements, compositional approach]
+    CRITICAL empty zones (these areas must blend seamlessly into the background —
+    NO visible rectangles, borders, or panels marking them):
+    [prompt_hint from layout-plan.json — list all zones]
+    Zones must have background suitable for [white/dark] text overlay.
+
+    Visual elements (placed ONLY outside the empty zones, framing them naturally):
+    [decoration description, color palette, background treatment,
+    atmospheric elements, compositional approach]
 
     [Style suffix]
     ```
 
 13. **Zone background contrast instruction.** Always conclude zone instructions with the contrast requirement: "Zones must have background suitable for [white/dark] text overlay." This is separate from the visual description.
+
+14. **Anti-visible-rectangle rule.** NEVER instruct the AI to "create a panel", "draw a box", or "add a rectangle" for zones. The zone should be an absence of decoration, not a presence of a frame. Use language like "leave this area as calm, uncluttered background" rather than "create an empty panel/box here."
 
 ---
 

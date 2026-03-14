@@ -62,6 +62,7 @@ Rules for zone instructions:
 - All visual elements MUST be placed ONLY outside text zones
 - Zone backgrounds must be uniform and predictable for text overlay contrast — no textures, gradients, or patterns inside zones
 - State the expected text color (light or dark) so the zone surface provides appropriate contrast
+- **CRITICAL: Zones must blend seamlessly into the background.** Do NOT instruct the AI to "create a panel", "draw a rectangle", or "add a box" for zones. The zone should be an organic part of the background — simply a calm region where the same base color/gradient continues, free of decorative elements. Use language like "leave this area as calm, uncluttered background" NOT "create an empty panel/box here"
 
 ### 5. Style Suffix
 
@@ -93,6 +94,17 @@ If a zone sits over a complex visual region, the prompt must either:
 
 > A 16:9 aspect ratio presentation slide background. This is a statistics/data slide — central metric zone and label zone left clear. Dark navy (#1a1a2e) base. Leave the central metric zone — 40% wide, 35% tall, centered horizontally at 30% from top — completely empty with uniform dark navy (#1a1a2e) suitable for large electric blue stat text. Leave the label zone — 50% wide, 12% tall, centered horizontally at 67% from top — completely empty with uniform dark navy suitable for white label text. A thin circular ring decorative element centered on the slide, radius extending only to the outer edge of the metric zone — does not enter the empty zone. Subtle radiating line pattern in the four outer corners only, very low opacity. Clean modern sans-serif mood.
 
+## Style Consistency Reinforcement
+
+When generating slides 3+ in reference mode, prepend an **anchor palette description** to each prompt. This is a 3-4 sentence description of the anchor slide's visual characteristics that reinforces consistency even when the reference image alone is insufficient.
+
+Format:
+```
+STYLE CONSISTENCY: This presentation uses [dominant color with hex] to [secondary color with hex] background with [accent color with hex] accent elements. Decorative motifs are [motif type], positioned in [position]. The mood is [mood]. ALL slides MUST maintain this exact palette and decoration style — do not introduce new colors, warm tones, or different decoration styles.
+```
+
+**This is CRITICAL for maintaining visual consistency.** Without it, the AI model may drift to completely different palettes (e.g., switching from teal to orange) even with a reference image.
+
 ## Anti-Patterns
 
 | Problem | Why it fails | Fix |
@@ -101,12 +113,14 @@ If a zone sits over a complex visual region, the prompt must either:
 | "Make a nice slide background" | Too vague, no zone guidance | Specify every zone coordinate and visual element placement |
 | Zones without clearing instructions | AI fills zones with visuals, blocking text overlay | Add explicit empty zone instructions for every zone |
 | Patterns or textures inside zones | Text overlay becomes unreadable | Keep zones uniform and solid-colored |
+| Visible rectangles/borders marking zones | Zones look like "holes" cut in the design | Use "leave area as calm background" — never "draw empty panel/box" |
 | Prompt > 2000 chars | Model may ignore details | Prioritize zone instructions, simplify decorative descriptions |
 | Missing zone contrast spec | Model picks surface that conflicts with text color | Always specify zone surface color AND expected text color |
 | "Use Arial font" | Model cannot use specific fonts | Irrelevant — fonts are handled by Slidev CSS, not the image |
 | Conflicting instructions | "Minimalist with many decorative elements" | Pick one direction for decorative regions |
 | No background specified | Model uses random backgrounds | Always describe base background color explicitly |
 | Visual elements crossing zone boundaries | Bleeds into text overlay area | Explicitly constrain each element to non-zone regions |
+| Missing anchor palette description | Slides 3+ drift to different color palettes | Always prepend STYLE CONSISTENCY block for slides 3+ |
 
 ## Prompt Length Guidelines
 
