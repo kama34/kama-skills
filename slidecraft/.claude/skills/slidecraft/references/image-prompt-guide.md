@@ -62,7 +62,7 @@ Rules for zone instructions:
 - All visual elements MUST be placed ONLY outside text zones
 - Zone backgrounds must be uniform and predictable for text overlay contrast — no textures, gradients, or patterns inside zones
 - State the expected text color (light or dark) so the zone surface provides appropriate contrast
-- **CRITICAL: Zones must blend seamlessly into the background.** Do NOT instruct the AI to "create a panel", "draw a rectangle", or "add a box" for zones. The zone should be an organic part of the background — simply a calm region where the same base color/gradient continues, free of decorative elements. Use language like "leave this area as calm, uncluttered background" NOT "create an empty panel/box here"
+- **CRITICAL: AI must NEVER draw panels, cards, boxes, or containers in text zones.** The zone must be an organic part of the background — simply a calm region where the same base color/gradient continues, free of decorative elements. If the final design needs card/panel containers around text, those are created by CSS in the Slidev layer (`zone-card` classes) — this guarantees perfect alignment between container and text (same DOM element). The AI draws ONLY atmospheric background + decorative elements outside zones. Use "leave this area as calm, uncluttered background" — NEVER "create a panel/box/card/rectangle here"
 
 ### 5. Style Suffix
 
@@ -113,7 +113,8 @@ STYLE CONSISTENCY: This presentation uses [dominant color with hex] to [secondar
 | "Make a nice slide background" | Too vague, no zone guidance | Specify every zone coordinate and visual element placement |
 | Zones without clearing instructions | AI fills zones with visuals, blocking text overlay | Add explicit empty zone instructions for every zone |
 | Patterns or textures inside zones | Text overlay becomes unreadable | Keep zones uniform and solid-colored |
-| Visible rectangles/borders marking zones | Zones look like "holes" cut in the design | Use "leave area as calm background" — never "draw empty panel/box" |
+| Visible rectangles/borders marking zones | Zones look like "holes" cut in the design; text misaligns with AI-drawn borders | NEVER draw containers in AI layer — use CSS `zone-card` classes instead |
+| AI-drawn cards/panels for text | Text and card borders inevitably misalign (AI ~approx coords, CSS = exact) | Cards/panels are CSS-only (`zone-card`, `zone-card-solid`, `zone-card-accent`) |
 | Prompt > 2000 chars | Model may ignore details | Prioritize zone instructions, simplify decorative descriptions |
 | Missing zone contrast spec | Model picks surface that conflicts with text color | Always specify zone surface color AND expected text color |
 | "Use Arial font" | Model cannot use specific fonts | Irrelevant — fonts are handled by Slidev CSS, not the image |

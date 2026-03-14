@@ -397,7 +397,7 @@ Determine the visual direction and text design for this presentation. This is wh
 - **Palette**: Choose 3-5 colors with a dominant + accent hierarchy. Commit to specific hex values.
 - **Background treatment**: Gradients, geometric patterns, subtle textures — be specific.
 - **Decorative elements**: What elements will populate non-zone areas (geometric shapes, organic blobs, architectural details, abstract motifs).
-- **Composition approach**: How the visual interacts with the empty zones (frame around zones, contrast fill beside zones, gradient fade into zones).
+- **Composition approach**: How the visual interacts with the empty zones (decorative elements framing zones, gradient fade toward zones). **CRITICAL: AI must NEVER draw panels, cards, boxes, or any rectangular containers in text zones.** If the design calls for card-like containers around text, those are created in the CSS layer (Step 6), not by the AI. The AI draws only the atmospheric background + decorative elements outside zones.
 
 *Text layer (Slidev):*
 - **Font pair**: Distinctive Google Fonts — display font + body font. Good pairs: Outfit + Source Serif 4, Syne + Literata, Cabinet Grotesk + Newsreader, Plus Jakarta Sans + Fraunces, Bricolage Grotesque + Lora. NEVER Inter/Roboto/Arial.
@@ -414,7 +414,7 @@ Determine the visual direction and text design for this presentation. This is wh
 Document all decisions as a **style suffix** (for AI prompts) + **text design plan** (for Slidev assembly). The style suffix is a paragraph of English describing the visual to the AI model.
 
 Example style suffix:
-> "Style: Deep navy background (#1a1a2e) with subtle geometric grid overlay at 4% opacity. Electric blue (#00d4ff) accent lines forming abstract architectural motifs on the right side and bottom corners. Frosted glass card-like zones floating on the dark canvas. Gradient fade from deep navy to near-black at right edge. 16:9 aspect ratio presentation background."
+> "Style: Deep navy background (#1a1a2e) with subtle geometric grid overlay at 4% opacity. Electric blue (#00d4ff) accent lines forming abstract architectural motifs on the right side and bottom corners. Smooth gradient fade from deep navy to near-black at right edge. No panels, cards, boxes, or rectangular containers in the image — text containers are handled by CSS overlay. 16:9 aspect ratio presentation background."
 
 ### Step 4: Plan Slides
 
@@ -729,6 +729,28 @@ export default defineConfig({
   overflow: hidden;
 }
 
+/* Zone card styles — CSS-rendered containers for text.
+   Use these instead of asking AI to draw panels/boxes.
+   The card and text are the SAME DOM element = perfect alignment always. */
+.zone-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 24px 28px;
+  backdrop-filter: blur(8px);
+}
+.zone-card-solid {
+  background: rgba(0, 0, 30, 0.55);
+  border-radius: 12px;
+  padding: 24px 28px;
+}
+.zone-card-accent {
+  background: linear-gradient(135deg, var(--color-accent-bg), rgba(0,0,0,0.3));
+  border: 1px solid var(--color-accent-dim);
+  border-radius: 12px;
+  padding: 24px 28px;
+}
+
 /* Background references — one class per slide */
 .slide-01 { background-image: url('./slides/slide-01.png'); }
 .slide-02 { background-image: url('./slides/slide-02.png'); }
@@ -796,6 +818,14 @@ layout: none
 - Copy coordinates directly from `layout-plan.json` (x → left, y → top, w → width, h → height)
 - Use inline styles on text elements (not just on the zone div) — do NOT rely on CSS class inheritance due to Slidev theme CSS specificity
 - Text colors must match what Phase 1 QA confirmed (may differ from original plan if background mismatch was found)
+- **Card containers are CSS-only, never AI-drawn.** If the design calls for a panel/card around text, add `zone-card`, `zone-card-solid`, or `zone-card-accent` class to the zone div:
+  ```html
+  <div class="zone zone-card" style="left:5%;top:8%;width:55%;height:80%;">
+    <h1>Heading</h1>
+    <p>Content inside a glass card — perfectly aligned because card = zone div</p>
+  </div>
+  ```
+  This guarantees the card border and text are always perfectly aligned (same DOM element).
 - `v-clicks` work inside zone divs for bullet lists — test pattern:
   ```html
   <div class="zone" style="left:5%;top:25%;width:58%;height:55%;">
@@ -1059,7 +1089,7 @@ SlideCraft complete!
 
 13. **Zone background contrast instruction.** Always conclude zone instructions with the contrast requirement: "Zones must have background suitable for [white/dark] text overlay." This is separate from the visual description.
 
-14. **Anti-visible-rectangle rule.** NEVER instruct the AI to "create a panel", "draw a box", or "add a rectangle" for zones. The zone should be an absence of decoration, not a presence of a frame. Use language like "leave this area as calm, uncluttered background" rather than "create an empty panel/box here."
+14. **Anti-visible-rectangle rule.** NEVER instruct the AI to "create a panel", "draw a box", "add a card", or "add a rectangle" for zones. The AI must NOT draw any containers, frames, or bordered areas where text will go. If the design needs card/panel containers around text, those are created by CSS classes (`zone-card`, `zone-card-solid`, `zone-card-accent`) in the Slidev layer — this guarantees perfect alignment between container border and text. The AI draws ONLY the atmospheric background + decorative elements outside zones. Use language like "leave this area as calm, uncluttered continuation of the background" rather than "create an empty panel/box/card here."
 
 ---
 

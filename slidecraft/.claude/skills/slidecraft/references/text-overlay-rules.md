@@ -99,6 +99,59 @@ The frontmatter `background:` renders on a parent element that the theme's opaqu
 - Does NOT work inside nested HTML `<div>` structures
 - For custom HTML layouts, use static presentation instead
 
+## CSS Card Containers (NOT AI-drawn)
+
+**CRITICAL RULE:** If the design calls for panels, cards, or containers around text, they MUST be created in the CSS layer — NEVER drawn by the AI in the image. This is because AI coordinates are approximate while CSS coordinates are exact, so AI-drawn borders and CSS-positioned text will always misalign.
+
+Three card styles are available as CSS classes on `.zone` divs:
+
+```html
+<!-- Glass card — subtle frosted glass effect -->
+<div class="zone zone-card" style="left:5%;top:8%;width:55%;height:80%;">
+  <h1>Heading perfectly aligned with card border</h1>
+  <p>Content inside a glass card</p>
+</div>
+
+<!-- Solid dark card — semi-transparent dark overlay -->
+<div class="zone zone-card-solid" style="left:5%;top:8%;width:55%;height:80%;">
+  <h1>Heading</h1>
+</div>
+
+<!-- Accent card — gradient with accent color border -->
+<div class="zone zone-card-accent" style="left:40%;top:20%;width:55%;height:60%;">
+  <h1>Highlighted content</h1>
+</div>
+```
+
+**CSS definitions (in `styles/index.css`):**
+
+```css
+.zone-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 24px 28px;
+  backdrop-filter: blur(8px);
+}
+.zone-card-solid {
+  background: rgba(0, 0, 30, 0.55);
+  border-radius: 12px;
+  padding: 24px 28px;
+}
+.zone-card-accent {
+  background: linear-gradient(135deg, var(--color-accent-bg), rgba(0,0,0,0.3));
+  border: 1px solid var(--color-accent-dim);
+  border-radius: 12px;
+  padding: 24px 28px;
+}
+```
+
+**Why CSS cards instead of AI cards:**
+- Card border and text are the SAME DOM element → always perfectly aligned
+- Cards adapt to actual text length (CSS flexbox)
+- Easy to change card style without regenerating AI images
+- Consistent border-radius, padding, and blur across all slides
+
 ## Text Contrast Guarantee
 
 The AI image generation prompt requires uniform backgrounds in text zones. Text color is chosen to contrast:
