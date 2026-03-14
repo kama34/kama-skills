@@ -136,15 +136,15 @@ If zone is not empty → regeneration with reinforced prompt: `"CRITICAL: the ar
 
 **Background mismatch remediation:** If Phase 1 QA finds that zone background differs from planned (e.g., planned dark but AI generated light), update text color in `layout-plan.json` to match the actual background before proceeding to Step 5 assembly.
 
-### Step 4.5: Install Dependencies
+### Step 5.5: Install Dependencies
 
-Before QA or dev server, install npm dependencies and Playwright:
+After project scaffold (Step 5), install npm dependencies and Playwright:
 
 ```bash
 cd <output-dir> && npm install && npx playwright install chromium
 ```
 
-This step runs once after project scaffold (Step 5) and is required before any `npx slidev export` or `npx slidev` command.
+This step runs once after Step 5 assembly and is required before Step 6 QA (`npx slidev export`) or `--dev` (`npx slidev`).
 
 ### Step 5: Slidev Project Assembly
 
@@ -268,7 +268,7 @@ Two-phase quality assurance process.
   - Image problem → regenerate PNG (Phase 1)
   - Text problem → adjust CSS/positioning (Phase 2)
   - Harmony problem → may require both
-- Up to 2 regeneration attempts per slide
+- Up to 2 regeneration attempts per slide (applies to both Phase 1 image regen and Phase 2 image regen triggered by low scores). CSS/text adjustments in Phase 2 are capped at 3 attempts — if still failing, flag to user for manual review
 
 ### Step 7: Export
 
@@ -291,9 +291,9 @@ Final export via Slidev export engine:
 | `--compare <dir1> <dir2>` | Export both, score on 6 axes, delta table. Compares both AI layer and composite |
 | `--notes [dir]` | Adds 4-point speaker notes (Opening/Key message/Details/Transition) |
 | `--learn=N` | N iterations: generate → dual QA → analyze → adjust prompt AND positioning strategy → improvements.md |
-| `--create-preset <name>` | 7-question wizard. Preset includes: visual style (for AI) + typography (for text layer) + zone layout templates |
+| `--create-preset <name>` | 9-question wizard. Preset includes: visual style (for AI) + typography (for text layer) + zone layout templates. See wizard detail below |
 | `--dev [dir]` | Dev server: `cd <dir> && (sleep infinity \| npx slidev) 2>&1` run in background. Wait for "ready" URL in output, report to user. Requires `npm install` first |
-| `--export <format> [dir]` | pdf / png2pdf / pngs / png_N — final composite export via Slidev |
+| `--export <format> [dir]` | pdf / png2pdf / pngs / png_N / html — final composite export via Slidev |
 | `--responsive [dir]` | Switch aspectRatio to 4/3, check: zones don't overflow? Background scales correctly? |
 | `--picture [auto\|paths]` | Adds additional photos (via Brave search) into non-text zones on top of AI background |
 
@@ -345,7 +345,7 @@ Adds real photos to non-text zones of AI-generated backgrounds:
 1. Identify free zones — areas NOT occupied by text zones in layout-plan.json
 2. Search photos via Brave Image Search (or use provided paths)
 3. Download and place into `slides/` directory
-4. For each slide with photos: add CSS `background-image` layer between AI background and text layer (z-index: 0.5 via stacking order)
+4. For each slide with photos: add as a separate `<div>` layer between AI background (z-index: 0) and text zones (z-index: 2), using z-index: 1. Adjust text zone z-index to 2 when photos are present
 5. Apply gradient overlay on photo edges to blend with AI background
 6. Phase 2 QA on affected slides — verify photos don't interfere with text readability
 
