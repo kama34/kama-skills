@@ -29,6 +29,7 @@ Each skill directory serves dual purpose: **skill source** (in `.claude/skills/`
 | Outline Structure Generator | `outline/` | `/outline` |
 | Game Coach (Gamified Goals) | `game-coach/` | `/game` |
 | Slidegen Image Presenter | `slidegen/` | `/slidegen` |
+| SlideCraft (Two-Layer Presentations) | `slidecraft/` | `/slidecraft` |
 
 ## Working with Skills
 
