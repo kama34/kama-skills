@@ -66,20 +66,28 @@ Content-Type: application/json
 **Response (synchronous):**
 ```json
 {
-  "id": "aig_abc123",
+  "id": "gen_abc123",
+  "object": "media.generation",
   "status": "completed",
-  "data": {
-    "images": [
-      { "url": "https://cdn.polza.ai/..." }
-    ]
+  "created": 1773494259,
+  "model": "google/gemini-3.1-flash-image-preview",
+  "data": [
+    { "url": "https://s3.polza.ai/..." }
+  ],
+  "usage": {
+    "output_units": 1,
+    "cost_rub": 4.8,
+    "cost": 4.8
   }
 }
 ```
 
+**CRITICAL:** `data` is a top-level array of objects (NOT `data.images`). Access the image URL as `data[0].url`.
+
 **Response (async — status: "pending"):**
 ```json
 {
-  "id": "aig_abc123",
+  "id": "gen_abc123",
   "status": "pending"
 }
 ```
@@ -88,7 +96,7 @@ Content-Type: application/json
 - Poll: `GET https://polza.ai/api/v1/media/{id}` with same Authorization header
 - Interval: every 5 seconds
 - Per-slide timeout: 120 seconds
-- On `status: "completed"`: download image from `data.images[0].url`
+- On `status: "completed"`: download image from `data[0].url`
 - On `status: "failed"`: log error, skip slide
 
 **Downloading the image:**
