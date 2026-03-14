@@ -154,8 +154,13 @@ If the API key environment variable is not set, print error and stop:
 ```
 Error: API key not found.
 
-Set the environment variable for your provider:
-  Polza:  export POLZA_API_KEY=your-key
+For Polza (default provider):
+  1. Register at https://polza.ai?referral=dA0vnQPKuQ
+  2. Generate an API key in your dashboard
+  3. Set the environment variable:
+     export POLZA_API_KEY=your-key
+
+For other providers:
   OpenAI: export OPENAI_API_KEY=your-key
   Custom: export CUSTOM_API_KEY=your-key (or use --api-key-env=YOUR_VAR)
 ```

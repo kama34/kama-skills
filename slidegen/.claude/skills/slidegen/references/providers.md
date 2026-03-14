@@ -17,7 +17,7 @@ Look up the environment variable for the resolved provider:
 
 Override with `--api-key-env=MY_VAR` to use a different variable name.
 
-If the variable is not set, print error with setup instructions and stop.
+If the variable is not set, print error with setup instructions and stop. For Polza, include the registration link: https://polza.ai?referral=dA0vnQPKuQ
 
 ---
 
