@@ -4,6 +4,7 @@
 # But not these files...
 !.gitignore
 !README.md
+!README.ru.md
 
 # Track the skill
 !.claude/

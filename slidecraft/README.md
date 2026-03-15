@@ -1,5 +1,7 @@
 # SlideCraft
 
+[![en](https://img.shields.io/badge/lang-English-blue)](README.md) [![ru](https://img.shields.io/badge/lang-Русский-green)](README.ru.md)
+
 Two-layer presentation generator: AI-generated visuals + Slidev text overlay.
 
 ## Usage

@@ -1,5 +1,7 @@
 # Slidegen — AI Image Presentation Generator
 
+[![en](https://img.shields.io/badge/lang-English-blue)](README.md) [![ru](https://img.shields.io/badge/lang-Русский-green)](README.ru.md)
+
 A Claude Code skill that generates complete presentations as AI-generated images.
 
 ## Usage
