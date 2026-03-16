@@ -1,7 +1,7 @@
 ---
 name: outline
-description: "Use when creating presentation outlines/structures. Supports agent pipeline presets, auto-selection, preset creation, editing, review, and agent training. Handles --preset, --format, --new-preset, --edit, --review, --questions, --learn=N, and --help."
-argument-hint: "[--help | --preset <name> | --format <fmt> | --questions | --new-preset | --edit <file> <comment> | --review <file> [--preset <name>] | --learn=N [preset]] [<topic>]"
+description: "Use when creating presentation outlines/structures. Supports agent pipeline presets, auto-selection, preset creation, editing, review, and agent training. Handles --preset, --format, --new-preset, --edit, --review, --questions, --learn=N, --deep_learn=N, and --help."
+argument-hint: "[--help | --preset <name> | --format <fmt> | --questions | --new-preset | --edit <file> <comment> | --review <file> [--preset <name>] | --learn=N [preset] | --deep_learn=N [preset]] [<topic>]"
 ---
 
 # Outline — Presentation Structure Generator
@@ -45,6 +45,7 @@ Outline — Генератор структуры презентаций
   /outline --review <файл> [--preset <имя>]     Ревью и улучшение любой структуры
   /outline --new-preset                         Создать новый пресет агентного пайплайна
   /outline --learn=N [пресет]                   Обучить агентов на N тестовых прогонах
+  /outline --deep_learn=N [пресет]             Итеративное обучение: N циклов (прогон → анализ → правки)
   /outline --help                               Эта справка
 
 Как это работает:
@@ -84,6 +85,10 @@ Stop here — do not proceed to generation.
 ---
 
 **`--learn=N [preset]`**: Run the Learn Procedure (L-1 through L-6). Parse N from the argument (e.g., `--learn=5`). Optional `preset` argument specifies which preset to train. Stop here — do not proceed to generation.
+
+---
+
+**`--deep_learn=N [preset]`**: Run the Deep Learn Procedure (DL-1 through DL-7). Parse N from the argument (e.g., `--deep_learn=5`). N is the number of training cycles. Optional `preset` argument specifies which preset to train. Stop here — do not proceed to generation.
 
 ---
 
@@ -770,6 +775,248 @@ Print a final summary:
 ```
 
 Clean up: the `learn-<preset-name>/` directory with test outputs can be kept for reference or deleted — ask the user: "Удалить директорию с тестовыми результатами learn-<preset-name>/? (да/нет)"
+
+---
+
+## Deep Learn Procedure
+
+Iterative training: run test pipelines, analyze, apply fixes to agent files, repeat N cycles. Each cycle builds on the improvements from the previous one.
+
+**Key differences from `--learn=N`:**
+
+| | `--learn=N` | `--deep_learn=N` |
+|---|---|---|
+| N means | number of test topics in one batch | number of training cycles |
+| Test topics per cycle | N | 3 (fixed) |
+| Agent file edits | 1 time at end, with user confirmation | after each cycle, automatically |
+| Core idea | "test and suggest" | "train iteratively until convergence" |
+
+### DL-1: Parse Arguments
+
+- Parse N from the argument (e.g., `--deep_learn=5`). N must be >= 2 (minimum 2 cycles to see improvement). If N < 2, error:
+  ```
+  --deep_learn требует минимум 2 цикла (N >= 2).
+  ```
+  Stop here.
+
+- If `preset` is specified:
+  1. Look up by name: local (`.outline-presets/<name>/`) → global (`~/.claude/outline-presets/<name>/`)
+  2. If not found, error:
+     ```
+     Пресет '<name>' не найден.
+     Искали в: .outline-presets/<name>/, ~/.claude/outline-presets/<name>/
+     ```
+     Stop here.
+  3. Train only this preset.
+
+- If no preset specified:
+  - Scan both local and global storage for all presets
+  - If no presets found:
+    ```
+    Пресетов для обучения не найдено. Сначала создайте пресет:
+      /outline --new-preset
+    ```
+    Stop here.
+  - If multiple presets found, train each one independently (full DL-2 through DL-5 cycle for each).
+
+### DL-2: Create Working Directory
+
+Create the working directory for training artifacts:
+
+```
+deep-learn-<preset-name>/
+  ├── cycle-1/
+  │   ├── run-1/  (outline.md, meta.md)
+  │   ├── run-2/
+  │   ├── run-3/
+  │   ├── critic-report.md
+  │   └── changes-applied.md
+  ├── cycle-2/
+  │   └── ...
+  ├── ...
+  └── final-report.md
+```
+
+Also, **snapshot the original agent files** before any modifications:
+- Copy all files from the preset's `agents/` directory to `deep-learn-<preset-name>/agents-snapshot-original/`
+- This allows comparison of before/after at the end
+
+Print:
+```
+Deep Learn: запуск итеративного обучения для пресета '<name>'
+
+  Циклов:            N
+  Тем за цикл:       3
+  Всего прогонов:    N × 3
+  Рабочая директория: deep-learn-<preset-name>/
+
+  Цикл 1/<N> начинается...
+```
+
+### DL-3: Run Training Cycle
+
+For each cycle `c` from 1 to N:
+
+#### DL-3.1: Generate Test Topics
+
+Generate 3 diverse test topics that match the preset's description and keywords. **CRITICAL:** Topics MUST differ between cycles — do not reuse topics from previous cycles. Vary:
+- Industry / domain
+- Scope (small pitch vs. large fund)
+- Complexity (early-stage vs. mature studio)
+- Geography
+
+#### DL-3.2: Run Pipelines
+
+For each test topic (i = 1 to 3):
+
+1. **Re-read agent files from disk** before each cycle — agents may have been modified by the previous cycle's fixes
+2. Run the full Generate Procedure (G-1 through G-7) using the current preset and topic
+3. Save output to `deep-learn-<preset-name>/cycle-<c>/run-<i>/outline.md`
+4. Save metadata (topic, iterations used, final verdict, which iteration got APPROVED) to `deep-learn-<preset-name>/cycle-<c>/run-<i>/meta.md`
+
+**Run all 3 topics in parallel** using the Agent tool with `run_in_background: true` for maximum speed.
+
+#### DL-3.3: Critic Analysis
+
+After all 3 runs in this cycle complete, construct a critic agent (same prompt as L-3) with:
+- Current agent prompts (read fresh from disk)
+- All 3 generated outlines from this cycle
+- All 3 meta.md files from this cycle
+- If `c > 1`: also provide the previous cycle's critic report for context, so the critic can assess whether previous issues were fixed
+
+Append this extra instruction to the critic prompt when `c > 1`:
+```
+IMPORTANT: This is cycle <c> of <N>. The previous cycle's critic report is
+provided below. Evaluate whether the issues identified in the previous cycle
+have been fixed. If an issue persists despite a fix attempt, escalate its
+severity. If new issues appeared after fixes, flag them as REGRESSION.
+
+Previous cycle critic report:
+<previous critic report content>
+```
+
+Save the critic report to `deep-learn-<preset-name>/cycle-<c>/critic-report.md`.
+
+#### DL-3.4: Auto-Apply Changes
+
+**CRITICAL difference from `--learn`:** Changes are applied AUTOMATICALLY without user confirmation.
+
+Based on the critic's report:
+
+1. Extract all proposed fixes with severity `critical` or `major`
+2. For `minor` severity: apply only if the fix is simple and low-risk (single-line change). Skip complex minor fixes.
+3. For each change to apply:
+   a. Read the target agent file from disk
+   b. Apply the modification using the Edit tool
+   c. Verify the edit was applied correctly
+4. Save a log of applied changes to `deep-learn-<preset-name>/cycle-<c>/changes-applied.md`:
+   ```markdown
+   # Changes Applied — Cycle <c>
+
+   ## Applied
+   1. [file] — <description>
+      - Severity: <level>
+      - Before: "<excerpt>"
+      - After: "<excerpt>"
+
+   ## Skipped
+   1. [file] — <description>
+      - Reason: <why skipped>
+   ```
+
+**Safety rules for auto-apply:**
+- NEVER delete an agent file or remove it from the pipeline
+- NEVER change the pipeline structure (steps order, add/remove agents) — only modify agent prompts
+- NEVER remove existing instructions from an agent — only add, refine, or rephrase
+- If the critic suggests a pipeline-level change (add agent, change iterations), log it as a suggestion but do NOT auto-apply — save it for the final report
+- If an edit fails (old_string not found), log it as skipped and continue
+
+#### DL-3.5: Cycle Report
+
+Print a brief status update:
+```
+Цикл <c>/<N> завершён.
+
+  Качество:    <overall quality from critic>/10
+  Прогоны:     3/3 успешных
+  Итерации:    <avg iterations across 3 runs> (среднее)
+  Правки:      <X applied, Y skipped>
+  Регрессии:   <count, or "нет">
+
+  Цикл <c+1>/<N> начинается...
+```
+
+If this is the last cycle (c = N), skip the "next cycle" line.
+
+### DL-4: Convergence Detection (Optional Early Stop)
+
+After DL-3.5, check for convergence:
+
+- If the critic's overall quality score is **9 or 10** for two consecutive cycles → early stop:
+  ```
+  Раннее завершение: качество стабилизировалось на <score>/10 в циклах <c-1> и <c>.
+  Дальнейшие итерации вряд ли дадут улучшение.
+  ```
+  Skip remaining cycles and proceed to DL-5.
+
+- If quality **decreased** compared to the previous cycle (regression) → warn but continue:
+  ```
+  ⚠ Регрессия: качество упало с <prev>/10 до <curr>/10.
+  Возможно, правки в цикле <c-1> ухудшили агентов. Продолжаем — следующий цикл попытается исправить.
+  ```
+
+### DL-5: Final Report
+
+After all cycles complete (or early stop), generate a comprehensive final report.
+
+Save to `deep-learn-<preset-name>/final-report.md` and print:
+
+```
+Deep Learn завершён для пресета '<name>'.
+
+  Циклов выполнено: <actual cycles> / <N planned>
+  Прогонов всего:   <total runs>
+
+  Прогресс качества:
+    Цикл 1: <score>/10
+    Цикл 2: <score>/10
+    ...
+    Цикл N: <score>/10
+
+  Всего правок применено: <total across all cycles>
+  Регрессий обнаружено:   <count>
+
+  Изменённые файлы (суммарно):
+    - agents/<agent>.md — <cumulative summary of all changes>
+    - ...
+
+  Нереализованные предложения (требуют ручного вмешательства):
+    - <pipeline-level suggestions that were not auto-applied>
+
+  Рабочая директория: deep-learn-<preset-name>/
+```
+
+### DL-6: Snapshot Comparison
+
+Read the original agent snapshots from `deep-learn-<preset-name>/agents-snapshot-original/` and compare with the current agent files on disk.
+
+For each agent that changed, print a brief before/after summary:
+```
+Изменения агентов (до → после):
+
+  <agent-name>.md:
+    + <added instruction or refinement>
+    ~ <rephrased section>
+    ...
+```
+
+### DL-7: Cleanup
+
+Ask the user:
+```
+Удалить рабочую директорию deep-learn-<preset-name>/? (да/нет)
+Директория содержит: снимки агентов, все тестовые аутлайны, отчёты критиков, логи правок.
+```
 
 ---
 
