@@ -260,7 +260,9 @@ Determine the generation mode:
 
    Higher total score wins. Tie → slide 2 wins. Record anchor index in `meta.json`.
 
-4. **Generate slides 3..N** — for each remaining slide:
+4. **Regenerate the non-anchor slide** — the slide that lost anchor selection was generated without a style reference and is likely stylistically inconsistent. **CRITICAL**: regenerate the losing slide using the winning anchor as reference image. Replace the old PNG. This ensures ALL slides in the deck share the same visual foundation.
+
+5. **Generate slides 3..N** — for each remaining slide:
    - Read the style anchor PNG as base64
    - Call the provider API with the slide prompt + anchor image as reference
    - Save to `<output-dir>/slides/slide-NN.png`
@@ -298,14 +300,43 @@ Save `meta.json`:
 - Fix any issues before sending to the API.
 
 **6b. Visual Review** (after generation):
-Read EVERY generated PNG. For each slide, evaluate:
-- **Text readability**: font size adequate, sufficient contrast with background, text not clipped or cut off at edges
-- **Stylistic consistency**: matches the style anchor (colors, typography mood, decoration style)
-- **Composition**: balanced layout, no empty/overcrowded areas, clear focal point
-- **Content accuracy**: all specified text is present and correct (no garbled or missing words)
+Read EVERY generated PNG. For each slide, run these **concrete checks**:
+
+1. **Language & Script Verification** — **CRITICAL gate, check FIRST**:
+   - Detect the expected language from the outline (e.g., Russian → Cyrillic, Chinese → CJK, etc.)
+   - For each slide, verify that ALL visible text is rendered in the correct script
+   - **FAIL criteria** (any one triggers mandatory regeneration):
+     - Latin characters where Cyrillic/CJK/Arabic should be (transliteration)
+     - Garbled/nonsensical characters (model failed to render the script)
+     - Mixed scripts where outline specifies a single language (e.g., half-Cyrillic half-Latin in one word)
+     - Missing text blocks (prompt specified text that doesn't appear on the slide)
+   - If a slide fails this check, DO NOT score it — regenerate immediately with strengthened script instructions in the prompt
+
+2. **Style Consistency Audit** — compare each slide against the **design direction from Step 3**:
+   - **Background**: does the slide's background match the specified color/treatment? (e.g., if design says dark #0F0F1A, a pink gradient is a FAIL)
+   - **Color palette**: are the accent colors from the design direction actually used? Are there colors that don't belong?
+   - **Typography mood**: does the font style match? (e.g., geometric sans-serif vs. serif mismatch)
+   - **Decorative elements**: consistent with the design direction? No out-of-style illustrations, clip-art, or cartoon characters unless explicitly specified
+   - **FAIL criteria** (triggers mandatory regeneration):
+     - Background color/treatment clearly different from design direction
+     - Dominant colors not in the specified palette
+     - Illustration style clashes with the deck aesthetic (e.g., anime character in a geometric-neon deck)
+   - Pay **extra attention** to slides generated without a reference image (typically slides 1 and 2 before anchor selection, though the non-anchor should have been regenerated in Step 5.4)
+
+3. **Text Readability**: font size adequate, sufficient contrast with background, text not clipped or cut off at edges
+
+4. **Composition**: balanced layout, no empty/overcrowded areas, clear focal point
+
+5. **Content Accuracy**: all specified text present and correct, no garbled or missing words
+
+**Regeneration from Visual Review**: any slide that FAILs checks 1 or 2 MUST be regenerated with the style anchor as reference. Update the prompt to address the specific failure. Max 2 retries per slide. Log each regeneration reason in the score report.
 
 **6c. Scoring** — run the Scoring Subroutine (`references/scoring-subroutine.md`):
 - Score each slide on 6 axes (1-10): Visual Impact, Layout Uniqueness, Typography Drama, Color Conviction, Content Clarity, Decorative Quality
+- **Style Consistency Gate** — **CRITICAL**: when scoring **Color Conviction** and **Decorative Quality**, score RELATIVE TO THE DESIGN DIRECTION from Step 3, not in isolation. A slide with beautiful colors that don't match the design direction scores LOW on Color Conviction. A slide with polished decorations in the wrong style scores LOW on Decorative Quality. Specifically:
+  - Color Conviction ≤ 4 if the background color doesn't match the design direction
+  - Color Conviction ≤ 5 if accent colors are outside the specified palette
+  - Decorative Quality ≤ 4 if decorative elements clash with the deck's aesthetic style
 - Write `score-report.md` in the output directory
 
 **6d. Regeneration** — for each slide scoring < 6 on ANY single axis:
@@ -399,3 +430,5 @@ Slidegen complete!
     - `quote` → "This is a quote slide — prominent quotation with attribution"
     - `comparison` → "This is a comparison slide — two or more items side by side"
     - `end` → "This is a closing/thank-you slide — call to action or contact info"
+12. **Non-Latin text rendering.** **CRITICAL** — if the slide content contains non-Latin characters (Cyrillic, CJK, Arabic, etc.), EVERY prompt MUST include the following instruction immediately after the slide type declaration: `"CRITICAL: All text on this slide MUST be rendered in [language] [script] exactly as written. Do NOT transliterate, substitute, or omit any [script] characters."` For example, for Russian: `"CRITICAL: All text on this slide MUST be rendered in Russian Cyrillic script exactly as written. Do NOT transliterate, substitute, or omit any Cyrillic characters."` Without this instruction, image generation models consistently garble non-Latin text into unreadable artifacts.
+13. **No generic illustrations or clip-art.** Do not request cartoon characters, stock-photo-style illustrations, or clip-art people in prompts unless the outline explicitly calls for them. These tend to clash with geometric/modern slide aesthetics. Prefer abstract icons, geometric shapes, and data visualizations instead. If an illustration IS needed, specify its art style to match the presentation's visual direction (e.g., "flat geometric illustration in the same neon style").
