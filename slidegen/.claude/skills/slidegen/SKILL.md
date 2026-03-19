@@ -1,7 +1,7 @@
 ---
 name: slidegen
 description: Use when generating an AI image presentation from a slide outline. Generates each slide as an image using configurable image generation APIs (Polza.ai default). Supports preset styles, custom style descriptions, reference-based style consistency, and quality scoring. Also handles --help, --edit, --polish, --compare, --notes, --learn, --create-preset, --export subcommands.
-argument-hint: "[--help | --edit [dir] <comment> | --polish=N [dir] | --compare <dir1> <dir2> | --notes [dir] | --learn=N | --create-preset <name> | --export pdf [dir] | --preset <name> | --provider <name> | --model <id> | --no-ref | style: <desc>] <outline or file path>"
+argument-hint: "[--help | --edit [dir] <comment> | --polish=N [dir] | --compare <dir1> <dir2> | --notes [dir] | --learn=N | --create-preset <name> | --export pdf [dir] | --preset <name> | --provider <name> | --model <id> | --no-ref | --resolution <1K|2K|4K> | --quality <low|medium|high> | --format <png|jpeg> | --size <WxH> | style: <desc>] <outline or file path>"
 ---
 
 # Slidegen — AI Image Presentation Generator
@@ -33,6 +33,10 @@ Parse the user's input to determine the subcommand or mode.
 - `--no-ref` — Disable reference-based style consistency (generate each slide independently)
 - `--base-url <url>` — Custom provider endpoint URL
 - `--api-key-env <VAR>` — Environment variable name for the API key
+- `--resolution <1K|2K|4K>` — Image resolution (Polza only, default: `1K`). Higher = better quality but slower and more expensive (1K≈4.8₽, 2K≈7.2₽, 4K≈10.8₽ per slide)
+- `--quality <low|medium|high>` — Image quality (OpenAI only, default: `high`)
+- `--format <png|jpeg>` — Output image format (Polza only, default: `jpeg`)
+- `--size <WxH>` — Output image dimensions (OpenAI only, default: `1792x1024`). Supported: `1024x1024`, `1536x1024`, `1024x1536`, `1792x1024`, `1024x1792`
 
 ### Subcommands (handle before anything else)
 
@@ -60,6 +64,12 @@ Provider flags (combinable with any mode):
   --no-ref                                         Generate without style references
   --base-url <url>                                 Custom provider endpoint
   --api-key-env <VAR>                              API key env variable name
+
+Image quality flags:
+  --resolution <1K|2K|4K>                          Image resolution (Polza, default: 1K)
+  --quality <low|medium|high>                      Image quality (OpenAI, default: high)
+  --format <png|jpeg>                              Output format (Polza, default: jpeg)
+  --size <WxH>                                     Image dimensions (OpenAI, default: 1792x1024)
 ```
 
 **`--create-preset <name>`**: Interactive preset creation wizard.
@@ -146,9 +156,14 @@ After subcommands are handled, determine the generation mode:
 
 ## Generation Procedure
 
-### Step 1: Resolve Provider and API Key
+### Step 1: Resolve Provider, API Key, and Image Settings
 
 Follow `references/providers.md` to resolve the provider, model, endpoint, and API key based on flags or defaults.
+
+**Resolve image quality settings** based on provider:
+- **Polza**: `image_resolution` from `--resolution` (default `1K`), `output_format` from `--format` (default `jpeg`)
+- **OpenAI**: `quality` from `--quality` (default `high`), `size` from `--size` (default `1792x1024`)
+- **Custom**: same as Polza (Polza-compatible format)
 
 If the API key environment variable is not set, print error and stop:
 ```
@@ -286,6 +301,8 @@ Save `meta.json`:
   "mode": "reference",
   "style_anchor": 2,
   "aspect_ratio": "16:9",
+  "resolution": "1K",
+  "format": "jpeg",
   "created": "2026-03-14T12:00:00Z",
   "slide_count": 10
 }
@@ -402,6 +419,7 @@ Slidegen complete!
   Score:     <overall-avg>/10
 
   Provider:  <provider> / <model>
+  Quality:   <resolution|quality> / <format>
   Mode:      reference (anchor: slide N) | no-reference
   QA:        N slides regenerated, N content fixes applied
 

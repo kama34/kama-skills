@@ -39,7 +39,9 @@ Content-Type: application/json
   "model": "<model-id>",
   "input": {
     "prompt": "<slide prompt>",
-    "aspect_ratio": "16:9"
+    "aspect_ratio": "16:9",
+    "image_resolution": "<1K|2K|4K>",
+    "output_format": "<png|jpeg>"
   }
 }
 ```
@@ -51,6 +53,8 @@ Content-Type: application/json
   "input": {
     "prompt": "<slide prompt>",
     "aspect_ratio": "16:9",
+    "image_resolution": "<1K|2K|4K>",
+    "output_format": "<png|jpeg>",
     "images": [
       {
         "type": "base64",
@@ -60,6 +64,11 @@ Content-Type: application/json
   }
 }
 ```
+
+**Image resolution and format defaults:**
+- `image_resolution`: `1K` (1376x768 for 16:9), `2K` (2752x1536), `4K` (5504x3072). Set via `--resolution` flag.
+- `output_format`: `jpeg` (default), `png`. Set via `--format` flag.
+- These parameters go inside `input`, NOT at the top level.
 
 **Supported aspect ratios:** 1:1, 9:16, 16:9, 3:4, 4:3, 3:2, 2:3, 5:4, 4:5, 21:9
 
@@ -132,11 +141,15 @@ Content-Type: application/json
   "model": "<model-id>",
   "prompt": "<slide prompt>",
   "n": 1,
-  "size": "1792x1024",
-  "quality": "high",
+  "size": "<WxH>",
+  "quality": "<low|medium|high>",
   "response_format": "url"
 }
 ```
+
+**OpenAI quality and size defaults:**
+- `size`: `1792x1024` (default). Supported: `1024x1024`, `1536x1024`, `1024x1536`, `1792x1024`, `1024x1792`. Set via `--size` flag.
+- `quality`: `high` (default). Supported: `low`, `medium`, `high`. Set via `--quality` flag.
 
 **Note:** OpenAI's `/v1/images/generations` does NOT support reference images natively. When using OpenAI provider with reference mode, include a description of the style anchor in the prompt text instead of passing an image. Append to the prompt: "Match the visual style of: [describe the anchor slide's colors, typography, layout, decorations based on Claude's visual analysis]."
 
