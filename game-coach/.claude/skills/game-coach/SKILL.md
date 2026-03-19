@@ -20,6 +20,9 @@ Parse user arguments and execute the appropriate mode:
 | `mentor` | `m` | Mentor (GROW+WOOP session) |
 | `dashboard` | `dash`, `d` | Dashboard (progress visualization) |
 | `status` | `s` | Quick status (one line) |
+| `hypo` | `hypothesis`, `h` | Hypothesis — create weekly hypothesis |
+| `hypo review` | `h review`, `h r` | Hypothesis Review — end-of-week review |
+| `hypo update` | `h update`, `h u` | Hypothesis Update — update artifacts mid-week |
 | `--analyze=N` | `analyze N`, `a N`, `a` | Retrospective analysis (N days, default 7) |
 | `--help` | `help`, empty | Show full help |
 
@@ -59,22 +62,22 @@ Unknown argument: "Unknown command. Use `/game --help` for help."
       "daily_tasks": []
     }
   ],
-  "woop": [
-    {
-      "date": "2026-01-01",
-      "goal_id": "goal-slug",
-      "wish": "...",
-      "outcome": "...",
-      "obstacle": "...",
-      "plan": "...",
-      "tasks_created": false,
-      "status": "active"
-    }
-  ],
+  "woop": [],
+  "habits": {
+    "tasklist_id": "google-tasks-list-id",
+    "tasklist_name": "Daily Habits",
+    "items": []
+  },
+  "hypotheses": {
+    "active": null,
+    "archive": []
+  },
   "history": {
     "checkins": 0,
     "mentors": 0,
-    "tasks_done": 0
+    "tasks_done": 0,
+    "hypotheses_created": 0,
+    "hypotheses_reviewed": 0
   }
 }
 ```
@@ -94,45 +97,82 @@ Unknown argument: "Unknown command. Use `/game --help` for help."
 - When goal is complete (all tasks done): offer to delete the list, mark goal completed
 - Progress = done/total NON-DAILY tasks in this list
 
-### Daily Tasks (Recurring Habits)
+### Habits (Recurring Daily Habits — SEPARATE from goals)
 
-Daily tasks are recurring habits that reset every checkin. They live in the same dedicated list as one-time tasks but are tracked separately.
+Habits are **independent** from goals. They live in a dedicated Google Tasks list (e.g. "Daily Habits") and are tracked in `state.habits`. When a goal is archived, linked habits can remain active.
 
-**Schema** — new field `daily_tasks` in each goal:
+#### Schema: `state.habits`
 ```json
 {
-  "daily_tasks": [
+  "tasklist_id": "google-tasks-list-id",
+  "tasklist_name": "Daily Habits",
+  "items": [
     {
-      "task_id": "google-tasks-id",
-      "tasklist_id": "parent-list-id",
-      "title": "🔄 [P1] Run autopilot + review",
+      "id": "habit-slug",
+      "task_id": "google-tasks-task-id",
+      "title": "Habit description",
       "priority": "P1",
-      "history": {
-        "2026-03-12": "done",
-        "2026-03-11": "missed"
-      },
-      "current_streak": 1,
-      "best_streak": 3,
-      "last_reset_date": "2026-03-13"
+      "linked_goal": "goal-id-or-null",
+      "active": true,
+      "history": { "2026-03-15": "done", "2026-03-14": "missed" },
+      "current_streak": 0,
+      "best_streak": 0,
+      "last_reset_date": null
     }
   ]
 }
 ```
 
-**Detection** — a task is daily if ANY marker is present:
+#### Fields
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique slug (e.g. "morning-run", "code-review") |
+| `task_id` | string | Google Tasks task ID in the habits list |
+| `title` | string | Display title |
+| `priority` | string | P0/P1/P2/P3 — determines XP award |
+| `linked_goal` | string/null | Optional link to goal id (informational only) |
+| `active` | boolean | Whether this habit is currently tracked |
+| `history` | object | Date (YYYY-MM-DD, local TZ) → "done" or "missed" |
+| `current_streak` | number | Consecutive days completed |
+| `best_streak` | number | All-time best streak for this habit |
+| `last_reset_date` | string/null | Idempotency guard: skip reset if == today |
+
+#### Checkin: Habit Reset Logic
+During checkin, process ALL `habits.items[]` where `active == true`:
+1. `list-tasks(habits.tasklist_id, showCompleted=true)`
+2. For each active habit:
+   - If `last_reset_date == today` → skip
+   - Find task by `task_id`
+   - If completed yesterday → `history[yesterday] = "done"`, award XP by priority, reset to needsAction, streak++
+   - If completed before yesterday → record done + fill missed gaps, reset, streak = 0
+   - If needsAction and yesterday not in history → `history[yesterday] = "missed"`, streak = 0
+   - Set `last_reset_date = today`
+
+#### Dashboard: Habits Block
+Render habits as a **separate block BEFORE goals**:
+```markdown
+## Daily Habits (yesterday)
+✅ Morning run (🔥3d)  +50 XP
+❌ Code review
+☐ Read 30min
+```
+
+#### Legacy: `goals[].daily_tasks[]`
+**DEPRECATED** — kept empty `[]` for backwards compatibility. All habits now in `habits.items[]`. Checkin/dashboard process ONLY `habits.items[]`.
+
+#### Detection Logic (for goal progress exclusion)
 ```
 is_daily(task) =
   "🔄" in task.title
   OR "type: daily" in task.notes
-  OR task.id in goal.daily_tasks[].task_id
 ```
+Still used to exclude daily tasks from goal `progress_tasks` counts.
 
-**Key rules:**
-- Daily tasks are EXCLUDED from `progress_tasks` (goal progress counts only one-time tasks)
-- Daily tasks are EXCLUDED from quest progress counting
-- XP for daily tasks is awarded ONLY during checkin (for yesterday's completions), never at completion time
-- `last_reset_date` is an idempotency guard: if == today, skip reset (prevents double-processing)
-- All date comparisons use LOCAL timezone
+#### Habits list is separate from goal lists
+Habits live in their own list (NOT in goal lists). Goal progress = only tasks in goal's own list.
+
+#### Timezone
+All date comparisons use local timezone (user's system clock). `completed_date` = Google Tasks `completed` timestamp converted to local date.
 
 ---
 
@@ -154,6 +194,9 @@ Built on Octalysis (White Hat) + GROW/WOOP methodologies.
 | `/game mentor` | `/game m` | Mentor session — GROW+WOOP for deep goal work |
 | `/game dashboard` | `/game dash` | Full dashboard — level, badges, quests, goals |
 | `/game status` | `/game s` | Quick status (one line) |
+| `/game hypo` | `/game h` | Weekly hypothesis — formulate new |
+| `/game hypo review` | `/game h r` | Hypothesis review — end of week |
+| `/game hypo update` | `/game h u` | Update hypothesis artifacts (mid-week) |
 | `/game --analyze=N` | `/game a N` | Retrospective for N days (default 7) |
 | `/game --help` | `/game help` | This help |
 
@@ -162,7 +205,9 @@ Built on Octalysis (White Hat) + GROW/WOOP methodologies.
 1. **First time**: `/game checkin` — starts tracking, shows dashboard
 2. **Every day**: `/game ch` — 5 min for daily focus (+25 XP + streak bonus)
 3. **Weekly**: `/game m` — deep work on main goal (+75 XP)
-4. **Anytime**: `/game dash` — check progress
+4. **Start of week**: `/game h` — formulate hypothesis (+50 XP)
+5. **End of week**: `/game h r` — review hypothesis results (+75 XP)
+6. **Anytime**: `/game dash` — check progress
 ```
 
 ---
@@ -176,11 +221,11 @@ Built on Octalysis (White Hat) + GROW/WOOP methodologies.
    - Otherwise: streak = 1 (reset)
 3. Award XP: 25 (checkin) + streak x 5 (bonus)
 4. Increment `history.checkins`
-5. **RESET DAILY TASKS** — for each goal with `daily_tasks[]`:
-   a. `list-tasks(goal.task_list_id, showCompleted=true)`
-   b. For each daily_task:
+5. **RESET HABITS** — from `state.habits.items[]` (NOT from goals[].daily_tasks[]):
+   a. `list-tasks(habits.tasklist_id, showCompleted=true)`
+   b. For each habit where `active == true`:
       - If `last_reset_date == today` -> skip (already processed)
-      - Find task in Google Tasks by `task_id`
+      - Find task in Google Tasks by `habit.task_id`
       - If task is `completed`:
         - `completed_date` = completion date (local TZ)
         - If `completed_date == today` -> leave as-is, set `last_reset_date = today`
@@ -191,21 +236,21 @@ Built on Octalysis (White Hat) + GROW/WOOP methodologies.
         - Else -> skip (already recorded)
       - Set `last_reset_date = today`
    c. **Fallback**: if `update-task` fails -> delete task + recreate with same text, update `task_id`
-5a. **Migration (first run)**: if goal has empty `daily_tasks` but its dedicated list contains tasks with "daily" in title -> offer: "Found task '{title}' with 'daily'. Convert to daily habit 🔄?"
-   On conversion: add 🔄 to title, `type: daily` to notes, reset to needsAction if completed, register in daily_tasks[]
+   d. **IMPORTANT**: `goals[].daily_tasks[]` is DEPRECATED. Process ONLY `habits.items[]`.
 6. Show dashboard
-6a. **"Daily habits (yesterday)" section** (show only if any goal has daily_tasks):
+6a. **"Daily habits (yesterday)" section** (show only if any active habits exist):
    ```
    **Daily habits** (yesterday):
-   ✅ 🔄 Run autopilot + review (🔥3d)  +50 XP
-   ❌ 🔄 Launch TG automation
+   ✅ 🔄 Morning run (🔥3d)  +50 XP
+   ❌ 🔄 Code review
+   ☐ 🔄 Read 30min
    ```
 7. Ask: "What went well yesterday?" -> celebration
 8. **REQUIRED — Load goal progress from Google Tasks:**
    For each goal in state.goals[]:
    - Find goal's DEDICATED list by name goal.task_list via list-tasklists
    - list-tasks(tasklist_id, showCompleted=true) — can reuse data from step 5
-   - Compute done/total/pct — **EXCLUDE daily tasks** (is_daily: 🔄 in title OR type: daily in notes OR task_id in daily_tasks[])
+   - Compute done/total/pct — **EXCLUDE daily tasks** (is_daily: 🔄 in title OR type: daily in notes)
    - Update state.goals[].progress_tasks
    - Find next_tasks (first 3 incomplete NON-DAILY, sorted by priority [P0]>[P1]>[P2]>[P3])
 8a. **Daily check-in question** (show only if daily tasks in needsAction): "Today {N} daily tasks. Which ones are you planning to do?"
@@ -218,9 +263,12 @@ Built on Octalysis (White Hat) + GROW/WOOP methodologies.
     - Count completed NON-DAILY tasks in goal's dedicated list since Monday
     - Update quest.progress
     - If progress >= target: celebrate + award XP + assign new quest
-10. Check badges (first_checkin, streak_3/7/14/30, perfect_week)
-11. Check level up
-12. Save state.json
+10. **Auto-Review Trigger**: If Monday and `hypotheses.active` exists with `active.week < current_week`:
+    - Prompt: "Last week ended! Let's review your hypothesis:"
+    - Trigger hypothesis review workflow before continuing
+11. Check badges (first_checkin, streak_3/7/14/30, perfect_week)
+12. Check level up
+13. Save state.json
 
 ---
 
@@ -231,10 +279,11 @@ Built on Octalysis (White Hat) + GROW/WOOP methodologies.
 3. **R (Reality)**: "Where are you now?" + goal-tracking data
 4. **O (Options + Obstacles)**: "What's in the way?" -> WOOP Obstacle
 5. **W (Will + Plan)**: "If [obstacle] then [action]" -> tasks in Google Tasks
-5a. **Daily task detection**: If a task from the WOOP plan is a daily habit (user says "every day", "daily", or task is inherently recurring):
+5a. **Habit detection**: If a task from the WOOP plan is a daily habit (user says "every day", "daily", or task is inherently recurring):
    - Ask: "Is this a daily habit? Make it a 🔄 daily task?"
-   - If yes -> create task with `🔄` prefix in title + `type: daily` in notes
-   - Register in `goals[goal_id].daily_tasks[]` with fields: task_id, tasklist_id, title, priority, history:{}, current_streak:0, best_streak:0, last_reset_date:null
+   - If yes -> create task with `🔄` prefix in title + `type: daily` in notes in `habits.tasklist_id`
+   - Register in `habits.items[]` with fields: id (slug), task_id, title, priority, linked_goal (goal_id or null), active:true, history:{}, current_streak:0, best_streak:0, last_reset_date:null
+   - Do NOT add to `goals[].daily_tasks[]` (deprecated)
 
 **Task Creation from WOOP Plan:**
   1. Extract 3-5 concrete tasks from the If-Then plan steps
@@ -275,7 +324,7 @@ Built on Octalysis (White Hat) + GROW/WOOP methodologies.
    For EACH goal in state.goals[]:
    a. `list-tasklists` -> find DEDICATED list by name goal.task_list
    b. `list-tasks(tasklist_id, showCompleted=true)`
-   c. Goal tasks = ALL tasks in list, **EXCLUDING daily** (is_daily: 🔄 in title OR type: daily in notes OR task_id in daily_tasks[])
+   c. Goal tasks = ALL tasks in list, **EXCLUDING daily** (is_daily: 🔄 in title OR type: daily in notes)
    d. total = non-daily tasks, done = completed non-daily
    e. pct = done/total*100 (if total=0 -> 0%)
    f. next_tasks = first 3 INCOMPLETE (priority: [P0]>[P1]>[P2]>[P3])
@@ -297,13 +346,23 @@ Built on Octalysis (White Hat) + GROW/WOOP methodologies.
 
 ---
 
-**Goals**:
+**Weekly Hypothesis** (W{WW}): <- goal: {goal_name}
+> Assume: {assumption_short}
+> Verify: {verification_short}
+> True if: {success_criteria_short}
+
+---
+
+**Daily Habits**:
+└ 🔄 {habit1_title} (🔥{streak1}d) — today: {☐/☑}
+└ 🔄 {habit2_title} (🔥{streak2}d) — today: {☐/☑}
+
+---
 
 **[{P0}]** {goal1} `{bar1}` {done1}/{total1} {pct1}%
 └ {task1_1}
 └ {task1_2}
 └ {task1_3}
-└ 🔄 {daily_title} (🔥{streak}d) — today: {☐/☑}
 
 ---
 
@@ -311,7 +370,6 @@ Built on Octalysis (White Hat) + GROW/WOOP methodologies.
 └ {task2_1}
 └ {task2_2}
 └ {task2_3}
-└ 🔄 {daily_title} (🔥{streak}d) — today: {☐/☑}
 
 ---
 
@@ -326,7 +384,8 @@ To level {next_level}: {remaining} XP
 
 **Progress bar**: `[████████░░]`
 **Tasks under goal**: show up to 3 incomplete NON-DAILY from next_tasks, each with `└` prefix. If 0 tasks — "No tasks. `/game mentor`"
-**Daily tasks under goal**: after regular tasks, show each daily_task from goal.daily_tasks[]. Format: `└ 🔄 {title_without_🔄} (🔥{current_streak}d) — today: ☐` (if needsAction) or `☑` (if completed). Daily tasks do NOT count toward done/total progress.
+**Habits — separate block**: render FROM `habits.items[]` (NOT from goals[].daily_tasks[]). Format: `└ 🔄 {title} (🔥{current_streak}d) — today: ☐/☑`. Load status from `list-tasks(habits.tasklist_id)`. Habits do NOT count toward goal progress.
+**Hypothesis block**: render BETWEEN quest and habits sections. If no active hypothesis: "Weekly Hypothesis: — (create via `/game hypo`)"
 **Next Action**: first NON-DAILY task from next_tasks of P0 goal. If none — "No tasks. `/game mentor`"
 **Goal separation**: between goal blocks insert empty markdown `---` for clear visual separation. Do NOT use `&nbsp;` — CLI doesn't render it.
 
@@ -339,6 +398,78 @@ To level {next_level}: {remaining} XP
 
 One line:
 `Lvl {level} {title} | XP: {xp}/{next} | {streak}d streak | {badges_count} badges | {tasks_done} tasks`
+
+---
+
+## Mode: Hypothesis
+
+### Create (`hypo` / `h`)
+```
+1. If active hypothesis exists and week changed → prompt review first
+2. "Which goal does this hypothesis relate to?" → show active goals list
+3. "What do you assume? (I assume that...)" → assumption
+4. "How will you verify? (To verify this I will...)" → verification
+5. "When are you right? (I'll be right if...)" → success_criteria
+6. Calculate ISO week from today → id (hypo-{YYYY}-w{WW}), week ({YYYY}-W{WW})
+7. Save to state.hypotheses.active
+8. Award 50 XP, check badge (first_hypothesis)
+9. Increment history.hypotheses_created
+10. Show hypothesis card in dashboard format
+```
+
+### Review (`hypo review` / `h r`)
+```
+1. Load active hypothesis
+2. If no active hypothesis → "No active hypothesis. Create via /game hypo"
+3. Show hypothesis card (assumption, verification, success_criteria)
+4. "What artifacts did you collect during verification?"
+5. "What's the conclusion? Choose status:"
+   - ✅ Verified — success criteria met
+   - ❌ Refuted — success criteria not met
+   - 🔶 Partial — some data, but inconclusive
+6. Save: artifacts, conclusion, status, reviewed=today
+7. Move hypothesis to archive, set active=null
+8. Award 75 XP
+9. Increment history.hypotheses_reviewed
+10. "Ready to formulate next week's hypothesis?"
+```
+
+### Update (`hypo update` / `h u`)
+```
+1. Load active hypothesis
+2. If no active hypothesis → "No active hypothesis."
+3. Show current hypothesis card
+4. "What artifacts have you collected so far?"
+5. Update hypothesis.artifacts
+6. Save state.json
+```
+
+### Hypothesis Schema
+```json
+{
+  "active": {
+    "id": "hypo-2026-w12",
+    "week": "2026-W12",
+    "goal_id": "goal-slug",
+    "goal_name": "Goal Name",
+    "assumption": "I assume that...",
+    "verification": "To verify this I will...",
+    "success_criteria": "I'll be right if...",
+    "artifacts": null,
+    "conclusion": null,
+    "status": "active",
+    "created": "2026-03-19",
+    "reviewed": null
+  },
+  "archive": []
+}
+```
+
+### Status Values
+- `active` — current week's hypothesis, in progress
+- `verified` — confirmed (success criteria met)
+- `refuted` — disproven (success criteria not met)
+- `partial` — partially confirmed (some data, but criteria not fully met)
 
 ---
 
@@ -360,6 +491,7 @@ See `references/analyze-mode.md` for the full 7-block analysis procedure.
 - Badge: "New badge: Three Days of Fire! 3 days in a row without missing."
 - Quest: "Quest complete: 'Close 3 P1 tasks' -> +100 XP!"
 - Streak: "Streak: 5 days! +25 XP streak bonus."
+- Hypothesis: "New badge: Hypothesis Tester! First hypothesis created."
 
 ---
 

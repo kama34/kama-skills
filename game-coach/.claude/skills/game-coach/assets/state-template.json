@@ -16,9 +16,20 @@
   },
   "goals": [],
   "woop": [],
+  "habits": {
+    "tasklist_id": null,
+    "tasklist_name": "Daily Habits",
+    "items": []
+  },
+  "hypotheses": {
+    "active": null,
+    "archive": []
+  },
   "history": {
     "checkins": 0,
     "mentors": 0,
-    "tasks_done": 0
+    "tasks_done": 0,
+    "hypotheses_created": 0,
+    "hypotheses_reviewed": 0
   }
 }

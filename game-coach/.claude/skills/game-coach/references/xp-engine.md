@@ -15,6 +15,10 @@
 | quest_monthly | 200-300 |
 | okr_created | 50 |
 | daily_task_done | by priority (P0=80..P3=15) — checkin only |
+| hypothesis_created | 50 |
+| hypothesis_reviewed | 75 |
+
+**Daily task XP**: awarded ONLY during checkin (for yesterday's completions). NOT awarded via Task Completion Hook. NOT counted in `history.tasks_done`.
 
 ---
 
@@ -66,6 +70,7 @@ def xp_for_next_level(level):
   {"id": "tasks_50", "icon": "check", "name": "Fifty Strong", "condition": "history.tasks_done >= 50"},
   {"id": "tasks_100", "icon": "check", "name": "Century", "condition": "history.tasks_done >= 100"},
   {"id": "first_mentor", "icon": "brain", "name": "Mentor Path", "condition": "history.mentors >= 1"},
+  {"id": "first_hypothesis", "icon": "microscope", "name": "Hypothesis Tester", "condition": "history.hypotheses_created >= 1"},
   {"id": "first_quest", "icon": "trophy", "name": "Quest Complete", "condition": "first quest completed"},
   {"id": "level_5", "icon": "gem", "name": "Strategist", "condition": "profile.level >= 5"},
   {"id": "level_10", "icon": "crown", "name": "Titan", "condition": "profile.level >= 10"},
