@@ -122,6 +122,9 @@ Describe the mood, visual metaphors, textures, and overall feel.
 | `aspectRatio` | No | Slide aspect ratio. Default: `16/9` |
 | `transition` | No | Default slide transition |
 | `accentColor` | No | Primary accent color (hex) |
+| `iconStyle` | No | Icon rendering style: `outlined` (default), `filled`, `duotone` |
+| `densityProfile` | No | Archetype density preference: `minimal`, `balanced` (default), `dense` |
+| `maxFonts` | No | Max visual font identities. Default: `2` |
 
 ## Body
 
@@ -129,7 +132,33 @@ The body has two parts:
 
 1. **Aesthetic description** (plain text): Free-form text describing the visual direction. The skill uses this to make design decisions not covered by frontmatter fields (e.g., background textures, illustration style, spacing density).
 
-2. **CSS block** (REQUIRED fenced `css` block): Written verbatim to `styles/index.css` in the generated project. This block MUST include:
+2. **Archetypes block** (optional fenced `archetypes` block): Configures composition archetype preferences for this preset.
+
+   ```archetypes
+   preferred: [bento-grid, asymmetric-split, icon-trio, stat-hero]
+   avoid: [timeline-zigzag]
+   cta_style: cta-warm
+   cover_style: cover-hero
+   ```
+
+   - `preferred` — acts as a tie-breaker within the candidate set from content-type mapping. Does NOT override the mapping.
+   - `avoid` — archetypes removed from candidate set before filtering. Takes absolute priority.
+   - `cta_style` / `cover_style` — fixed archetypes for first and last slide.
+
+3. **Shapes block** (optional fenced `shapes` block): Configures sub-slide visual element shapes.
+
+   ```shapes
+   card_radius: 14px
+   icon_container: circle        # circle | rounded-square | hexagon | none
+   stat_display: typographic     # typographic | pill-badge | card-inset
+   label_style: pill             # pill | uppercase-text | accent-line
+   divider_style: diagonal       # diagonal | horizontal | gradient-fade | none
+   photo_mask: circle            # circle | rounded-rect | hexagon
+   ```
+
+   When generating slides, archetype HTML skeletons use these shape values to render elements. Defaults when absent: `icon_container: none`, `stat_display: card-inset`, `label_style: uppercase-text`, `divider_style: horizontal`, `photo_mask: rounded-rect`.
+
+4. **CSS block** (REQUIRED fenced `css` block): Written verbatim to `styles/index.css` in the generated project. When a `shapes` block is present, the CSS block should include corresponding utility classes for the shape vocabulary. This block MUST include:
 
    **Required sections in the CSS block:**
    - **CSS variables** (`:root` block with `--slidev-theme-*` and `--color-*` variables)
