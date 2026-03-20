@@ -30,7 +30,27 @@ With ONE big idea — a quote, a key number, a provocative question. Minimal tex
 - When in doubt: add `radial-gradient(ellipse 80% 80% at 50% 50%, <lifted-color> 0%, <base> 75%)` as the background. Even 8% opacity center brightening creates perceptible differentiation.
 - **Multiple section slides rule**: If a presentation has 2+ section slides, they MUST use different color temperatures from each other. Example: Section 01 = lifted navy (`#0e1624`), Section 02 = deeper teal (`#080e14`) — NOT both the same dark navy. The color temperature shift between section slides signals structural progression in the narrative.
 
-**Anti-pattern**: 8 consecutive `default` layout slides with the same structure.
+**CRITICAL — Mandatory per-slide background variation for dark themes**: When `colorSchema: dark`, EVERY slide MUST have a visually distinguishable background. Use this concrete recipe:
+
+```
+Given base background #0B0F1A (or similar dark):
+
+Slide type          | Background recipe                                           | Luminance delta
+--------------------|-------------------------------------------------------------|----------------
+Cover               | base + radial-gradient(accent glow at center, 8% opacity)  | +3-5%
+Content (odd)       | base                                                       | 0% (anchor)
+Content (even)      | base + 3% luminance lift (#0E1320)                         | +3%
+Section divider     | base + 12% luminance lift (#151B2E) + centered glow        | +12%
+Stat/fact hero      | base + accent radial glow (10% opacity)                    | +5% perceptual
+Problem slides      | base (darkest)                                             | 0%
+Solution slides     | base + 5% lift                                             | +5%
+Ask/CTA             | warm hue shift (amber/gold gradient with base overlay 30%) | different hue
+Penultimate         | base + 8% lift (pre-CTA warmup)                            | +8%
+```
+
+**Visual QA must verify**: export PNGs of consecutive slides, compare backgrounds. If two adjacent slides have visually identical backgrounds (same hex within ±3 luminance points), flag as CRITICAL and fix before proceeding.
+
+**Anti-pattern**: 8 consecutive `default` layout slides with the same structure. Also: 12 slides with the exact same `background-color` hex value.
 
 ---
 

@@ -827,6 +827,7 @@ Fix any issues found before proceeding to visual review.
 - [ ] Accent color is used consistently across slides (headings, bullets, borders)
 - [ ] No jarring color inconsistencies between slides
 - [ ] Background treatment is consistent across similar slide types
+- [ ] **CRITICAL — Background variation (dark themes)**: Compare this slide's background to the previous slide. Are they visually distinguishable? If both are the same flat dark color — flag as FAIL. Section dividers MUST be noticeably lighter/different. See `references/design-principles.md` Principle 1 for the concrete luminance recipe.
 
 #### Layout & Composition
 - [ ] Layout matches the intended type (cover looks like cover, fact shows big number, etc.)
@@ -920,7 +921,7 @@ If no presets found anywhere, skip to Step 0.4 (create new).
 **Step 0.3: If MATCH** — Load the matched preset using the standard Preset Resolution (4-tier lookup). Continue to mode "Preset mode" below.
 
 **Step 0.4: If NO_MATCH (or no presets exist)** — Create and refine a new preset:
-1. Generate an initial `.preset.md` based on the topic — infer mood, colors, fonts, CSS from the presentation subject (e.g., a tech startup pitch → bold modern with dark theme; a healthcare lecture → clean professional with calming palette)
+1. Generate an initial `.preset.md` based on the topic — infer mood, colors, fonts, CSS from the presentation subject. **CRITICAL — Light/Dark balance**: Do NOT default to dark themes. Alternate between light and dark across generations. Light themes are appropriate for: commercial proposals, investor reports, educational content, healthcare, corporate presentations. Dark themes are appropriate for: tech product demos, developer talks, creative portfolios, gaming. When in doubt, prefer light — light themes have better readability and fewer CSS specificity issues. Examples: a tech startup pitch → light cream with bold accent; a healthcare lecture → clean white with calming palette; a developer talk → dark with neon accent; a corporate proposal → light editorial.
    Include `archetypes` and `shapes` sections based on the presentation type:
    - Commercial proposal (КП) → `preferred: [bento-grid, stat-hero, profile-grid, card-mosaic]`, `icon_container: circle`, `stat_display: typographic`
    - Pitch deck → `preferred: [stat-hero, icon-trio, timeline-horizontal, asymmetric-split]`, `icon_container: circle`
@@ -1041,7 +1042,7 @@ Generate a completely unique design. Apply `/frontend-design` aesthetic principl
 - Build a dominant palette (2-3 base colors) + one sharp accent
 - Define as CSS variables: `--color-bg`, `--color-text`, `--color-accent`, `--color-surface`
 - Map to Slidev variables: `--slidev-theme-primary`, `--slidev-theme-background`
-- Vary between dark and light schemes across generations
+- **CRITICAL — Vary between dark and light schemes across generations.** Do NOT always default to dark. Check the last 3 generated presentations (via design memory) — if all were dark, this one MUST be light. Light themes: cream (#F8F7F4), warm white (#FAFAF8), soft gray (#F0F0ED). Dark themes: navy (#0C1524), charcoal (#1A1A2E), deep slate (#0F172A). When unsure, prefer light.
 - Never use plain white (#fff) or plain black (#000) as backgrounds — always tinted
 - Avoid cliched color schemes (particularly purple gradients on white backgrounds)
 
