@@ -1127,6 +1127,55 @@ Include:
 - **Decorative motif classes** (Principle 6): CSS pseudo-element patterns for the chosen decorative motifs (geometric circles, gradient blobs, dot grids, diagonal lines, etc.)
 - If preset mode with CSS block, write the preset's CSS verbatim (can extend but not contradict)
 
+### Step 4.5: Composition Planning
+
+Before writing slides, create a Composition Plan that maps each outline slide to a named archetype from `references/composition-archetypes.md`. This replaces ad-hoc layout selection with structured, content-aware composition.
+
+**Procedure:**
+
+1. **Read preset archetypes** (if present): load `preferred` and `avoid` lists from the preset's `archetypes` section. If no archetypes section, use empty defaults.
+
+2. **Classify each slide's content type**: For each slide in the outline, determine its content type from this taxonomy:
+   - `intro` — first slide, company/product name
+   - `credentials` — experience, stats, certifications
+   - `context` — task description, parameters
+   - `vision` — visualization, concept, design
+   - `scope` — list of works, features
+   - `process` — stages, timeline, steps
+   - `team` — people, roles
+   - `metric` — key number, budget, KPI
+   - `portfolio` — cases, projects, examples
+   - `trust` — guarantees, quality control
+   - `terms` — conditions, legal, payment
+   - `cta` — call to action, contacts
+
+3. **Select archetype for each slide** using the mapping table in `references/composition-archetypes.md`:
+   a. Get candidate archetypes from content type mapping
+   b. Remove any archetypes in the preset's `avoid` list
+   c. Remove archetypes used in the last 3 slides (entropy window = 4)
+   d. If previous slide was high-density, prefer low/medium-density candidates
+   e. If a candidate is in the preset's `preferred` list AND matches the content type, select it (tie-breaker)
+   f. Select the most suitable remaining candidate
+   g. **Fallback**: if empty after filtering → relax entropy window to 2 and retry. If still empty → ignore density filter AND entropy window, select the candidate with the lowest recent-use count.
+
+4. **Validate deck-level constraints**:
+   - Every 10-slide deck contains minimum: 1 low-density, 1 medium, 1 high-density archetype
+   - No more than 2 consecutive high-density archetypes
+   - At least 3 different archetype groups (hero/grid/split/timeline/table/cta) in any 10-slide deck
+   - `profile-grid` appears at most once per deck
+   - Cover archetype always first, CTA archetype always last
+
+5. **Output Composition Plan** as a table in the generation context:
+   ```
+   | Slide | Content Type | Archetype | Group | Density |
+   |-------|-------------|-----------|-------|---------|
+   | 1     | intro       | cover-hero | hero | low     |
+   | 2     | credentials | bento-grid | grid | medium-high |
+   ...
+   ```
+
+This plan is consumed by Step 5: for each slide, use the archetype's HTML skeleton from `references/composition-archetypes.md` and fill `{{SLOT}}` markers with content from the outline. Apply the preset's shape vocabulary when rendering elements.
+
 ### Step 5: Write slides.md
 
 Structure:
@@ -1135,7 +1184,9 @@ Structure:
 
 For each slide in the outline:
 
-1. **Choose layout** based on content type (reference `slidev-layouts.md`) AND **Design Principles**:
+1. **Use the Composition Plan from Step 4.5**: For each slide, look up its assigned archetype. Use `layout: none` and the archetype's HTML skeleton from `references/composition-archetypes.md`. Fill `{{SLOT}}` markers with content from the outline. Apply the preset's shape vocabulary (icon containers, stat display style, label style, photo masks) when rendering elements within the skeleton.
+
+   If no Composition Plan exists (Step 4.5 was not executed for any reason), fall back to the legacy layout selection:
    - Title/intro → `cover`
    - Section break → `section`
    - Bullet points → `default`
