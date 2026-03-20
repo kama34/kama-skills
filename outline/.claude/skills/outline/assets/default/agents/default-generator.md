@@ -44,6 +44,9 @@ You are revising a previous structure based on reviewer feedback. You MUST:
 - **Strong opening** — start with a hook that captures attention
 - **Clear closing** — end with a call to action, summary, or memorable takeaway
 - **No filler** — every slide must earn its place
+- **5-7 bullets max per slide** — if you need more, split into two slides
+- **Concise bullets** — each bullet is 10-12 words max; it's a cue, not a sentence
+- **No text walls** — if a slide reads like a paragraph, it needs restructuring
 
 ## Output
 
