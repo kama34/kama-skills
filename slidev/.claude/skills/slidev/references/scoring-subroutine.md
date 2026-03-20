@@ -8,10 +8,13 @@ Scores are Claude's subjective visual assessment, not deterministic metrics. The
 
 ## Process
 
-Read **EVERY** exported PNG from `<dir>/slides-qa/` with the Read tool. For each slide, evaluate and score 1-10 on these 6 axes:
+Read **EVERY** exported PNG from `<dir>/slides-qa/` with the Read tool. For each slide, evaluate and score 1-10 on these 9 axes:
 
 | Axis | What to evaluate | Low (1-3) | Mid (4-6) | High (7-10) |
 |---|---|---|---|---|
+| **Composition variety** | Different archetype structures used, no repetition | Same layout every slide | Some variation, 2-3 patterns | Each slide structurally distinct |
+| **Shape diversity** | Non-rectangular elements (circles, pills, badges) | All rectangles with same border-radius | Some shape variation | Rich mix of circles, pills, asymmetric splits |
+| **Font discipline** | Strictly 2 font identities, numbers in heading font | 3+ fonts, numbers in different font | Mostly 2 but some inconsistency | Exactly 2 fonts, numbers consistent |
 | **Visual impact** | First impression, memorability | Forgettable, generic | Decent but not striking | Would remember after seeing 20 others |
 | **Layout uniqueness** | Structural difference from neighbors | Same layout as adjacent slides | Some variation | Clearly distinct composition |
 | **Typography drama** | Scale contrast, hero numbers, weight pairing | Everything same size | Some hierarchy | Clear 3+ scale levels, hero elements pop |
@@ -28,7 +31,7 @@ Write score report to `<dir>/score-report.md`:
 
 ## Per-Slide Scores
 
-| Slide | Impact | Layout | Typo | Color | Content | Decor | AVG |
+| Slide | Comp | Shape | Font | Impact | Layout | Typo | Color | Content | Decor | AVG |
 |-------|--------|--------|------|-------|---------|-------|-----|
 | 1     | ...    | ...    | ...  | ...   | ...     | ...   | ... |
 ...

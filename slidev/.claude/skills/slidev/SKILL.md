@@ -17,7 +17,7 @@ Before generating, internalize these references:
 - `references/preset-format.md` — Preset file specification
 - `references/layout-css-patterns.md` — **CRITICAL**: Battle-tested CSS patterns for each layout type (alignment, backgrounds, overlays)
 - `references/design-principles.md` — **CRITICAL**: Gamma-level design quality principles (visual rhythm, layout diversity, typography drama, icon system, card variation, decorative layer, visual arc, data viz, mockups, SVG diagrams, spacing, accent hierarchy). Apply in ALL modes: generation, editing, presets, Visual QA.
-- `references/scoring-subroutine.md` — Slide scoring (1-10 on 6 axes), used by --polish, --learn, --compare
+- `references/scoring-subroutine.md` — Slide scoring (1-10 on 9 axes), used by --polish, --learn, --compare
 - `references/content-review-subroutine.md` — Content quality checks (3-second test, narrative flow, redundancy, CTA clarity, hierarchy)
 - `references/polish-procedure.md` — `--polish=N` iterative improvement cycle
 - `references/ab-testing.md` — A/B variant generation for weak slides (used by --polish)
@@ -372,7 +372,7 @@ ANALYSIS PROCESS:
 2. Read EVERY exported PNG — apply the full QA-4 visual checklist + QA-8 critic checklist
 3. Cross-reference: do the rules in SKILL.md and design-principles.md actually produce good results? Are there gaps?
 4. Look for SYSTEMIC issues — patterns that appear across multiple slides, not just one-off problems
-5. Run the Scoring Subroutine — score each slide on 6 axes (visual impact, layout uniqueness, typography drama, color conviction, content clarity, decorative quality)
+5. Run the Scoring Subroutine — score each slide on 9 axes (composition variety, shape diversity, font discipline, visual impact, layout uniqueness, typography drama, color conviction, content clarity, decorative quality)
 6. Run the Content Review Subroutine — check 3-second test, narrative flow, redundancy, CTA clarity, information hierarchy
 
 OUTPUT FORMAT — write to <edu_dir>/learn_<i>/critique.md:
@@ -552,7 +552,7 @@ Triggered by `--learn=N --preset <name>` or `--learn=N` (with preset specified).
 - Launch a subagent (Agent tool) as a **demanding visual design critic** for presets. Provide:
   - All exported PNGs from all N runs (read ALL visually)
   - The current `.preset.md` file content
-  - `references/scoring-subroutine.md` — apply the 6-axis scoring (1-10 scale): visual impact, layout uniqueness, typography drama, color conviction, content clarity, decorative quality
+  - `references/scoring-subroutine.md` — apply the 9-axis scoring (1-10 scale): composition variety, shape diversity, font discipline, visual impact, layout uniqueness, typography drama, color conviction, content clarity, decorative quality
   - `references/design-principles.md` — check compliance
 
 - Critic output — write to `preset-learn-<name>/critic-report.md`:

@@ -51,7 +51,7 @@ Before the first variant, also save the original:
 
 ### AB-5: Score Variants
 
-Run the Scoring Subroutine evaluation (read the PNG, score on 6 axes) for each variant's exported PNG. This is a single-slide scoring — apply the same 6-axis evaluation from `references/scoring-subroutine.md`.
+Run the Scoring Subroutine evaluation (read the PNG, score on 9 axes) for each variant's exported PNG. This is a single-slide scoring — apply the same 9-axis evaluation from `references/scoring-subroutine.md`.
 
 Compare: original avg vs variant A avg vs variant B avg.
 
