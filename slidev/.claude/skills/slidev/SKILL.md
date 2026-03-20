@@ -55,6 +55,7 @@ Usage:
   /slidev --learn=N --preset <name>            Preset learning (create + refine with visual critic)
   /slidev --deep_learn=N                       Preset deep learning (auto-refine N cycles)
   /slidev --deep_learn=N --preset <name>       Deep learn a specific preset
+  /slidev --add_archetype [name]              Add a new composition archetype
   /slidev --no-preset <outline>                Generate without auto-preset (Unique mode)
   /slidev --help                                 Show this help
 ```
@@ -79,6 +80,23 @@ Usage:
 5. Generate demo presentation using `assets/demo-outline.md` with that preset, output to `demo-<name>/`.
 6. **Visual QA** — Run the Visual QA Loop for `demo-<name>/`.
 7. Print summary: preset path (noting global vs local), demo path, Visual QA results, how to preview, how to use.
+
+**`--add_archetype [name]`**: Add a new composition archetype to the library.
+
+1. If `name` not provided — ask "Как назвать архетип? (kebab-case)"
+2. Ask: **"Для какого типа контента этот архетип? Опишите ситуацию, когда существующие архетипы не подходят."**
+3. Based on the answer, determine:
+   - How many archetypes are actually needed (may be 1, may be 2-3 for different aspects)
+   - Density level for each (low / medium / medium-high / high)
+   - Group classification (hero / grid / split / timeline / table / cta)
+   - Which content types it serves
+   - Which shape elements it uses (circles, pills, hexagons, etc.)
+4. Generate HTML skeleton following the format in `references/composition-archetypes.md` (using `{{SLOT}}` markers, `layout: none`, max 3 div nesting levels, inline styles)
+5. Append the archetype record(s) to `references/composition-archetypes.md` — both the archetype definition AND its content-type association in the mapping table at the top
+6. Generate a test slide using the new archetype with sample content and export as PNG for visual verification
+7. Report: archetype name(s), density, content types served, and the test slide PNG path
+
+Stop here — do not proceed to generation.
 
 **`--learn=N`**: Learning loop. Parse N from the argument (e.g., `--learn=5`).
 - **Without `--preset`**: Self-improving skill loop. Follow the Learning Loop Procedure (L-1 through L-5) — improves SKILL.md and design-principles.md based on visual critique.
