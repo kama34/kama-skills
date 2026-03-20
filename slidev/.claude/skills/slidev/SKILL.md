@@ -987,6 +987,16 @@ Generate a completely unique design. Apply `/frontend-design` aesthetic principl
 - Vary between geometric/humanist sans + old-style/transitional serif
 - Monospace: JetBrains Mono, Fira Code, IBM Plex Mono, Source Code Pro
 
+### Font Number Blacklist
+- **CRITICAL — Number-heavy presentations** (financial, metrics, data): NEVER select these fonts for headings — their digits render unevenly in Chromium headless export: `Syne, Playfair Display, Bodoni Moda`
+- Before selecting a heading font, check if the outline contains 3+ slides with prominent numbers (budgets, metrics, percentages). If yes, verify the chosen font is NOT on the blacklist.
+
+### Strict 2-Font Rule
+- **Maximum 2 visual font identities in the entire presentation.** Heading font (sans) for: headings, numbers, labels, hero text. Body font (serif) for: descriptions, bullets, supporting text.
+- Labels differ from headings only via `text-transform`, `letter-spacing`, `font-size` — same font-family.
+- Hero numbers use heading font, just larger. Not a separate visual style.
+- Monospace fonts used exclusively in code blocks (`<code>`, `<pre>`) do not count as a visual font identity — they serve a functional role.
+
 ### Color & Theme
 - Commit to a cohesive aesthetic. Dominant colors with sharp accents outperform timid, evenly-distributed palettes
 - Build a dominant palette (2-3 base colors) + one sharp accent
@@ -1365,6 +1375,7 @@ These rules combine `/frontend-design` aesthetic principles with the Gamma-level
 22. **Content density limit**: Max 4-5 visual blocks per slide. If a slide needs 6+ elements, split into 2 slides or move secondary details to presenter notes. Dense information walls overwhelm the audience and shrink text to unreadable sizes.
 23. **Hero metric prominence**: When a slide shows 3-4 key metrics, DON'T make them all equal-sized cards. Pick the MOST impactful metric, make it hero-sized (centered, 3-6em), place the rest as smaller supporting elements below. If all metrics are equally important, use 2.5-3em minimum — never smaller than the heading text.
 24. **Visible decoration**: Decorative elements (grain, scanlines, dot grids, blobs) must be visible in exported PNGs. Minimum opacity: 0.08-0.15 for patterns. If a decorative element isn't noticeable in a static screenshot, increase its opacity or size. Better 2-3 clearly visible decorative touches than 10 invisible ones.
+25. **Font discipline**: Maximum 2 visual font identities per presentation (heading + body). Numbers, labels, and hero text use the heading font — never a third font. Check font number blacklist for number-heavy decks. See Font Number Blacklist in Mode: Unique.
 
 ## Output Directory
 
