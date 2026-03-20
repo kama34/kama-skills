@@ -86,6 +86,12 @@ Usage:
 
 Stop here — do not proceed to generation.
 
+**`--deep_learn=N`**: Preset deep learning loop. Creates (or uses named) preset, then iteratively auto-refines it through N cycles of 3 visual test runs with convergence detection. N must be >= 2.
+- **With `--preset <name>`**: deep learn a specific preset
+- **Without `--preset`**: interactive wizard creates the initial preset (same as `--create-preset`)
+
+Follow the Preset Deep Learning Procedure (PDL-1 through PDL-7). Stop here — do not proceed to generation.
+
 **`--polish=N [dir]`**: Iterative design improvement cycle. Runs N rounds (default 3, max 5) of score → redesign weak slides → re-score. Includes A/B testing for weak slides and content review. Follow the Polish Procedure in `references/polish-procedure.md`. Stop here — do not proceed to generation.
 
 **`--compare <dir1> <dir2>`**: Compare two presentations side-by-side with scoring. Follow the Compare Procedure in `references/compare-procedure.md`. Stop here — do not proceed to generation.
@@ -589,6 +595,132 @@ Preset learning complete: <name>
 ```
 
 Stop here — do not proceed to generation.
+
+### Preset Deep Learning Procedure
+
+Triggered by `--deep_learn=N` (with or without `--preset <name>`). Creates/refines a preset through N cycles of automated visual critique and improvement. Also used internally by Step 0.4 (auto-preset) as an inline variant with N=3.
+
+**PDL-1: Initialization**
+- Parse N. If N < 2, error: `--deep_learn requires N >= 2 (minimum two cycles to observe improvement).` Stop.
+- If `--preset <name>` specified: generate initial `.preset.md` from the name. Save to `.slidev-presets/<name>.preset.md`.
+- If `--preset` not specified: run the interactive wizard (7 questions) to create the initial preset.
+- If called as inline variant from Step 0.4: the initial preset is already created — skip wizard.
+- Create working directory: `preset-deep-learn-<name>/`
+- Snapshot the original preset: copy `.preset.md` to `preset-deep-learn-<name>/preset-snapshot-original.preset.md`
+- Scaffold the Slidev project once inside the working directory:
+  - Write `package.json` with standard Slidev deps
+  - Run `npm install`
+  - Run `npx playwright install chromium`
+  - This scaffolding is reused for ALL cycles and runs.
+
+**PDL-2: Training cycle** — Repeat for c = 1 to N:
+
+**PDL-2.1: Generate outlines** — Generate 3 diverse outlines (ALL in Russian). Topics MUST NOT repeat across cycles. Vary: industry, scope, complexity, geography.
+
+**PDL-2.2: Run presentations** — For each of the 3 outlines:
+1. Re-read `.preset.md` from disk (it may have been modified by the previous cycle)
+2. Write `slides.md` using the full generation procedure (Steps 1-8) with the current preset in Preset mode
+3. Update `styles/index.css` from the current preset's CSS block
+4. Export PNGs: `npx slidev export --format png --output slides`
+5. Copy PNGs to `preset-deep-learn-<name>/cycle-<c>/run-<i>/slides/`
+6. **Optimization**: Reuse the scaffolded `node_modules/` — only swap `slides.md` and `styles/index.css` between runs.
+
+**PDL-2.3: Visual critic** — Launch a subagent as a demanding visual critic. Provide:
+- All PNGs from the 3 runs in this cycle
+- Current `.preset.md` content
+- `references/scoring-subroutine.md` and `references/design-principles.md`
+- **For cycle > 1**: also provide the previous cycle's critic report (`cycle-<c-1>/critic-report.md`). Instruct the critic to:
+  - Check whether issues from the previous cycle were fixed
+  - If an issue persists despite a fix attempt: **escalate its severity** (minor → major, major → critical)
+  - If new issues appeared after fixes: flag as **REGRESSION**
+
+Critic output — write to `preset-deep-learn-<name>/cycle-<c>/critic-report.md` (same format as PL-3 critic, plus escalation/regression annotations).
+
+**PDL-2.4: Auto-apply changes** — **CRITICAL: Changes are applied automatically without user confirmation.**
+- `critical` severity: always apply
+- `major` severity: always apply
+- `minor` severity: auto-apply only if the fix touches a single CSS property or font value; otherwise skip and log as deferred
+
+For each change: read `.preset.md`, apply via Edit tool, verify the edit took effect.
+
+Log all changes (applied and skipped) to `preset-deep-learn-<name>/cycle-<c>/changes-applied.md`:
+```
+# Cycle <c> Changes
+
+## Applied
+1. [description] — severity: critical
+   Before: "<excerpt>"
+   After: "<new text>"
+
+## Skipped
+1. [description] — severity: minor, reason: multi-property change
+```
+
+**Safety guardrails (NEVER violated):**
+- Changes ONLY to `.preset.md` (CSS + YAML frontmatter)
+- NEVER delete the preset file
+- NEVER change the preset's `name` field
+- If an Edit fails (old_string not found in file): log as skipped, continue to next change
+
+**PDL-2.5: Cycle status** — Print:
+```
+Цикл <c>/<N> завершён.
+  Качество:    <score>/10
+  Прогоны:     3/3 успешных
+  Правки:      <X applied, Y skipped>
+  Регрессии:   <count or "нет">
+```
+
+**PDL-3: Convergence detection (early stopping)** — After each cycle's status, check:
+- If the critic's overall quality score is **9 or 10 for two consecutive cycles**: stop early.
+  ```
+  Раннее завершение: качество стабилизировалось на <score>/10 в циклах <c-1> и <c>.
+  ```
+  Skip remaining cycles, proceed to PDL-5.
+- If score decreased vs. previous cycle (regression): warn but do NOT stop — the next cycle will attempt to fix it.
+
+**PDL-4: (reserved for future use)**
+
+**PDL-5: Final report** — Write to `preset-deep-learn-<name>/final-report.md` and print:
+```
+# Preset Deep Learning Report: <name>
+
+## Summary
+- Cycles executed: <actual> / <N planned>
+- Early stop: yes/no (reason)
+- Final score: X/10
+
+## Score Progression
+Cycle 1: ██████░░░░ 6.2
+Cycle 2: ████████░░ 7.8
+Cycle 3: █████████░ 9.1
+
+## Total Changes
+- Applied: N
+- Skipped: N
+- Regressions: N
+
+## Preset Diff (original → final)
+[Show before/after of key sections of .preset.md that changed]
+```
+
+**PDL-6: Save** — Ask the user where to save the final preset:
+```
+Пресет '<name>' готов. Сохранить:
+1. Локально: .slidev-presets/<name>.preset.md (уже сохранён)
+2. Глобально: ~/.claude/slidev-presets/<name>.preset.md
+
+Выбор (1/2):
+```
+If global: copy the preset to `~/.claude/slidev-presets/` and add to registry if `~/.claude/slidev-presets.json` exists.
+
+**Note**: When called as inline variant from Step 0.4, PDL-6 is skipped — preset stays in `.slidev-presets/` automatically.
+
+**PDL-7: Cleanup** — Ask user: `Удалить рабочую директорию preset-deep-learn-<name>/? (да/нет)`
+
+**Note**: When called as inline variant from Step 0.4, PDL-7 is skipped — working directory is cleaned up automatically.
+
+Stop here — do not proceed to generation (unless called as inline variant from Step 0.4, in which case return to Step 0.4 flow).
 
 ## Visual QA Loop
 
