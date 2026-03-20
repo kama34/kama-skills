@@ -239,6 +239,12 @@ defineProps({
 </script>
 ```
 
+**Icon Style Selection**: The preset format supports an `iconStyle` field: `"outlined"` (default — stroke icons as above), `"filled"` (solid fill, no stroke), `"duotone"` (two-tone with fill + lighter overlay).
+
+- If preset defines `iconStyle: filled`, generate Icon.vue with `fill="currentColor"` and `stroke="none"` instead of the stroke-based template above. Adjust SVG paths accordingly for filled rendering.
+- If preset defines `iconStyle: duotone`, generate Icon.vue with primary shapes using `fill` at full opacity and secondary shapes using `fill` at 40% opacity.
+- **Thematic specificity**: Icons must be thematically relevant to the presentation topic. A construction proposal needs building, crane, helmet, blueprint icons — not abstract geometric shapes. A tech startup needs rocket, chart, code, cloud icons. Generic Lucide-style icons signal "AI-generated."
+
 **Usage in slides**: `<Icon name="phone" :size="32" color="var(--color-accent)" />`
 
 When the aesthetic calls for filled icons instead of outlined, adjust the component to use `fill` instead of `stroke`.
@@ -428,6 +434,12 @@ Minimum difference between problem and solution slides: 5% luminance change meas
 - (C) A fully inverted treatment with a unique compositional anchor (centered oversized number, radial burst SVG, large decorative icon) that does not appear on the section slide.
 
 Rule of thumb: **a viewer who has seen the section break should feel escalation, not déjà-vu, when reaching the climax.** If both use the same background color, the presentation loses its narrative momentum in the final stretch.
+
+**CTA slide color transition smoothness**: The CTA/closing slide background MUST share at least one color channel with the preceding slide. Rules:
+- If the deck is dark, CTA may use accent color as background but with base color overlay (30-40% opacity) — creating "warm dark" instead of full color inversion.
+- The penultimate slide MUST begin the color transition: slightly warmer background, brighter accent usage, ~5% luminance shift toward the CTA's target color.
+- No full color inversion between adjacent slides. The audience should feel a gradual warm-up, not a jarring switch.
+- Acceptable CTA backgrounds on a dark deck: `linear-gradient(145deg, accent 0%, darken(accent, 30%) 100%)` with `rgba(base, 0.30)` overlay. This reads as "warm and inviting" rather than "shocking change."
 
 **Anti-pattern**: Every slide at the same visual intensity from start to finish.
 
