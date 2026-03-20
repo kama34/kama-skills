@@ -35,8 +35,7 @@ Load the matched preset, continue as `--preset <name>`.
 
 **Step 0.4: If NO_MATCH**
 - Generate an initial preset based on the topic (mood, colors, fonts, CSS)
-- Run **deep_learn=3** on this preset — 3 cycles of visual critique and auto-refinement
-- Save the refined preset to `.slidev-presets/`
+- Run **deep_learn=3** on this preset — 3 cycles of visual critique and auto-refinement (inline variant: runs PDL-1 through PDL-5 silently, skips PDL-6 save prompt and PDL-7 cleanup prompt — preset is saved to `.slidev-presets/` automatically, working directory is cleaned up automatically)
 - Continue presentation generation with this preset
 
 **`--no-preset` flag:** Skips Step 0 entirely. Generation proceeds in Unique mode (current default behavior).
@@ -88,7 +87,7 @@ Load the matched preset, continue as `--preset <name>`.
 - **PDL-2.1:** Generate 3 diverse outlines (topics MUST NOT repeat across cycles)
 - **PDL-2.2:** For each: update only `slides.md` + `styles/index.css` from current preset → export PNG. Reuse scaffolding.
 - **PDL-2.3:** Visual critic receives PNGs from all 3 runs + current preset + (for cycle > 1) previous critic report. Scores on 6 axes. Persisting issues from previous cycle get **severity escalation**. New issues after fixes get flagged as **REGRESSION**.
-- **PDL-2.4:** Auto-apply: `critical`/`major` fixes applied without confirmation. `minor` — only if simple. Log to `cycle-<c>/changes-applied.md`.
+- **PDL-2.4:** Auto-apply: `critical`/`major` fixes applied without confirmation. `minor` — auto-applied only if they touch a single CSS property or font value; otherwise skipped. Log to `cycle-<c>/changes-applied.md`.
 - **PDL-2.5:** Cycle status: score, runs, changes applied, regressions.
 
 **PDL-3: Safety guardrails**
@@ -124,7 +123,7 @@ All modes share a single scaffolding optimization:
 |------|--------|
 | `slidev/.claude/skills/slidev/SKILL.md` | Add Step 0 (auto-preset), `--no-preset` flag, `--learn=N` preset mode, `--deep_learn=N` preset mode, render optimization |
 
-All changes are in SKILL.md — no new reference files needed. The learn/deep_learn procedures follow the same subagent dispatch pattern already used by the existing `--learn=N` mode (which improves SKILL.md). The visual critic uses the existing `scoring-subroutine.md` reference.
+All changes are in SKILL.md — no new reference files needed. The learn/deep_learn procedures follow the same subagent dispatch pattern already used by the existing `--learn=N` mode (which improves SKILL.md). The visual critic uses the existing `references/scoring-subroutine.md` (already present in the skill directory — defines the 6-axis scoring scale from 1 to 10).
 
 ## Design Rationale
 
