@@ -1143,6 +1143,7 @@ Include:
 - Custom utility classes
 - **Card style variants** (Principle 5): `.card-solid`, `.card-ghost`, `.card-accent`, `.card-glass` — at least 2-3 distinct styles
 - **Decorative motif classes** (Principle 6): CSS pseudo-element patterns for the chosen decorative motifs (geometric circles, gradient blobs, dot grids, diagonal lines, etc.)
+- **Shape vocabulary CSS** (if preset has `shapes` section): Generate CSS classes corresponding to the shape settings. For `icon_container: circle` → `.icon-container { width:56px; height:56px; border-radius:50%; background:var(--color-accent-bg); border:1.5px solid var(--color-accent-dim); display:flex; align-items:center; justify-content:center; }`. For `stat_display: typographic` → `.stat-hero { font-size:5rem; font-weight:800; color:var(--color-accent); line-height:1; }` (no card wrapper). For `label_style: pill` → `.label-pill { display:inline-flex; background:rgba(255,255,255,0.06); border:1.5px solid var(--color-accent-dim); border-radius:20px; padding:6px 18px; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--color-accent); font-weight:600; }`. For `photo_mask: circle` → `.photo-circle { border-radius:50%; overflow:hidden; }`. These classes are used by archetype HTML skeletons.
 - If preset mode with CSS block, write the preset's CSS verbatim (can extend but not contradict)
 
 ### Step 4.5: Composition Planning
