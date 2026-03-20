@@ -857,6 +857,13 @@ Visual QA Results:
   Design critic: [pass — presentation is polished | N refinements applied]
 ```
 
+<HARD-GATE>
+**MANDATORY QUALITY GATES — NEVER SKIP:**
+1. **Step 0.4 PDL**: When creating a new preset (NO_MATCH), you MUST run Preset Deep Learn (PDL-1 through PDL-5) with N=3. No exceptions. No "for practicality". No "the user just wants export". The preset MUST be visually validated before use.
+2. **Step 7 Visual QA Loop**: After generating slides.md, you MUST run the full Visual QA Loop (Phase 1-4). No exceptions. This includes CSS code review, PNG export, per-slide visual inspection, and design critic review.
+Skipping either of these gates produces untested output. If you skip them, the presentation is defective by definition regardless of how it looks.
+</HARD-GATE>
+
 ### Generation Modes
 
 **`--no-preset` flag**: If present, skip Step 0 entirely and proceed directly to mode selection below.
@@ -1186,7 +1193,7 @@ If `--picture` modifier is present on the generation command, run the Picture Pl
 
 ### Step 7: Visual QA
 
-Run the Visual QA Loop for `<project-dir>`.
+**CRITICAL — MUST NOT SKIP.** Run the full Visual QA Loop (all 4 phases) for `<project-dir>`. This is mandatory after EVERY generation, regardless of whether `--export` is also specified. Export happens AFTER Visual QA, not instead of it.
 
 ### Step 8: Output Summary
 
