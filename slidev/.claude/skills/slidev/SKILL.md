@@ -1,7 +1,7 @@
 ---
 name: slidev
 description: Use when generating a Slidev presentation from a slide outline. Supports preset styles, unique designs, custom style descriptions, and image placement. Scaffolds a complete Slidev project. Also handles --help, --dev, --export, --edit, --picture, --create-preset, and --learn subcommands.
-argument-hint: "[--help | --dev [dir] | --export <format> [dir] | --edit [dir] <comment> | --picture [auto|paths...] [dir] | --create-preset <name> | --learn=N | --preset <name> | style: <desc>] <outline or file path>"
+argument-hint: "[--help | --dev [dir] | --export <format> [dir] | --edit [dir] <comment> | --picture [auto|paths...] [dir] | --create-preset <name> | --learn=N | --deep_learn=N | --no-preset | --preset <name> | style: <desc>] <outline or file path>"
 ---
 
 # Slidev Presentation Generator
@@ -52,6 +52,10 @@ Usage:
   /slidev --dev [dir]                            Launch dev server
   /slidev --create-preset <name>                 Create a new preset
   /slidev --learn=N                              Self-improving loop (N cycles)
+  /slidev --learn=N --preset <name>            Preset learning (create + refine with visual critic)
+  /slidev --deep_learn=N                       Preset deep learning (auto-refine N cycles)
+  /slidev --deep_learn=N --preset <name>       Deep learn a specific preset
+  /slidev --no-preset <outline>                Generate without auto-preset (Unique mode)
   /slidev --help                                 Show this help
 ```
 
