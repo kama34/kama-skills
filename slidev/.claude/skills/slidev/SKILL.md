@@ -633,9 +633,39 @@ Visual QA Results:
 
 ### Generation Modes
 
-1. **Preset mode**: Input contains `--preset <name|path>` → extract preset identifier, remainder is outline
+**`--no-preset` flag**: If present, skip Step 0 entirely and proceed directly to mode selection below.
+
+#### Step 0: Auto-Preset (runs before mode selection if no `--preset`, no `--no-preset`, and no `style:` prefix)
+
+When the user calls `/slidev <topic>` without explicit style flags:
+
+**Step 0.1: Scan existing presets** — Collect all `.preset.md` files from:
+- `.slidev-presets/` (local project directory)
+- `~/.claude/slidev-presets/` (global)
+- `~/.claude/slidev-presets.json` (registry — read JSON, resolve all mapped paths)
+
+If no presets found anywhere, skip to Step 0.4 (create new).
+
+**Step 0.2: LLM matching** — Evaluate the presentation topic against each preset's name and aesthetic description. For each preset, consider: does this preset's mood, color scheme, and visual style fit the topic? Output one of:
+- `MATCH: <preset-name>` — a suitable preset was found
+- `NO_MATCH` — no existing preset fits this topic
+
+**Step 0.3: If MATCH** — Load the matched preset using the standard Preset Resolution (4-tier lookup). Continue to mode "Preset mode" below.
+
+**Step 0.4: If NO_MATCH (or no presets exist)** — Create and refine a new preset:
+1. Generate an initial `.preset.md` based on the topic — infer mood, colors, fonts, CSS from the presentation subject (e.g., a tech startup pitch → bold modern with dark theme; a healthcare lecture → clean professional with calming palette)
+2. Save it to `.slidev-presets/<inferred-name>.preset.md` (local)
+3. Run the **Preset Deep Learn Procedure (PDL-1 through PDL-5)** with N=3 as an inline variant:
+   - PDL-6 (save prompt) is skipped — preset is already saved locally
+   - PDL-7 (cleanup prompt) is skipped — working directory is cleaned up automatically
+   - All other steps (scaffolding, 3 cycles of visual critique, auto-apply, convergence) run normally
+4. Continue to mode "Preset mode" with the refined preset
+
+#### Mode Selection
+
+1. **Preset mode**: Input contains `--preset <name|path>` (or auto-preset matched/created one) → extract preset identifier, remainder is outline
 2. **Custom style mode**: Input starts with `style:` → extract style description, remainder is outline
-3. **Unique mode**: No flags → generate a completely unique design
+3. **Unique mode**: `--no-preset` flag present → generate a completely unique design (current default behavior, no preset involvement)
 
 ### Outline Source
 
