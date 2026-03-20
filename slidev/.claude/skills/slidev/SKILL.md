@@ -80,7 +80,11 @@ Usage:
 6. **Visual QA** — Run the Visual QA Loop for `demo-<name>/`.
 7. Print summary: preset path (noting global vs local), demo path, Visual QA results, how to preview, how to use.
 
-**`--learn=N`**: Self-improving learning loop. Parse N from the argument (e.g., `--learn=5`). Follow the Learning Loop Procedure (L-1 through L-5). Stop here — do not proceed to generation.
+**`--learn=N`**: Learning loop. Parse N from the argument (e.g., `--learn=5`).
+- **Without `--preset`**: Self-improving skill loop. Follow the Learning Loop Procedure (L-1 through L-5) — improves SKILL.md and design-principles.md based on visual critique.
+- **With `--preset <name>`**: Preset learning loop. Creates (or uses named) preset, generates N demo presentations, visual critic evaluates and proposes CSS/font/color improvements. Follow the Preset Learning Procedure (PL-1 through PL-6).
+
+Stop here — do not proceed to generation.
 
 **`--polish=N [dir]`**: Iterative design improvement cycle. Runs N rounds (default 3, max 5) of score → redesign weak slides → re-score. Includes A/B testing for weak slides and content review. Follow the Polish Procedure in `references/polish-procedure.md`. Stop here — do not proceed to generation.
 
@@ -492,6 +496,96 @@ Learning complete: edu_XX
 
   Results: <edu_dir>/summary.md
   Each iteration: <edu_dir>/learn_<i>/
+```
+
+Stop here — do not proceed to generation.
+
+### Preset Learning Procedure
+
+Triggered by `--learn=N --preset <name>` or `--learn=N` (with preset specified). Creates/refines a preset through N visual test runs with user-confirmed improvements.
+
+**PL-1: Initialization**
+- If `--preset <name>` specified: generate an initial `.preset.md` from the name — infer mood, colors, fonts, CSS from the name/description. Save to `.slidev-presets/<name>.preset.md`.
+- If `--preset` not specified: run the interactive wizard (7 questions, same as `--create-preset`) to create the initial preset.
+- Create working directory: `preset-learn-<name>/`
+- Scaffold the Slidev project once inside the working directory:
+  - Write `package.json` with standard Slidev deps (`@slidev/cli: latest`, `@slidev/theme-default: latest`)
+  - Run `npm install`
+  - Run `npx playwright install chromium`
+  - This scaffolding is reused for ALL N runs — only `slides.md` and `styles/index.css` change between runs.
+
+**PL-2: Generate demo presentations**
+- Generate N diverse outlines (ALL in Russian). Vary across industries, formats, sizes (8-16 slides), and tones. Use `assets/demo-outline.md` as structural reference.
+- For each outline i = 1 to N:
+  1. Write `slides.md` by running the full generation procedure (Steps 1-8) using the current preset in Preset mode. Output to `preset-learn-<name>/run-<i>/`.
+  2. Apply the current preset's CSS to `styles/index.css`.
+  3. Export PNGs: `cd preset-learn-<name> && npx slidev export --format png --output run-<i>/slides`
+  4. **Optimization**: Reuse the scaffolded `node_modules/` — do NOT run `npm install` for every run. Run all generations in the same scaffolded directory, moving `slides.md` and `styles/index.css` between runs, and copying exported PNGs to `run-<i>/slides/`.
+
+**PL-3: Visual critic**
+- Launch a subagent (Agent tool) as a **demanding visual design critic** for presets. Provide:
+  - All exported PNGs from all N runs (read ALL visually)
+  - The current `.preset.md` file content
+  - `references/scoring-subroutine.md` — apply the 6-axis scoring (1-10 scale): visual impact, layout uniqueness, typography drama, color conviction, content clarity, decorative quality
+  - `references/design-principles.md` — check compliance
+
+- Critic output — write to `preset-learn-<name>/critic-report.md`:
+
+```
+# Preset Critic Report: <name>
+
+## Overall Score: X/10
+
+## Scoring Per Run
+- Run 1 ([topic]): X/10 — [strongest axis], [weakest axis]
+- Run 2 ([topic]): X/10 — ...
+...
+
+## Systemic CSS/Style Issues
+
+### Issue 1: [Title]
+- **Severity**: critical | major | minor
+- **Frequency**: N/N runs affected
+- **Description**: What's wrong visually
+- **Evidence**: Which PNGs show the problem
+- **Root cause**: Which part of .preset.md causes this
+- **Proposed fix**:
+  - **Before**: [relevant excerpt from .preset.md]
+  - **After**: [proposed replacement text]
+
+## What Works Well
+- [list CSS patterns, font choices, color decisions that scored well]
+```
+
+**PL-4: Propose changes**
+- Read the critic report. Present a numbered list of proposed changes to the user:
+```
+Предлагаемые изменения для пресета '<name>':
+1. [description] — Severity: critical
+   Было: "<excerpt>"
+   Стало: "<proposed text>"
+2. [description] — Severity: major
+   ...
+
+Применить изменения? (да / нет / выбрать)
+```
+- `да` — apply all
+- `нет` — discard all
+- `выбрать` — user picks by number
+
+**PL-5: Apply**
+- For each approved change: read `.preset.md`, apply via Edit tool, verify.
+- Only modify `.preset.md` (YAML frontmatter + CSS block). Do NOT change preset name.
+
+**PL-6: Report**
+```
+Preset learning complete: <name>
+
+  Runs: N
+  Score: X/10
+  Changes applied: N
+  Changes skipped: N
+  Preset: .slidev-presets/<name>.preset.md
 ```
 
 Stop here — do not proceed to generation.
