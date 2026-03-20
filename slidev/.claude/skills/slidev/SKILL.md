@@ -1456,6 +1456,9 @@ These rules combine `/frontend-design` aesthetic principles with the Gamma-level
 23. **Hero metric prominence**: When a slide shows 3-4 key metrics, DON'T make them all equal-sized cards. Pick the MOST impactful metric, make it hero-sized (centered, 3-6em), place the rest as smaller supporting elements below. If all metrics are equally important, use 2.5-3em minimum — never smaller than the heading text.
 24. **Visible decoration**: Decorative elements (grain, scanlines, dot grids, blobs) must be visible in exported PNGs. Minimum opacity: 0.08-0.15 for patterns. If a decorative element isn't noticeable in a static screenshot, increase its opacity or size. Better 2-3 clearly visible decorative touches than 10 invisible ones.
 25. **Font discipline**: Maximum 2 visual font identities per presentation (heading + body). Numbers, labels, and hero text use the heading font — never a third font. Check font number blacklist for number-heavy decks. See Font Number Blacklist in Mode: Unique.
+26. **Composition-aware layouts**: Use the Composition Plan (Step 4.5) to select archetype for each slide. Never default to the same card-grid layout. Each slide uses a named archetype from `references/composition-archetypes.md`. Entropy rule: no archetype repeats within a 4-slide window.
+27. **Shape variety**: At least 20-30% of visual elements should be non-rectangular: circle icon containers, pill badges, typographic heroes without card wrappers. Check the preset's shape vocabulary and apply it. All-rectangles = design failure.
+28. **CTA color smoothness**: CTA slide background shares at least one color channel with the preceding slide. Penultimate slide begins the color transition. See Principle 7 CTA transition rule.
 
 ## Output Directory
 
