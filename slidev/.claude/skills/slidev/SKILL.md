@@ -190,7 +190,7 @@ Procedure:
 
 **`--edit [dir] <comment>`**: Edit an existing Slidev presentation based on a free-text comment.
 
-The comment describes what to change — content, styling, structure, animations, or any combination. Examples:
+The comment describes what to change — content, styling, structure, animations, composition, or any combination. Examples:
 - `"сделай тёмную тему"` — switch color scheme to dark
 - `"добавь слайд после 3-го про статистику"` — insert a new slide
 - `"убери все анимации"` — remove v-clicks and transitions
@@ -198,6 +198,9 @@ The comment describes what to change — content, styling, structure, animations
 - `"замени палитру на синюю"` — change color scheme
 - `"перепиши слайд 5 более кратко"` — rewrite specific slide content
 - `"добавь заметки для спикера"` — add presenter notes
+- `"смени слайд 5 на bento-grid"` — change slide composition archetype
+- `"сделай круглые иконки вместо прямоугольных"` — change shape vocabulary
+- `"замени карточки на icon-trio"` — swap rectangular cards for circle icon containers
 
 Procedure:
 
@@ -208,12 +211,16 @@ Procedure:
    - `uno.config.ts` (if exists)
    - All files in `components/` (if directory exists)
    - `package.json` (if exists)
+   - `.slidev-presets/*.preset.md` or `~/.claude/slidev-presets/*.preset.md` (if the presentation was generated with a preset — check headmatter or project directory for clues)
+   - `references/composition-archetypes.md` (always — needed for archetype-aware editing)
 3. **Analyze the comment** to determine what needs to change:
    - **Content edits**: adding/removing/rewriting slides or bullet points
    - **Style edits**: colors, fonts, backgrounds, spacing, layout changes
    - **Structure edits**: reordering slides, changing layouts, splitting/merging
    - **Animation edits**: transitions, v-clicks, reveals
    - **Component edits**: adding/modifying Vue components
+   - **Composition edits**: changing a slide's archetype (e.g., "switch slide 5 to bento-grid"), swapping rectangular cards for circle containers, changing shape vocabulary
+   - **Font edits**: changing fonts — must respect the 2-font rule (max 2 visual identities) and font number blacklist
 4. **Invoke `/frontend-design` thinking AND `references/design-principles.md`** for any visual or style-related edits. Before changing colors, fonts, layouts, backgrounds, components, or adding new slides:
    - Understand the existing aesthetic direction from the current `styles/index.css`, headmatter, and per-slide styles
    - Apply `/frontend-design` principles to ensure edits are cohesive, bold, and intentional — not generic
@@ -221,12 +228,16 @@ Procedure:
    - Style changes must be holistic: don't just swap a color — reconsider contrast, accent hierarchy, background treatment, and typography pairing as a system
    - Even for content-only edits, consider whether layout choice and spacing deserve `/frontend-design`-level attention (e.g., a new slide with a single stat deserves `fact` layout with dramatic styling, not a plain `default`)
    - Apply ALL Design Principles: new slides must maintain visual rhythm (Principle 1), not repeat the layout of adjacent slides (Principle 2), use the Icon component instead of emoji (Principle 4), and match the presentation's accent hierarchy (Principle 12)
+   - **Archetype awareness**: When adding new slides, classify their content type and select an appropriate archetype from `references/composition-archetypes.md`. Check the archetypes of neighboring slides — the new slide's archetype must differ from its immediate neighbors (entropy rule). Use the archetype's HTML skeleton and fill `{{SLOT}}` markers with content.
+   - **Shape vocabulary**: If the presentation uses a preset with a `shapes` section (check `.slidev-presets/`), new elements must match the existing shape vocabulary. If the presentation uses circle icon containers, new slides must too. If it uses pill badges, keep that consistent.
+   - **Font discipline**: When changing fonts, enforce the 2-font rule — max 2 visual font identities (heading + body). Check the font number blacklist for number-heavy slides. Never introduce a 3rd font.
 5. **Apply changes surgically** using the Edit tool:
    - Only modify files and sections that the comment requires
    - Preserve everything the comment doesn't mention
    - Maintain consistency: if changing accent color in `styles/index.css`, also update it in per-slide `<style>` blocks and headmatter if referenced there
-   - When adding slides, maintain the `---` separator convention and assign appropriate layouts
-   - When changing design (colors, fonts, backgrounds), update all relevant locations: CSS variables, headmatter fonts, per-slide styles
+   - When adding slides: maintain the `---` separator convention, classify the new slide's content type, select an archetype from `references/composition-archetypes.md` that differs from neighboring slides, and use the archetype's HTML skeleton with `layout: none`
+   - When changing composition (user asks to change an archetype): look up the requested archetype in `references/composition-archetypes.md`, replace the slide's HTML with the new archetype's skeleton, preserve content but reflow it into the new structure
+   - When changing design (colors, fonts, backgrounds), update all relevant locations: CSS variables, headmatter fonts, per-slide styles. Respect shape vocabulary from preset.
 5. **Verify consistency** after edits:
    - Slide count matches intent (unchanged unless comment asks to add/remove)
    - No broken references (e.g., deleted component still used in slides)
