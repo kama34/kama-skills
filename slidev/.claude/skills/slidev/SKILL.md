@@ -613,7 +613,7 @@ Triggered by `--deep_learn=N` (with or without `--preset <name>`). Creates/refin
   - Run `npx playwright install chromium`
   - This scaffolding is reused for ALL cycles and runs.
 
-**PDL-2: Training cycle** — Repeat for c = 1 to N:
+**PDL-2: Training cycle** — **MUST execute ALL N cycles.** Do NOT skip, abbreviate, or reduce the number of cycles for any reason. Repeat for c = 1 to N:
 
 **PDL-2.1: Generate outlines** — Generate 3 diverse outlines (ALL in Russian). Topics MUST NOT repeat across cycles. Vary: industry, scope, complexity, geography.
 
@@ -881,10 +881,10 @@ If no presets found anywhere, skip to Step 0.4 (create new).
 **Step 0.4: If NO_MATCH (or no presets exist)** — Create and refine a new preset:
 1. Generate an initial `.preset.md` based on the topic — infer mood, colors, fonts, CSS from the presentation subject (e.g., a tech startup pitch → bold modern with dark theme; a healthcare lecture → clean professional with calming palette)
 2. Save it to `.slidev-presets/<inferred-name>.preset.md` (local)
-3. Run the **Preset Deep Learn Procedure (PDL-1 through PDL-5)** with N=3 as an inline variant:
+3. **CRITICAL — MUST NOT SKIP**: Run the **Preset Deep Learn Procedure (PDL-1 through PDL-5)** with N=3 as an inline variant. This step is **mandatory** — do NOT skip it for any reason (speed, practicality, token savings, or any other justification). The entire point of auto-preset is visual validation through iterative critique. A preset without PDL is an untested guess.
    - PDL-6 (save prompt) is skipped — preset is already saved locally
    - PDL-7 (cleanup prompt) is skipped — working directory is cleaned up automatically
-   - All other steps (scaffolding, 3 cycles of visual critique, auto-apply, convergence) run normally
+   - All other steps (scaffolding, 3 cycles of visual critique, auto-apply, convergence) MUST run fully
 4. Continue to mode "Preset mode" with the refined preset
 
 #### Mode Selection
