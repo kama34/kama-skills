@@ -63,16 +63,18 @@ Usage:
 **`--create-preset <name>`**: Interactive preset creation wizard.
 
 1. Extract preset name from arguments. If missing, ask for one (kebab-case).
-2. Ask 7 questions **ONE AT A TIME**, waiting for each answer:
+2. Ask 8 questions **ONE AT A TIME**, waiting for each answer:
    - **Mood**: "What mood? (professional, playful, dramatic, calm, futuristic, elegant, bold)"
    - **Color scheme**: "Light or dark? (dark, light, deep navy, warm cream...)"
    - **Accent color**: "Accent color? (#ff6b35, electric blue, warm coral...)"
    - **Typography**: "Font personality? (geometric & modern, classic & refined, rounded & friendly, sharp & technical)"
    - **Density**: "Content density? (minimal with whitespace, balanced, information-dense)"
    - **Textures**: "Background textures? (subtle noise, gradient mesh, geometric patterns, clean flat, frosted glass)"
+   - **Slide types**: "Какие типы слайдов чаще всего будут? (метрики/числа, таймлайны, команда, портфолио, сравнения, данные...)"
    - **Transitions**: "Slide transitions? (fade, slide-left, none...)"
    - **Save location**: "Save preset globally or locally? (global: ~/.claude/slidev-presets/, local: ./.slidev-presets/ in current project)"
 3. Synthesize answers into concrete design params using `/frontend-design` principles (distinctive Google Fonts — never Inter/Roboto/Arial/generic choices, cohesive palette with dominant+accent hierarchy, atmospheric backgrounds, CSS). The CSS block MUST include layout-specific styles per `references/preset-format.md` — explicit `text-align: center` on `h1`, `p`, `div` for all centered layouts (cover, section, fact, end, statement, center), plus background image overlay support for cover/section. See `references/layout-css-patterns.md` for the required patterns.
+   Based on the "Slide types" answer, generate the `archetypes` section with `preferred`/`avoid` lists and the `shapes` section with appropriate defaults. For example, if the user said "метрики и команда", set `preferred: [stat-hero, profile-grid, bento-grid]` and `icon_container: circle`.
 4. Based on save location answer:
    - **Global**: Create `~/.claude/slidev-presets/` if needed, write `<name>.preset.md` there
    - **Local**: Create `.slidev-presets/` in the current working directory if needed, write `<name>.preset.md` there
@@ -530,7 +532,7 @@ Triggered by `--learn=N --preset <name>` or `--learn=N` (with preset specified).
 
 **PL-1: Initialization**
 - If `--preset <name>` specified: generate an initial `.preset.md` from the name — infer mood, colors, fonts, CSS from the name/description. Save to `.slidev-presets/<name>.preset.md`.
-- If `--preset` not specified: run the interactive wizard (7 questions, same as `--create-preset`) to create the initial preset.
+- If `--preset` not specified: run the interactive wizard (8 questions, same as `--create-preset`) to create the initial preset.
 - Create working directory: `preset-learn-<name>/`
 - Scaffold the Slidev project once inside the working directory:
   - Write `package.json` with standard Slidev deps (`@slidev/cli: latest`, `@slidev/theme-default: latest`)
@@ -621,7 +623,7 @@ Triggered by `--deep_learn=N` (with or without `--preset <name>`). Creates/refin
 **PDL-1: Initialization**
 - Parse N. If N < 2, error: `--deep_learn requires N >= 2 (minimum two cycles to observe improvement).` Stop.
 - If `--preset <name>` specified: generate initial `.preset.md` from the name. Save to `.slidev-presets/<name>.preset.md`.
-- If `--preset` not specified: run the interactive wizard (7 questions) to create the initial preset.
+- If `--preset` not specified: run the interactive wizard (8 questions) to create the initial preset.
 - If called as inline variant from Step 0.4: the initial preset is already created — skip wizard.
 - Create working directory: `preset-deep-learn-<name>/`
 - Snapshot the original preset: copy `.preset.md` to `preset-deep-learn-<name>/preset-snapshot-original.preset.md`
