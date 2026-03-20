@@ -653,6 +653,9 @@ Triggered by `--deep_learn=N` (with or without `--preset <name>`). Creates/refin
   - Check whether issues from the previous cycle were fixed
   - If an issue persists despite a fix attempt: **escalate its severity** (minor → major, major → critical)
   - If new issues appeared after fixes: flag as **REGRESSION**
+- Evaluate composition archetype adequacy: was the right archetype selected for each content type? Are there slides where a different archetype would create better visual variety?
+- Check archetype preferences: does the preset's `preferred` list match what actually works well? Should any archetypes be added to or removed from `preferred`/`avoid`?
+- Evaluate shape vocabulary: are circle containers, pill badges, and other non-rectangular shapes being used effectively? Or does the presentation still look like "all rectangles"?
 
 Critic output — write to `preset-deep-learn-<name>/cycle-<c>/critic-report.md` (same format as PL-3 critic, plus escalation/regression annotations).
 
@@ -677,7 +680,7 @@ Log all changes (applied and skipped) to `preset-deep-learn-<name>/cycle-<c>/cha
 ```
 
 **Safety guardrails (NEVER violated):**
-- Changes ONLY to `.preset.md` (CSS + YAML frontmatter)
+- Changes ONLY to `.preset.md` (CSS + YAML frontmatter + `archetypes` section + `shapes` section)
 - NEVER delete the preset file
 - NEVER change the preset's `name` field
 - If an Edit fails (old_string not found in file): log as skipped, continue to next change
@@ -907,6 +910,11 @@ If no presets found anywhere, skip to Step 0.4 (create new).
 
 **Step 0.4: If NO_MATCH (or no presets exist)** — Create and refine a new preset:
 1. Generate an initial `.preset.md` based on the topic — infer mood, colors, fonts, CSS from the presentation subject (e.g., a tech startup pitch → bold modern with dark theme; a healthcare lecture → clean professional with calming palette)
+   Include `archetypes` and `shapes` sections based on the presentation type:
+   - Commercial proposal (КП) → `preferred: [bento-grid, stat-hero, profile-grid, card-mosaic]`, `icon_container: circle`, `stat_display: typographic`
+   - Pitch deck → `preferred: [stat-hero, icon-trio, timeline-horizontal, asymmetric-split]`, `icon_container: circle`
+   - Technical talk → `preferred: [two-col-text, data-spotlight, comparison-table, timeline-horizontal]`, `icon_container: rounded-square`
+   - Educational lecture → `preferred: [icon-trio, timeline-zigzag, bento-grid, quote-pull]`, `icon_container: circle`
 2. Save it to `.slidev-presets/<inferred-name>.preset.md` (local)
 3. **CRITICAL — MUST NOT SKIP**: Run the **Preset Deep Learn Procedure (PDL-1 through PDL-5)** with N=3 as an inline variant. This step is **mandatory** — do NOT skip it for any reason (speed, practicality, token savings, or any other justification). The entire point of auto-preset is visual validation through iterative critique. A preset without PDL is an untested guess.
    - PDL-6 (save prompt) is skipped — preset is already saved locally
