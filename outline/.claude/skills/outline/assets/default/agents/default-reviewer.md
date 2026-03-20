@@ -49,6 +49,12 @@ Evaluate the structure against these criteria:
 - Does the opening grab attention?
 - Does the closing leave a lasting impression or clear call to action?
 
+### 7. Information Density
+- Does each slide have no more than 5-7 bullet points?
+- Is each bullet concise (10-12 words max), serving as a cue rather than a full sentence?
+- Are there slides that look like text walls (dense paragraphs instead of structured points)?
+- If a slide exceeds density limits, can it be split into two or trimmed without losing meaning?
+
 ## Iteration Guidance
 
 On iteration 2+, FIRST verify whether the previous round's feedback was addressed:
