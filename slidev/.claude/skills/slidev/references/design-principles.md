@@ -130,6 +130,24 @@ On a slide with a hero metric + supporting metrics:
 - Supporting numbers: 2.2em minimum (NEVER smaller than the slide heading)
 - Size ratio hero:supporting must be at least 1.6:1 to create clear hierarchy
 
+### Type Treatment Limit
+
+Maximum **3 visually distinct type treatments** per slide:
+1. Heading font (regular or bold) — titles, labels
+2. Body font (regular) — descriptions, bullets
+3. One accent treatment — bold OR italic OR uppercase, but **never all three simultaneously**
+
+FAIL if a single slide contains bold + italic + uppercase + multiple font families all at once ("font salad").
+
+### Italic Restriction
+
+Italic is permitted **only** in:
+- `<blockquote>` elements and direct quotations
+- Attribution lines ("— Author Name")
+- Image captions / footnotes
+
+Italic in headings, subheadings, or body text = **FAIL**.
+
 **Anti-pattern**: All headings at 1.8em, all body at 1em, across every slide. Or: 4 identical metric cards with numbers at 1.5em that are smaller than the heading.
 
 ---
@@ -405,6 +423,28 @@ PASS minimums:
 **Background hue proximity rule**: When the decorative element color is within 60° hue distance of the background color, apply a 1.6× opacity multiplier above the stated minimum. When within 30° (same hue family, e.g., green decorations on green background), the minimum opacity for ANY decorative element is 0.18 regardless of other calculations. Warm ecru backgrounds with similarly-warm dots require at minimum 0.28 opacity at 1.5px to register as a pattern. For corner arc/glow elements: the arc center MUST be no more than `radius * 0.5` outside the slide boundary to guarantee at least 40% visibility.
 
 **Anti-pattern**: Every slide is just text on a flat/gradient background with zero decorative elements. Or: decorative CSS at 0.03 opacity that is technically present but invisible to the human eye.
+
+### Pill/Badge Rendering
+
+All pill/badge/chip elements **must** use this CSS pattern:
+```css
+display: inline-flex;
+align-items: center;
+justify-content: center;
+line-height: 1;
+padding: 6px 18px;
+```
+
+`line-height: 1` is **CRITICAL** — without it, uppercase + letter-spacing text shifts visually upward.
+
+Pill background must be **opaque** (solid `var(--bg-base)` or `var(--bg-alt)`), not semi-transparent `rgba(...)`, to prevent "mud" effect when overlapping decorative gradient spots. **Alternative:** if a pill must be semi-transparent by design, radial-gradient spots must **not** be placed in the top 20% of the slide (where pills typically appear).
+
+### Decorative Gradient Exclusion Zones
+
+Decorative gradient spots (radial-gradient blobs, glows):
+- Must **not** overlap with text-heavy zones (headings, pills, body text)
+- Place in corners, edges, or outside the content area
+- If overlap with content is unavoidable: opacity ≤ 0.20
 
 ---
 
