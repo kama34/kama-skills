@@ -765,7 +765,7 @@ A reusable subroutine for visual quality assurance. Input: `<dir>` (project dire
 **QA-0: Pre-render code review** — Before exporting PNGs, read `slides.md` and check the CSS code directly. This catches structural issues that are hard to spot visually.
 
 **QA-0a: CSS correctness checks** — For EACH slide in the file, verify:
-- **Centered layouts** (`cover`, `section`, `fact`, `end`, `statement`, `center`): confirm that `text-align: center` is set **explicitly** on `h1`, `p`, and other text elements in the per-slide `<style>` block — not just on the parent `.slidev-layout`. If missing, **add it immediately** before proceeding.
+- **Centered layouts** (`cover`, `section`, `fact`, `end`, `statement`, `center`): confirm `text-align: center` is set on `h1`, `h2` and single-line elements (subtitle, date, attribution). Confirm multi-line `p` and `li` (>60 chars or >1 line) use `text-align: left` with `max-width: 600px; margin: 0 auto` — left-aligned in centered container. If multi-line body text is centered, fix immediately.
 - **Background image slides**: confirm the background is set via per-slide CSS (`background: url(...) center/cover no-repeat !important` on `.slidev-layout`), NOT via frontmatter `background:` prop. If using frontmatter prop, switch to CSS approach. Confirm `::before` overlay is present for readability. Confirm text colors are white/near-white.
 - **Text-on-image contrast**: if a slide has a background image or dark background, confirm text colors are explicitly set to white/light values.
 - **No reliance on CSS inheritance** for text alignment, colors, or font properties on centered layouts — all must be explicit due to Slidev theme specificity overrides.
@@ -778,17 +778,58 @@ A reusable subroutine for visual quality assurance. Input: `<dir>` (project dire
 - **Principle 5 (Cards)**: Check if all cards use identical styling. If yes, differentiate with at least 2 card styles.
 - **Principle 7 (Visual arc)**: Confirm the climax slide (Ask/CTA) has distinct visual treatment — different background, larger type, or unique color.
 - **Principle 8 (Data viz)**: Check bar charts for value labels, tables for hero-column highlights.
+- **Colorblind safety (Principle 8 expansion)**: Check that no data visualization uses red+green, green+brown, blue+purple, or green+black as the only differentiator. Recommend blue+orange for binary pairs.
 - **Principle 9 (Mockups)**: Check device mockups for wireframe content. If empty, add wireframe UI.
 - **Principle 10 (Diagrams)**: Check for text arrows (→ ↓ ← ↑) used as diagram connectors. Replace with SVG.
 - **Principle 11 (Spacing)**: Check content vertical distribution — should not be crammed to top.
 - **Principle 12 (Accent hierarchy)**: Verify accent color is used at varying intensities, not full saturation everywhere.
 - **HTML nesting depth (Rule 17)**: Scan for HTML nesting deeper than 3 levels (3+ opening `<div>` tags before content). Slidev will render these as raw HTML code. Flatten immediately.
-- **Font size minimum (Rule 18)**: Search for `text-xs` usage. If used for body content (not footnotes), replace with `text-sm`. If this makes content overflow, the slide has too much content — split it.
+- **Font size minimum (Rule 20)**: Check all font sizes. Body text below `1.25rem` (20px) = CRITICAL — raise to minimum. Headings below `2.2rem` = CRITICAL. Use `text-xs` (12px) ONLY for footnotes/source attributions. If raising font size causes content overflow, the slide has too much content — split it.
 - **Content density (Rule 22)**: Count visual blocks per slide. If any slide has 6+ distinct elements (cards, tables, charts, lists), split or remove secondary content.
 - **Breathing slides (Visual Rhythm Override)**: Count consecutive dense `default` layout slides. If 4+ in a row, convert 1-2 to statement/fact layout.
 - **Background image overlays (Rule P-5)**: If cover/section slides have background images, verify overlay uses gradient (not uniform opacity) with minimum 0.85 in text zones.
 
 Fix any issues found before proceeding to visual review.
+
+**QA-0c: Anti-Pattern Scan** — Before rendering, scan slides.md for these specific anti-patterns. This phase catches problems that QA-0a (CSS) and QA-0b (design principles) miss — pattern-specific bad practices identified by industry research.
+
+**Scope note:** Some items overlap with QA-0a/QA-0b — this is intentional redundancy for defense-in-depth.
+
+**Content density:**
+- [ ] Words per content slide ≤40 (WARNING >40, CRITICAL >75; exception: table/comparison slides ≤60)
+- [ ] Bullets per slide ≤4 (reinforces Rule 21)
+- [ ] Words per bullet ≤12
+- [ ] Text lines per slide ≤6
+
+**Typography:**
+- [ ] Body text ≥1.25rem (CRITICAL if smaller) (redundant with QA-0b)
+- [ ] Headings ≥2.2rem (CRITICAL if smaller)
+- [ ] Line-height 1.3–1.45 for body text
+- [ ] Bold usage ≤15% of total text
+- [ ] No centered multi-line body text (CRITICAL) (redundant with QA-0a)
+
+**Color:**
+- [ ] Primary accent not in AI blacklist (hue 240-290, sat >50%) = WARNING
+- [ ] Body text contrast ≥4.5:1 against background (CRITICAL)
+- [ ] No colorblind-unsafe data pairs (red+green, green+brown, blue+purple)
+
+**AI tells:**
+- [ ] No generic slide titles from blacklist: "Обзор", "Ключевые выводы", "О нас", "Наше решение", "Введение", "Итоги", "Резюме" (CRITICAL)
+- [ ] `icon-trio` archetype used ≤1 time per deck
+- [ ] All-caps eyebrow labels on ≤30% of slides
+- [ ] Last slide is NOT "Спасибо" / "Thank You" / "Вопросы?" (CRITICAL)
+- [ ] Action title by slide 2-3 surfaces main conclusion (business decks)
+
+**Data viz:**
+- [ ] Bar chart Y-axis starts at zero (CRITICAL if not)
+- [ ] Charts have ≤5-6 series/slices
+- [ ] Statistics have source citations (WARNING if missing)
+
+**Structure:**
+- [ ] Sub-bullet nesting ≤2 levels (CRITICAL if deeper)
+- [ ] Ghost Deck test: read slide titles in sequence — must tell coherent story (manual check)
+
+Fix all CRITICAL items before proceeding to visual review. Log WARNINGs for reviewer attention.
 
 ### Phase 2: Visual Export & Review
 
@@ -827,7 +868,10 @@ Fix any issues found before proceeding to visual review.
 - [ ] Accent color is used consistently across slides (headings, bullets, borders)
 - [ ] No jarring color inconsistencies between slides
 - [ ] Background treatment is consistent across similar slide types
-- [ ] **CRITICAL — Background variation (dark themes)**: Compare this slide's background to the previous slide. Are they visually distinguishable? If both are the same flat dark color — flag as FAIL. Section dividers MUST be noticeably lighter/different. See `references/design-principles.md` Principle 1 for the concrete luminance recipe.
+- [ ] **CRITICAL — WCAG contrast**: Body text contrast ≥4.5:1 against background. Large text ≥3:1. Verify — do not estimate.
+- [ ] **CRITICAL — Background variation (dark themes)**: Compare this slide's background to previous slide. Are they visually distinguishable? Section dividers MUST be noticeably different.
+- [ ] **Colorblind safety**: No data visualization uses red+green as only differentiator
+- [ ] **Whitespace**: Slide has ≥30% empty space, padding ≥44px from edges, gaps ≥16px between elements
 
 #### Layout & Composition
 - [ ] Layout matches the intended type (cover looks like cover, fact shows big number, etc.)
