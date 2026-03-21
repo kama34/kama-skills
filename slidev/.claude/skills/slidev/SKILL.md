@@ -827,6 +827,16 @@ A reusable subroutine for visual quality assurance. Input: `<dir>` (project dire
 - **Breathing slides (Visual Rhythm Override)**: Count consecutive dense `default` layout slides. If 4+ in a row, convert 1-2 to statement/fact layout.
 - **Background image overlays (Rule P-5)**: If cover/section slides have background images, verify overlay uses gradient (not uniform opacity) with minimum 0.85 in text zones.
 
+#### Feedback-Driven QA-0b Checks (code grep)
+
+- [ ] **Pill centering:** Grep `border-radius.*20px` (or pill/badge/chip patterns). Verify each has `line-height: 1`, `display:.*flex`, `align-items: center`. Missing = WARNING
+- [ ] **Pill-on-gradient mud:** Grep `rgba(` in pill/badge background context + `radial-gradient` on same slide. Both present = WARNING "potential mud overlap — use opaque pill background"
+- [ ] **Icon container uniformity:** Find all `border-radius:50%` with icon containers on same slide. If 3+ with identical width+height+border = WARNING "uniform icon containers"
+- [ ] **Grid element similarity:** Within each grid container, grep `border-radius` values. If different values among same-level children = WARNING "Gestalt similarity violation"
+- [ ] **Rule of Thirds heuristic:** On non-breathing, non-cover, non-CTA slides: if heading has `text-align:center` AND no `grid-template-columns` with unequal fractions AND no asymmetric width splits = WARNING "dead center layout — consider Rule of Thirds"
+- [ ] **Pie chart segment count:** If slides.md contains pie/donut chart markup with >5 segments/items = FAIL "pie chart exceeds 5 segments — use bar chart instead"
+- [ ] **Caption proximity heuristic:** Within grid/flex containers, check that caption/label elements are in the same or immediately adjacent cell as their referent element. If separated by >1 cell = WARNING "Gestalt proximity violation"
+
 Fix any issues found before proceeding to visual review.
 
 **QA-0c: Anti-Pattern Scan** — Before rendering, scan slides.md for these specific anti-patterns. This phase catches problems that QA-0a (CSS) and QA-0b (design principles) miss — pattern-specific bad practices identified by industry research.
@@ -845,11 +855,18 @@ Fix any issues found before proceeding to visual review.
 - [ ] Line-height 1.3–1.45 for body text
 - [ ] Bold usage ≤15% of total text
 - [ ] No centered multi-line body text (CRITICAL) (redundant with QA-0a)
+- [ ] Type treatments per slide ≤3 distinct combinations of font-family+weight+style (CRITICAL)
+- [ ] No `font-style: italic` outside `<blockquote>`, attribution, or caption context (CRITICAL)
+- [ ] Heading font not in Font Number Blacklist for number-heavy decks (CRITICAL)
 
 **Color:**
 - [ ] Primary accent not in AI blacklist (hue 240-290, sat >50%) = WARNING
 - [ ] Body text contrast ≥4.5:1 against background (CRITICAL)
-- [ ] No colorblind-unsafe data pairs (red+green, green+brown, blue+purple)
+- [ ] No colorblind-unsafe data pairs (red+green, green+brown, blue+purple). Hue ranges: red (0-30) + green (90-165) = FAIL; brown (20-40) + green (90-165) = WARNING
+- [ ] No pure `#000000` or `#FFFFFF` in any background or text color (CRITICAL)
+- [ ] All backgrounds use only `var(--bg-base)`, `var(--bg-alt)`, or `var(--bg-accent)` — no hardcoded background colors (CRITICAL)
+- [ ] Background temperature consistency: all 3 bg-levels share same warm/cool temperature (CRITICAL)
+- [ ] Muted text contrast: `--color-muted` vs each bg-level and `--color-accent-bg` in styles/index.css — all pairs ≥ 4.5:1 (CRITICAL)
 
 **AI tells:**
 - [ ] No generic slide titles from blacklist: "Обзор", "Ключевые выводы", "О нас", "Наше решение", "Введение", "Итоги", "Резюме" (CRITICAL)
@@ -857,6 +874,9 @@ Fix any issues found before proceeding to visual review.
 - [ ] All-caps eyebrow labels on ≤30% of slides
 - [ ] Last slide is NOT "Спасибо" / "Thank You" / "Вопросы?" (CRITICAL)
 - [ ] Action title by slide 2-3 surfaces main conclusion (business decks)
+- [ ] No text arrow characters (→←↑↓⟶➜▶) in visible content outside `<code>` and `<!-- -->` (CRITICAL)
+- [ ] No 3+ identical icon containers (same width+height+border-radius+border) on one slide — exception: numbered steps (CRITICAL)
+- [ ] Only 1 decorative gradient type used — classify each gradient as decorative vs functional/structural. Both radial and linear as decorative = WARNING
 
 **Data viz:**
 - [ ] Bar chart Y-axis starts at zero (CRITICAL if not)
@@ -929,6 +949,21 @@ Fix all CRITICAL items before proceeding to visual review. Log WARNINGs for revi
 
 #### v-click note
 - Elements in initial hidden state due to `v-click`/`v-clicks` are **expected** to be invisible in static export — this is NOT a bug unless the slide is completely empty with no visible content at all.
+
+#### Feedback-Driven Visual Checks (per slide)
+
+- [ ] **Pill centering:** Text inside pill/badge elements is vertically centered (not shifted up)
+- [ ] **Pill clarity:** Pill boundaries are crisp — no "mud" effect from gradient bleed-through
+- [ ] **Muted text readability:** Palest text on this slide is readable against its background (especially on accent-colored surfaces)
+- [ ] **Gestalt proximity:** Labels/captions are adjacent to their referent elements (not >1/4 slide height away)
+
+#### Feedback-Driven Visual Checks (deck-level, after all slides reviewed)
+
+- [ ] **Rule of Thirds:** At least 30% of content slides use off-center focal points (not all dead-center)
+- [ ] **Background consistency:** No unexpected color temperature shifts between adjacent slides
+- [ ] **Gradient consistency:** Decorative gradients all use the same type (all radial OR all linear)
+- [ ] **Icon container variation:** No slide has 3+ identical icon circles in a row (unless numbered steps)
+- [ ] **Muted text contrast (deck-level):** `--color-muted` is readable on ALL surface types across the entire deck
 
 **QA-5: Compile issues** — build a list of `slide N — [category] issue description`. If none → proceed to Phase 3.
 
@@ -1111,8 +1146,9 @@ Generate a completely unique design. Apply `/frontend-design` aesthetic principl
 - Monospace: JetBrains Mono, Fira Code, IBM Plex Mono, Source Code Pro
 
 ### Font Number Blacklist
-- **CRITICAL — Number-heavy presentations** (financial, metrics, data): NEVER select these fonts for headings — their digits render unevenly in Chromium headless export: `Syne, Playfair Display, Bodoni Moda`
-- Before selecting a heading font, check if the outline contains 3+ slides with prominent numbers (budgets, metrics, percentages). If yes, verify the chosen font is NOT on the blacklist.
+- **CRITICAL — Number-heavy presentations** (financial, metrics, data): NEVER select these fonts for headings — their digits render unevenly or bold is indistinguishable from regular in Chromium headless export: `Syne, Playfair Display, Bodoni Moda, Bricolage Grotesque`
+- Bricolage Grotesque: bold digits visually indistinguishable from regular weight at display sizes — confirmed via human feedback.
+- Before selecting a heading font, check if the outline contains 3+ slides with prominent numbers (budgets, metrics, percentages). If yes, verify the chosen font is NOT on the blacklist. For fonts not on the blacklist: if font's bold-regular weight delta < 300 = WARNING.
 
 ### Strict 2-Font Rule
 - **Maximum 2 visual font identities in the entire presentation.** Heading font (sans) for: headings, numbers, labels, hero text. Body font (serif) for: descriptions, bullets, supporting text.
@@ -1251,6 +1287,33 @@ Include:
 - **Shape vocabulary CSS** (if preset has `shapes` section): Generate CSS classes corresponding to the shape settings. For `icon_container: circle` → `.icon-container { width:56px; height:56px; border-radius:50%; background:var(--color-accent-bg); border:1.5px solid var(--color-accent-dim); display:flex; align-items:center; justify-content:center; }`. For `stat_display: typographic` → `.stat-hero { font-size:5rem; font-weight:800; color:var(--color-accent); line-height:1; }` (no card wrapper). For `label_style: pill` → `.label-pill { display:inline-flex; background:rgba(255,255,255,0.06); border:1.5px solid var(--color-accent-dim); border-radius:20px; padding:6px 18px; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--color-accent); font-weight:600; }`. For `photo_mask: circle` → `.photo-circle { border-radius:50%; overflow:hidden; }`. These classes are used by archetype HTML skeletons.
 - If preset mode with CSS block, write the preset's CSS verbatim (can extend but not contradict)
 
+#### Background Level System (REQUIRED)
+
+Generate these 3 CSS variables in `styles/index.css`:
+```css
+--bg-base: <hex>;    /* 60% of slides — primary content background */
+--bg-alt: <hex>;     /* 30% of slides — section dividers, alternating content */
+--bg-accent: <hex>;  /* 10% of slides — cover, CTA */
+```
+
+Rules:
+- All 3 must share the same color temperature (all warm or all cool)
+- Luminance delta between --bg-base and --bg-accent: max 40%
+- Never pure #000 or #FFF
+- Add a CSS comment with contrast ratios: `--color-muted` vs each bg-level, `--color-text` vs each bg-level
+
+#### Decorative Gradient Type Choice
+
+Choose exactly ONE decorative gradient type for the presentation and note it in a CSS comment:
+```css
+/* Decorative gradient type: radial-gradient */
+```
+This is a behavioral constraint — enforce during Step 5 when writing slides. Decorative = blobs, glows, washes. Functional (card tints, bg-accent) are exempt.
+
+#### Muted Text — Weakest Segment Check
+
+After defining `--color-muted`, verify its contrast ratio against ALL bg-levels and `--color-accent-bg`. The **lowest ratio** must be ≥ 4.5:1. If not, darken `--color-muted` until it passes. Document ratios in a CSS comment.
+
 ### Step 4.5: Composition Planning
 
 Before writing slides, create a Composition Plan that maps each outline slide to a named archetype from `references/composition-archetypes.md`. This replaces ad-hoc layout selection with structured, content-aware composition.
@@ -1292,12 +1355,26 @@ Before writing slides, create a Composition Plan that maps each outline slide to
    - **Ghost Deck test**: After creating the Composition Plan, read the planned action titles in sequence. They must tell a coherent argument. If the title sequence is a list of labels ("About", "Team", "Product"), rewrite as statements.
    - Cover archetype always first, CTA archetype always last
 
-5. **Output Composition Plan** as a table in the generation context:
+5. **Assign background levels** to each slide:
+
+   | Archetype | Default bg-level |
+   |-----------|-----------------|
+   | cover-hero | `--bg-accent` |
+   | section-divider | `--bg-alt` |
+   | stat-hero, quote-pull | `--bg-base` |
+   | icon-trio, bento-grid, two-col-text, card-mosaic, comparison-table | `--bg-base` or `--bg-alt` (alternate) |
+   | timeline-horizontal, timeline-zigzag, asymmetric-split, data-spotlight, profile-grid | `--bg-base` |
+   | cta-warm | `--bg-accent` |
+   | Pre-CTA slide (N-1 before cta-warm) | `--bg-alt` (bridge, if bg-accent is dark) |
+
+   No inline background colors — only `var(--bg-*)` tokens.
+
+6. **Output Composition Plan** as a table in the generation context:
    ```
-   | Slide | Content Type | Archetype | Group | Density |
-   |-------|-------------|-----------|-------|---------|
-   | 1     | intro       | cover-hero | hero | low     |
-   | 2     | credentials | bento-grid | grid | medium-high |
+   | Slide | Content Type | Archetype | Group | Density | Bg-Level |
+   |-------|-------------|-----------|-------|---------|----------|
+   | 1     | intro       | cover-hero | hero | low     | --bg-accent |
+   | 2     | credentials | bento-grid | grid | medium-high | --bg-base |
    ...
    ```
 
@@ -1324,6 +1401,12 @@ For each slide in the outline:
    - Closing → `end`
 
    **Content quality checks during writing**: For each slide, verify: (a) word count ≤40 (≤60 for tables), (b) title is an action title (statement, not label), (c) body text uses `font-size ≥1.25rem`, (d) no more than 4 bullets with ≤12 words each, (e) multi-line body text is left-aligned even on centered layouts, (f) line-height 1.3-1.45 for body, (g) if slide contains a chart, apply chart-specific rules from Rule 41 — bar chart Y-axis starts at zero, chart title = insight, ≤5-6 series.
+
+   **Enforcement rules during writing**:
+   - **Gradient type**: Use ONLY the decorative gradient type chosen in Step 4. If "radial-gradient" was chosen: decorative blobs use radial-gradient, card backgrounds use solid colors (no linear-gradient decoration). If "linear-gradient" was chosen: decorative overlays use linear-gradient, no radial-gradient blobs. bg-accent slide may use linear-gradient regardless (structural, exempt).
+   - **Text arrows**: NEVER write `→`, `←`, `↑`, `↓`, `⟶`, `➜`, `▶` in visible slide content. Use textual rephrasing, SVG arrows, or timeline archetypes instead.
+   - **Italic**: NEVER use `font-style: italic` except in `<blockquote>` elements, attribution lines, and image captions.
+   - **Background colors**: Use only `var(--bg-base)`, `var(--bg-alt)`, `var(--bg-accent)` as assigned in the Composition Plan. No hardcoded hex background colors.
 
    **CRITICAL — Visual Rhythm (Principle 1)**: Insert `section`, `statement`, or `fact` breathing slides every 2-3 content slides. If the outline doesn't explicitly include them, use section dividers between major topic shifts, or promote a key insight from a content slide into a standalone statement/fact slide.
 
