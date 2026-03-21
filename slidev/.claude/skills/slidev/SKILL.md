@@ -75,6 +75,7 @@ Usage:
    - **Save location**: "Save preset globally or locally? (global: ~/.claude/slidev-presets/, local: ./.slidev-presets/ in current project)"
 3. Synthesize answers into concrete design params using `/frontend-design` principles (distinctive Google Fonts — never Inter/Roboto/Arial/generic choices, cohesive palette with dominant+accent hierarchy, atmospheric backgrounds, CSS). The CSS block MUST include layout-specific styles per `references/preset-format.md` — explicit `text-align: center` on `h1`, `p`, `div` for all centered layouts (cover, section, fact, end, statement, center), plus background image overlay support for cover/section. See `references/layout-css-patterns.md` for the required patterns.
    Based on the "Slide types" answer, generate the `archetypes` section with `preferred`/`avoid` lists and the `shapes` section with appropriate defaults. For example, if the user said "метрики и команда", set `preferred: [stat-hero, profile-grid, bento-grid]` and `icon_container: circle`.
+   After determining the accent color, check it against the AI color blacklist (hue 240-290 at saturation >50%). If the accent falls in this range, regenerate with a different hue. Common safe alternatives: teal (#0D9488), amber (#D97706), emerald (#059669), rose (#E11D48).
 4. Based on save location answer:
    - **Global**: Create `~/.claude/slidev-presets/` if needed, write `<name>.preset.md` there
    - **Local**: Create `.slidev-presets/` in the current working directory if needed, write `<name>.preset.md` there
@@ -231,6 +232,10 @@ Procedure:
    - **Archetype awareness**: When adding new slides, classify their content type and select an appropriate archetype from `references/composition-archetypes.md`. Check the archetypes of neighboring slides — the new slide's archetype must differ from its immediate neighbors (entropy rule). Use the archetype's HTML skeleton and fill `{{SLOT}}` markers with content.
    - **Shape vocabulary**: If the presentation uses a preset with a `shapes` section (check `.slidev-presets/`), new elements must match the existing shape vocabulary. If the presentation uses circle icon containers, new slides must too. If it uses pill badges, keep that consistent.
    - **Font discipline**: When changing fonts, enforce the 2-font rule — max 2 visual font identities (heading + body). Check the font number blacklist for number-heavy slides. Never introduce a 3rd font.
+   - **Word count**: After editing, recount words on modified slides. If >40 (>60 for tables) — warn and suggest splitting or moving content to speaker notes.
+   - **Action titles**: If editing a slide title, ensure it's a statement/insight, not a label. Check against generic phrase blacklist.
+   - **Source citations**: If adding a statistic, include source citation.
+   - **Emphasis check**: Don't over-bold edited content — max 10-15% of text bold.
 5. **Apply changes surgically** using the Edit tool:
    - Only modify files and sections that the comment requires
    - Preserve everything the comment doesn't mention
@@ -238,6 +243,9 @@ Procedure:
    - When adding slides: maintain the `---` separator convention, classify the new slide's content type, select an archetype from `references/composition-archetypes.md` that differs from neighboring slides, and use the archetype's HTML skeleton with `layout: none`
    - When changing composition (user asks to change an archetype): look up the requested archetype in `references/composition-archetypes.md`, replace the slide's HTML with the new archetype's skeleton, preserve content but reflow it into the new structure
    - When changing design (colors, fonts, backgrounds), update all relevant locations: CSS variables, headmatter fonts, per-slide styles. Respect shape vocabulary from preset.
+   - When editing content: verify word count ≤40, font size ≥1.25rem for body, ≥2.2rem for headings
+   - When changing images: verify visual style consistency with existing images (same color temperature, contrast)
+   - When editing layout: verify whitespace ≥30%, padding ≥44px, gap ≥16px
 5. **Verify consistency** after edits:
    - Slide count matches intent (unchanged unless comment asks to add/remove)
    - No broken references (e.g., deleted component still used in slides)
@@ -290,6 +298,8 @@ Syntax:
 - Distribute across candidate slides in order
 - Fewer images than candidates → remaining slides unchanged
 - Fewer candidates than images → extras unused, noted in report
+
+After acquiring all images, verify visual style consistency across the set. All images should share similar color temperature, contrast level, and compositional style. If images vary significantly, apply a CSS harmonization filter on all image elements: `filter: saturate(0.85) contrast(1.05)` to unify the look. Do not mix photographic images with illustrations or AI-generated imagery.
 
 **P-4: Update slides.md** — for each slide that got an image:
 - `cover`/`section` → set background via **per-slide `<style>` CSS** (NOT frontmatter `background:` prop, which gets blocked by theme's opaque `background-color`). Use: `background: url('/images/slide-N-keyword.jpg') center/cover no-repeat !important;` on `.slidev-layout`.
@@ -385,6 +395,20 @@ ANALYSIS PROCESS:
 4. Look for SYSTEMIC issues — patterns that appear across multiple slides, not just one-off problems
 5. Run the Scoring Subroutine — score each slide on 9 axes (composition variety, shape diversity, font discipline, visual impact, layout uniqueness, typography drama, color conviction, content clarity, decorative quality)
 6. Run the Content Review Subroutine — check 3-second test, narrative flow, redundancy, CTA clarity, information hierarchy
+7. Check for anti-patterns from industry research:
+   - Generic label titles instead of action titles (Ghost Deck test: do titles tell a story?)
+   - Purple/indigo as primary palette (AI color blacklist)
+   - Three-column icon grid repeated >1 time
+   - All-caps eyebrow labels on every slide (max 30%)
+   - "Thank You" ending instead of CTA
+   - Recommendation buried after slide 5
+   - Body text centered on multi-line content
+   - Font sizes below 1.25rem for body, below 2.2rem for headings
+   - >40 words on a content slide
+   - Bold on >15% of text
+   - Bar charts not starting at zero
+   - Statistics without source citations
+   - Sub-bullets deeper than 2 levels
 
 OUTPUT FORMAT — write to <edu_dir>/learn_<i>/critique.md:
 
@@ -667,6 +691,20 @@ Triggered by `--deep_learn=N` (with or without `--preset <name>`). Creates/refin
 - Evaluate composition archetype adequacy: was the right archetype selected for each content type? Are there slides where a different archetype would create better visual variety?
 - Check archetype preferences: does the preset's `preferred` list match what actually works well? Should any archetypes be added to or removed from `preferred`/`avoid`?
 - Evaluate shape vocabulary: are circle containers, pill badges, and other non-rectangular shapes being used effectively? Or does the presentation still look like "all rectangles"?
+- Check for anti-patterns from industry research:
+   - Generic label titles instead of action titles (Ghost Deck test: do titles tell a story?)
+   - Purple/indigo as primary palette (AI color blacklist)
+   - Three-column icon grid repeated >1 time
+   - All-caps eyebrow labels on every slide (max 30%)
+   - "Thank You" ending instead of CTA
+   - Recommendation buried after slide 5
+   - Body text centered on multi-line content
+   - Font sizes below 1.25rem for body, below 2.2rem for headings
+   - >40 words on a content slide
+   - Bold on >15% of text
+   - Bar charts not starting at zero
+   - Statistics without source citations
+   - Sub-bullets deeper than 2 levels
 
 Critic output — write to `preset-deep-learn-<name>/cycle-<c>/critic-report.md` (same format as PL-3 critic, plus escalation/regression annotations).
 
@@ -971,6 +1009,7 @@ If no presets found anywhere, skip to Step 0.4 (create new).
    - Pitch deck → `preferred: [stat-hero, icon-trio, timeline-horizontal, asymmetric-split]`, `icon_container: circle`
    - Technical talk → `preferred: [two-col-text, data-spotlight, comparison-table, timeline-horizontal]`, `icon_container: rounded-square`
    - Educational lecture → `preferred: [icon-trio, timeline-zigzag, bento-grid, quote-pull]`, `icon_container: circle`
+   Verify the generated accent color is not in the AI color blacklist (hue 240-290, sat >50%). If it is, shift hue to nearest safe alternative.
 2. Save it to `.slidev-presets/<inferred-name>.preset.md` (local)
 3. **CRITICAL — MUST NOT SKIP**: Run the **Preset Deep Learn Procedure (PDL-1 through PDL-5)** with N=3 as an inline variant. This step is **mandatory** — do NOT skip it for any reason (speed, practicality, token savings, or any other justification). The entire point of auto-preset is visual validation through iterative critique. A preset without PDL is an untested guess.
    - PDL-6 (save prompt) is skipped — preset is already saved locally
@@ -1248,6 +1287,9 @@ Before writing slides, create a Composition Plan that maps each outline slide to
    - No more than 2 consecutive high-density archetypes
    - At least 3 different archetype groups (hero/grid/split/timeline/table/cta) in any 10-slide deck
    - `profile-grid` appears at most once per deck
+   - `icon-trio` appears at most once per deck (same as `profile-grid`)
+   - For business presentations (KP, pitch, report): main conclusion must be surfaced as action title by slide 2-3. If outline buries it after slide 5, formulate action titles that bring the conclusion forward.
+   - **Ghost Deck test**: After creating the Composition Plan, read the planned action titles in sequence. They must tell a coherent argument. If the title sequence is a list of labels ("About", "Team", "Product"), rewrite as statements.
    - Cover archetype always first, CTA archetype always last
 
 5. **Output Composition Plan** as a table in the generation context:
@@ -1280,6 +1322,8 @@ For each slide in the outline:
    - Quote → `quote`
    - Comparison → `two-cols`
    - Closing → `end`
+
+   **Content quality checks during writing**: For each slide, verify: (a) word count ≤40 (≤60 for tables), (b) title is an action title (statement, not label), (c) body text uses `font-size ≥1.25rem`, (d) no more than 4 bullets with ≤12 words each, (e) multi-line body text is left-aligned even on centered layouts, (f) line-height 1.3-1.45 for body, (g) if slide contains a chart, apply chart-specific rules from Rule 41 — bar chart Y-axis starts at zero, chart title = insight, ≤5-6 series.
 
    **CRITICAL — Visual Rhythm (Principle 1)**: Insert `section`, `statement`, or `fact` breathing slides every 2-3 content slides. If the outline doesn't explicitly include them, use section dividers between major topic shifts, or promote a key insight from a content slide into a standalone statement/fact slide.
 
