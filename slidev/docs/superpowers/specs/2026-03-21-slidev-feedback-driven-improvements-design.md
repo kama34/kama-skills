@@ -20,7 +20,9 @@ Real-world feedback on a generated presentation ("Prezentatsiya kotoraya ubezhda
 
 ### Approach
 
-**Hybrid (C):** Feedback items (F1-F13) as targeted additions with full pipeline integration. Research items (R1-R8) as systematic expansions. All changes flow through the complete pipeline: rules -> generation -> code QA -> visual QA -> scoring.
+**Hybrid (C):** Feedback items (F1-F13) as targeted additions with full pipeline integration. Research items (R1-R9) as systematic expansions. All changes flow through the complete pipeline: rules -> generation -> code QA -> visual QA -> scoring.
+
+**Note on R5 (Executive sequence):** R5 — "recommendation on slides 1-2, not buried at the end" — is already partially covered by the existing Anti-Pattern #7 in design-principles.md ("Recommendation buried after slide 5") and QA-0c's "recommendation position check." No additional changes needed; existing coverage is sufficient.
 
 ---
 
@@ -43,8 +45,25 @@ Generate three background levels in `styles/index.css`:
 1. All three levels share the **same color temperature** (all warm or all cool)
 2. Luminance delta between bg-base and bg-accent: **max 40%**
 3. **Never** pure `#000000` or `#FFFFFF` — always tinted (e.g., `#FAF9F6`, `#1A2332`)
-4. If bg-accent is dark and rest is light, the **penultimate slide** uses bg-alt as a visual bridge
+4. If bg-accent luminance < 30% (dark) and bg-base luminance > 70% (light), the **pre-CTA slide** (the slide immediately before the CTA/closing slide, regardless of deck position) uses bg-alt as a visual bridge. This **replaces** the existing Principle 1 "Penultimate" row.
 5. Archetypes reference `var(--bg-base)` / `var(--bg-alt)` / `var(--bg-accent)` — no hardcoded colors
+
+### Relationship to existing Principle 1
+
+The existing Principle 1 defines a per-slide-type luminance-delta recipe table (Cover +3-5%, Content even +3%, etc.). The new bg-system **replaces** that table. Mapping:
+
+| Existing Principle 1 slide type | New bg-level |
+|---------------------------------|-------------|
+| Cover | `--bg-accent` |
+| Content (odd) | `--bg-base` |
+| Content (even) | `--bg-alt` |
+| Section divider | `--bg-alt` |
+| Stat/fact hero | `--bg-base` |
+| Problem/Solution | `--bg-base` or `--bg-alt` (alternating) |
+| Ask/CTA | `--bg-accent` |
+| Pre-CTA | `--bg-alt` (bridge) |
+
+The luminance-delta values within each level are no longer needed — bg-base, bg-alt, and bg-accent are defined as concrete hex values in `styles/index.css`, not as relative deltas.
 
 ### Files to Change
 
@@ -81,7 +100,7 @@ Italic in headings, subheadings, body text = **FAIL**.
 
 ### 2c. Font Digit Rendering Check
 
-**Rule:** When a presentation contains prominent numbers (stat-hero, metrics), the heading font must have **visually distinguishable bold for digits**. Expand the existing Font Number Blacklist with fonts where bold and regular digits are indistinguishable (e.g., Bricolage Grotesque is a candidate for testing).
+**Rule:** When a presentation contains prominent numbers (stat-hero, metrics), the heading font must have **visually distinguishable bold for digits**. Add to Font Number Blacklist: **Bricolage Grotesque** (bold digits visually indistinguishable from regular weight at display sizes — confirmed via feedback). If a number-heavy presentation selects a font not on the blacklist, the generator must verify during Step 1 that bold digit rendering is distinct from regular by checking the font's weight range (fonts with weight range < 300 between regular and bold = WARNING). Blacklisted font in number-heavy presentation = FAIL.
 
 ### Files to Change
 
@@ -166,9 +185,8 @@ When defining `--color-muted` in `styles/index.css`:
 
 | Check | Type | Rule |
 |-------|------|------|
-| QA-0b | Code | For each `color` value in slides.md, find parent `background`. Calculate contrast ratio. < 4.5:1 = FAIL |
-| QA-0c | Code | New checkpoint "Muted text on all surfaces": list all (text-color, bg-color) pairs, verify ratio |
-| QA-4 | Visual | Find palest text on PNG, verify readability |
+| QA-0c | Code | New checkpoint "Muted text on all surfaces": list all CSS variable pairs (`--color-muted` vs `--bg-base`, `--bg-alt`, `--color-accent-bg`, `--color-surface`) from `styles/index.css`. Verify each pair's contrast ratio >= 4.5:1. This is a variable-level check, not a per-element DOM traversal. FAIL if any pair < 4.5:1 |
+| QA-4 | Visual | Find palest text on each exported PNG. If any text is hard to read against its background = FAIL. This is the definitive PASS/FAIL gate for contrast |
 
 ### Files to Change
 
@@ -176,7 +194,8 @@ When defining `--color-muted` in `styles/index.css`:
 |------|--------|
 | `design-principles.md` | Extend Principle 12 (Accent Hierarchy): "weakest segment first" rule |
 | `SKILL.md` Step 4 | When generating CSS, add comment with contrast ratios for all pairs |
-| `SKILL.md` QA-0b, QA-0c | New contrast checks against all surfaces |
+| `SKILL.md` QA-0c | New contrast check: CSS variable pairs from styles/index.css |
+| `SKILL.md` QA-4 | Visual contrast verification on exported PNGs (definitive gate) |
 | `scoring-subroutine.md` | Axis 7 (Color conviction): "all text-on-surface pairs pass WCAG" |
 
 ---
@@ -210,16 +229,21 @@ All containers same width+height+border-radius+border = **FAIL**.
 
 **Code check:** QA-0b grep all `border-radius:50%` with icons on same slide. If 3+ with identical width+height+border = WARNING.
 
-### 5c. Gradient Type Limit — Max 1 Type
+### 5c. Gradient Type Limit — Max 1 Decorative Gradient Type
 
-**Rule:** One presentation uses **only 1 gradient type**:
-- Either `radial-gradient` (decorative spots)
-- Or `linear-gradient` (backgrounds/cards)
-- Not both
+**Rule:** One presentation uses **only 1 type of decorative gradient**:
+- Either `radial-gradient` for decorative blobs/orbs (Principle 6)
+- Or `linear-gradient` for decorative backgrounds/overlays
+- Not both as decorative elements
 
-CTA slide (bg-accent) is the **sole exception** — may use `linear-gradient` for bg-accent level regardless of chosen type.
+**Clarification — what counts as "decorative":** Gradients used purely for visual embellishment (blobs, glows, background washes). Gradients that serve functional purposes are exempt:
+- Card `.card-accent` with a subtle `linear-gradient` tint = **functional** (differentiates card type) — exempt
+- `bg-accent` slide with `linear-gradient` background = **structural** (bg-system level) — exempt
+- A `radial-gradient` blob floating in a corner = **decorative** — counted
 
-**Code check:** QA-0c grep `radial-gradient` and `linear-gradient` in slides.md. Both found (excluding bg-accent slide) = WARNING.
+**Worked example:** If you choose `radial-gradient` as decorative type: decorative blobs use radial-gradient, card backgrounds use flat solid colors (no linear-gradient decoration), and the CTA bg-accent slide may still use linear-gradient (structural exempt). If you choose `linear-gradient`: decorative overlays use linear-gradient washes, no radial-gradient blobs anywhere.
+
+**Code check:** QA-0c — grep `radial-gradient` and `linear-gradient` in slides.md. For each match, classify as decorative or functional/structural. If both types appear as decorative = WARNING "multiple decorative gradient types".
 
 ### Files to Change
 
@@ -229,7 +253,7 @@ CTA slide (bg-accent) is the **sole exception** — may use `linear-gradient` fo
 | `SKILL.md` QA-0c | 3 new grep checks: arrow chars, uniform icons, mixed gradients |
 | `SKILL.md` Step 4 | Choose gradient type during CSS generation |
 | `SKILL.md` Step 5 | Enforce chosen gradient type during slide writing |
-| `composition-archetypes.md` | Remove hardcoded gradient types, use `var(--gradient-type)` concept |
+| `composition-archetypes.md` | Remove hardcoded decorative gradient types. Add comment to each archetype specifying which gradient slots are decorative vs structural. Generator enforces chosen decorative type as a behavioral rule during Step 5 |
 | `scoring-subroutine.md` | Axis 1: penalize uniform icons. Axis 7: penalize mixed gradients |
 
 ---
@@ -242,9 +266,11 @@ CTA slide (bg-accent) is the **sole exception** — may use `linear-gradient` fo
 
 **Rule:** Place dominant element at thirds-grid intersection, not dead center, except on breathing/stat-hero slides.
 
-**Code check:** QA-0b — if on a non-breathing slide all `text-align:center` + `justify-content:center` + `align-items:center` simultaneously = WARNING "dead center layout".
+**Verification:**
+- **QA-4 (visual, primary):** On each non-breathing, non-hero PNG, check if the heading/dominant element is dead center with no asymmetric counterweight (no offset column, no side image, no left-aligned body text). If every content slide is symmetrically centered = WARNING "consider Rule of Thirds for at least 30% of content slides."
+- **QA-0b (code, heuristic):** If a non-breathing, non-cover, non-CTA slide has its heading at `text-align:center` AND the slide contains no grid/flex split (no `grid-template-columns` with unequal fractions, no asymmetric width splits) = WARNING. This is a heuristic — visual QA-4 is the definitive check.
 
-**Files:** `design-principles.md` Principle 2; `SKILL.md` QA-0b; `composition-archetypes.md` add focal-point comments.
+**Files:** `design-principles.md` Principle 2; `SKILL.md` QA-4, QA-0b; `composition-archetypes.md` add focal-point comments per archetype.
 
 ### 6b. Chart Type Selection Matrix (R2)
 
@@ -269,27 +295,27 @@ CTA slide (bg-accent) is the **sole exception** — may use `linear-gradient` fo
 **Source:** Ugly Presentations Anti-Patterns
 
 **Rules:**
-- **Proximity:** label far from element = WARNING. Code: margin/gap between element and caption > 24px = WARNING
-- **Similarity:** same-level elements in a grid must share padding, border-radius, font-size. Code: grep border-radius within one grid — if different = WARNING
-- **Figure-ground:** text on background-image without overlay = FAIL (partially exists)
+- **Proximity:** label/caption must be visually adjacent to its referent element. **QA-4 (visual, primary):** on PNG, if a label appears more than ~1/4 slide height away from its element = WARNING. **QA-0b (code, heuristic):** within a grid or flex container, check that caption elements are in the same or adjacent cell as their referent.
+- **Similarity:** same-level elements in a grid must share padding, border-radius, font-size. **QA-0b (code):** grep border-radius values within one grid container — if different values = WARNING.
+- **Figure-ground:** text on background-image without overlay = FAIL (partially exists, no change needed).
 
-**Files:** `SKILL.md` QA-0b; `design-principles.md` new sub-section.
+**Files:** `SKILL.md` QA-4, QA-0b; `design-principles.md` new sub-section in layout principles.
 
 ### 6d. Colorblind Enforcement (R9)
 
 **Source:** Beautiful + Ugly guides
 
-**Rule:** If accent is red (hue 0-30) and used alongside green (hue 90-150) on same slide = FAIL. Replacement: blue/orange.
+**Rule:** If accent is red (hue 0-30) and used alongside green (hue 90-165) on same slide = FAIL. Replacement: blue/orange.
 
-**Code check:** QA-0c new checkpoint "Colorblind safety".
+This **augments** the existing QA-0c colorblind check ("No colorblind-unsafe data pairs (red+green, green+brown, blue+purple)") by adding concrete hue-range thresholds. Do not create a separate check — expand the existing one with: "Red hue 0-30 + green hue 90-165 on same slide = FAIL. Brown hue 20-40 + green hue 90-165 = WARNING."
 
-**Files:** `design-principles.md` Principle 8; `SKILL.md` QA-0c.
+**Files:** `design-principles.md` Principle 8 (add hue ranges to existing colorblind rule); `SKILL.md` QA-0c (expand existing checkpoint, not new one).
 
 ### 6e. Text Burstiness (R8)
 
 **Source:** AI Detection Guide
 
-**Rule:** On slides with 3+ bullets, if all items are within +-2 words of the same length = WARNING "monotonous text length".
+**Rule:** If a slide has 3 or more bullets AND the word count of every bullet is within +-3 words of the arithmetic mean of all bullet word counts on that slide = WARNING "monotonous text length, vary sentence structure." The +-3 threshold reduces false positives on naturally concise slides.
 
 **Files:** `content-review-subroutine.md`.
 
@@ -319,6 +345,8 @@ CTA slide (bg-accent) is the **sole exception** — may use `linear-gradient` fo
 - `human-centered` — organic shapes, natural palette, intentional imperfection
 - `broken-grid` — overlapping text/images, angular sections
 
+**Scope:** This addition is purely for `--create-preset` mode. The trend vocabulary is only surfaced when a preset is being created or the user explicitly references a trend. It does not affect default generation design thinking.
+
 **Files:** `preset-format.md`.
 
 ---
@@ -333,13 +361,29 @@ CTA slide (bg-accent) is the **sole exception** — may use `linear-gradient` fo
 | `SKILL.md` (Step 5) | 5c |
 | `SKILL.md` (QA-0b) | 1, 2, 3, 5b, 6a, 6c |
 | `SKILL.md` (QA-0c) | 1, 2, 3, 4, 5a, 5c, 6d |
-| `SKILL.md` (QA-4) | 3, 4 |
+| `SKILL.md` (QA-4) | 3, 4, 6a, 6c |
 | `SKILL.md` (Font Selection) | 2c |
 | `composition-archetypes.md` | 1, 3, 5c, 6a |
 | `layout-css-patterns.md` | 3 |
-| `scoring-subroutine.md` | 1, 2, 3, 4, 5, 6 |
+| `scoring-subroutine.md` | 1, 2, 3, 4, 5, 6 — see Scoring Guidance below |
 | `content-review-subroutine.md` | 6e, 6f, 6g |
 | `preset-format.md` | 6h |
+
+## Scoring Guidance
+
+Concrete text to add/modify in `scoring-subroutine.md` axis descriptions:
+
+| Axis | Add to Low (1-3) | Add to High (7-10) |
+|------|-------------------|---------------------|
+| 1 (Composition variety) | "3+ uniform icon containers on one slide" | "Icon containers vary in size, shape, or style" |
+| 2 (Shape diversity) | No changes | No changes |
+| 3 (Font discipline) | ">3 type treatments on one slide; italic outside quotes; blacklisted font for number-heavy deck" | "Max 3 treatments/slide; italic only in quotes; font digit rendering verified" |
+| 4 (Visual impact) | No changes | "Rule of Thirds applied on 30%+ of content slides" |
+| 7 (Color conviction) | "Pure #000/#FFF; inconsistent bg temperature; bg-system not used; mixed decorative gradient types; muted text fails WCAG on any surface" | "3-level bg-system; single color temperature; all text-on-surface pairs pass WCAG 4.5:1; single decorative gradient type" |
+| 8 (Content clarity) | "Monotonous bullet length (all within +-3 words)" | "Varied sentence structure; cost-of-inaction slide present (pitch decks)" |
+| 9 (Decorative quality) | "Pill/badge mud overlap with gradient; gradient exclusion zone violated" | "Pills crisp on all backgrounds; decorative elements in corners/edges only" |
+
+---
 
 ## Feedback Traceability
 
@@ -362,6 +406,7 @@ CTA slide (bg-accent) is the **sole exception** — may use `linear-gradient` fo
 | R2 — Chart type matrix | 6b | Covered |
 | R3 — Modern trends vocabulary | 6h | Covered |
 | R4 — Cost-of-inaction slide | 6f | Covered |
+| R5 — Executive sequence (recommendation first) | — | Already covered by existing Anti-Pattern #7 + QA-0c |
 | R6 — Gestalt principles | 6c | Covered |
 | R7 — Cognitive overload | 6g | Covered |
 | R8 — Text burstiness | 6e | Covered |
