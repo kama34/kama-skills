@@ -99,6 +99,10 @@ The "LABEL → H1 → content" three-layer pattern may appear on at most 3 conse
 
 **Anti-pattern**: Every slide following "LABEL top-left → accent line → 2-column grid".
 
+### Rule of Thirds
+
+On non-breathing, non-hero slides, place the dominant element at a thirds-grid intersection rather than dead center. Center alignment is reserved for breathing slides (stat-hero, quote-pull) and cover/CTA slides. At least 30% of content slides should use off-center focal points.
+
 ---
 
 ## Principle 3: Typographic Drama
@@ -299,6 +303,18 @@ defineProps({
 **Usage in slides**: `<Icon name="phone" :size="32" color="var(--color-accent)" />`
 
 When the aesthetic calls for filled icons instead of outlined, adjust the component to use `fill` instead of `stroke`.
+
+### Icon Container Variation
+
+When 3+ icons appear on one slide, their containers must **differ** on at least one dimension:
+- Size (e.g., 48px, 56px, 64px), OR
+- Shape (circle, rounded-square, no container), OR
+- Style (solid fill, ghost outline, accent bg), OR
+- Placement (not strictly equal-gap row)
+
+All containers with identical width + height + border-radius + border = **FAIL**.
+
+**Exception:** numbered steps (1, 2, 3) may use uniform containers — uniformity is semantically justified for sequential items.
 
 ---
 
@@ -590,6 +606,17 @@ Charts and graphs should look like analytical dashboards, not colored divs.
 - Prohibited pairs: red+green, green+brown, blue+purple, green+black
 - Recommended binary pair: blue+orange
 - Never use color as ONLY differentiator — add shape, pattern, or text label
+- **Hue ranges:** Red (hue 0-30) + Green (hue 90-165) on same slide = **FAIL**. Brown (hue 20-40) + Green (hue 90-165) = **WARNING**.
+
+### Chart Type Selection Matrix
+
+| Goal | Correct type | Avoid |
+|------|-------------|-------|
+| Category comparison | Horizontal bar | 3D, exploded pie |
+| Change over time | Line chart | Bar with many periods |
+| Parts of whole | Stacked bar / Donut (≤5 segments) | Pie >6 segments |
+| Correlation | Scatter + trend line | Tables |
+| Simple proportion | Donut (3-5 segments) | 3D pie |
 
 ---
 
@@ -657,6 +684,19 @@ Complex diagrams (flywheels, flow charts, cycles) need proper vector graphics.
 **Flow chart pattern**: Use `<line>` or `<path>` with `marker-end` for proper arrowheads.
 
 **Anti-pattern**: Using `position: absolute` with text characters `→ ↓` as arrows.
+
+### Text Arrow Character Ban
+
+The following characters are **banned** in slides.md content (outside `<code>`, backticks, and `<!-- -->` speaker notes):
+
+`→` `←` `↑` `↓` `⟶` `➜` `▶`
+
+**Replacements:**
+- Sequences ("A → B → C"): rephrase textually ("from A to B, then to C") or use SVG `<path>` arrows
+- Pipelines: use `timeline-horizontal` / `timeline-zigzag` archetype with numbered steps
+- Navigation cues: use `Icon.vue` with `arrow-right` icon inside layout
+
+Any match in visible content = **FAIL** in QA-0c.
 
 ---
 
@@ -753,6 +793,23 @@ Use this checklist during generation, editing, and Visual QA:
 - [ ] **Diagrams**: Are diagrams SVG with proper arrows, not CSS+text?
 - [ ] **Spacing**: Is content vertically balanced, not crammed to top?
 - [ ] **Accent levels**: Is accent color used at 3 different intensities?
+- [ ] **Bg-system**: 3-level bg-system (bg-base/alt/accent), same temperature, no pure #000/#FFF?
+- [ ] **Type treatments**: ≤3 per slide; italic only in quotes/attribution?
+- [ ] **Icon containers**: Varied (size, shape, or style) when 3+ on one slide?
+- [ ] **Pills**: Opaque bg + line-height:1; no mud overlap with decorative gradients?
+- [ ] **Charts**: Type matches data goal (see matrix); colorblind-safe hue pairs?
+- [ ] **Arrow chars**: No text arrows (→←↑↓) in visible content?
+- [ ] **Muted text**: Passes WCAG 4.5:1 on ALL surfaces (weakest segment first)?
+
+---
+
+## Gestalt Compliance Notes
+
+**Proximity:** Labels and captions must be visually adjacent to their referent elements. A label more than ~1/4 slide height away from its element = violation.
+
+**Similarity:** Same-level elements in a grid (e.g., all cards in a card-mosaic) must share the same padding, border-radius, and font-size. Inconsistent styling within a group = violation.
+
+**Speaker Note Redundancy (Mayer Principle):** Speaker notes must EXTEND slide content, not repeat it verbatim. If slide text and speaker note convey the same information = redundancy violation.
 
 ---
 
@@ -777,5 +834,8 @@ What makes a presentation look AI-generated — avoid ALL of these:
 15. **Pure `#000000` or `#FFFFFF`** — always use tinted variants for text and backgrounds
 16. **Inconsistent background temperature** — mixing warm and cool backgrounds in the same deck
 17. **More than 3 background colors** — only `--bg-base`, `--bg-alt`, `--bg-accent` allowed
+18. **Text arrow characters** (→ ← ↑ ↓) in visible content — use SVG arrows or textual rephrasing
+19. **3+ identical icon containers** on one slide (same size, shape, border) — vary at least one dimension
+20. **Multiple decorative gradient types** (radial + linear as decoration) in same presentation — pick one
 
 **The test:** Would a professional presentation designer approve this slide? Would a McKinsey partner present it? If not — fix it.
