@@ -508,6 +508,36 @@ Charts and graphs should look like analytical dashboards, not colored divs.
 
 **Anti-pattern**: Bar charts without value labels. Tables that are just plain text grids.
 
+**Chart-Specific Rules (from research):**
+
+**Bar charts:**
+- Y-axis MUST start at zero — bar length encodes value, truncated axis = visual lie
+- Maximum 7-8 bars per chart
+- Value labels mandatory on every bar
+- Title = insight: "Revenue grew 23%" not "Revenue chart"
+
+**Line charts:**
+- Do NOT require zero baseline (acceptable to truncate for trend detail)
+- Maximum 5 lines per chart
+- Labels directly on lines — no separate legend
+
+**Pie/Donut:**
+- Maximum 5-6 segments, remainder → "Other"
+- Largest segment at 12 o'clock, clockwise descending by size
+- Donut preferred over pie (better readability, center can hold label)
+- 3D effects FORBIDDEN
+
+**General chart rules:**
+- No legends — label data directly on the chart element
+- Chart title = finding/insight, not chart type name
+- Dual Y-axes FORBIDDEN (implies false correlation)
+- Every statistic needs source citation: `(source: Name, Year)`
+
+**Colorblind-safe data encoding:**
+- Prohibited pairs: red+green, green+brown, blue+purple, green+black
+- Recommended binary pair: blue+orange
+- Never use color as ONLY differentiator — add shape, pattern, or text label
+
 ---
 
 ## Principle 9: No Placeholder Mockups
@@ -631,6 +661,19 @@ When accent color is everywhere at the same intensity, nothing stands out.
 
 **Anti-pattern**: Using `#06C1A7` at full saturation for everything — big numbers, small labels, borders, icons, backgrounds.
 
+**60-30-10 Color Distribution Rule:**
+
+- **60%** — dominant color (background). One color family across the deck.
+- **30%** — secondary (text, card surfaces, borders).
+- **10%** — accent (CTA buttons, key metrics, highlights, active states).
+- **Maximum 4 distinct colors** in the entire presentation palette (dominant + secondary + accent + optional warm/cool variant).
+
+**AI Color Blacklist:**
+These colors are statistically the most common AI-default choices (Tailwind training bias). BANNED as primary/dominant accent:
+- Hue range 240-290 (purple-indigo-violet) at saturation >50%
+- Specific: `#6366F1`, `#8B5CF6`, `#A855F7`, `#06B6D4`
+- Acceptable as secondary/ambient (≤10% coverage), never as primary.
+
 ---
 
 ## Quick Reference: Principle Checklist
@@ -649,3 +692,26 @@ Use this checklist during generation, editing, and Visual QA:
 - [ ] **Diagrams**: Are diagrams SVG with proper arrows, not CSS+text?
 - [ ] **Spacing**: Is content vertically balanced, not crammed to top?
 - [ ] **Accent levels**: Is accent color used at 3 different intensities?
+
+---
+
+## Anti-Patterns Quick Reference
+
+What makes a presentation look AI-generated — avoid ALL of these:
+
+1. **Same layout on >30% of slides** — every slide must be structurally distinct from neighbors
+2. **Purple/indigo/cyan as primary color** — AI-default from Tailwind training data
+3. **Three-column icon grid repeated** — `icon-trio` max once per deck
+4. **All-caps label on every slide** — max 30%, and labels must be specific not generic
+5. **Generic titles** — "Overview", "Our Approach", "Key Takeaways" = AI tell. Use action titles.
+6. **"Thank You" ending** — last slide must be CTA with specific action, not gratitude
+7. **Recommendation at the end** — main conclusion by slide 2-3, not buried in final third
+8. **Body text centered on multiple lines** — multi-line body MUST be left-aligned
+9. **Font below 20px (1.25rem) for body** — audience can't read small text on projected slides
+10. **>40 words on a content slide** — that's a document, not a slide
+11. **>15% of text bold** — over-emphasis kills emphasis
+12. **Bar charts not starting at zero** — truncated Y-axis is a visual lie
+13. **Statistics without sources** — unsourced numbers signal hallucination
+14. **Sub-bullets 3+ levels deep** — max 2 levels, then restructure
+
+**The test:** Would a professional presentation designer approve this slide? Would a McKinsey partner present it? If not — fix it.
