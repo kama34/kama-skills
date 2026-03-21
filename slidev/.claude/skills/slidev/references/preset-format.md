@@ -189,3 +189,16 @@ Presets can be stored in two locations:
 - **Local**: `./.slidev-presets/<name>.preset.md` — scoped to the current project, committed with the repo
 
 The optional registry file `~/.claude/slidev-presets.json` maps preset names to absolute paths for presets stored elsewhere.
+
+## Trend Vocabulary (for --create-preset)
+
+When creating presets via `--create-preset`, these named aesthetic trends can be referenced in the preset body to guide design decisions. This vocabulary is **only for preset creation** — it does not affect default generation.
+
+| Trend | Description |
+|-------|-------------|
+| `bold-minimalism` | White text on dark backgrounds, max 1-2 elements per slide, large typography as primary design element |
+| `editorial` | Wide margins, asymmetric grids, magazine-like layout, strong photo hierarchy, pull quotes in contrasting type |
+| `human-centered` | Organic shapes, natural color palettes (terracotta, sage, cream), tactile imagery, intentional imperfection |
+| `broken-grid` | Overlapping text and images, angular sections, diagonal dividers, dynamic and editorial feel |
+
+Reference in preset body as: "This preset follows the `bold-minimalism` trend..."
