@@ -4,7 +4,7 @@ Battle-tested CSS patterns for Slidev layouts. Use these as the foundation — c
 
 ## Critical Rule: Explicit Text Alignment
 
-Slidev's `@slidev/theme-default` (and other themes) set `text-align: left` on child elements with CSS specificity that **overrides inherited `text-align`** from parent containers. You MUST set `text-align` explicitly on every text element (`h1`, `h2`, `p`, `li`, `div`) inside centered layouts — never rely on inheritance from the parent `.slidev-layout`.
+Slidev's `@slidev/theme-default` (and other themes) set `text-align: left` on child elements with CSS specificity that **overrides inherited `text-align`** from parent containers. You MUST set `text-align` explicitly on every text element (`h1`, `h2`, `p`, `li`, `div`) inside centered layouts — never rely on inheritance from the parent `.slidev-layout`. Note: body text (p, li) on centered layouts is LEFT-aligned within a centered container (max-width + margin auto). Only headings are centered.
 
 **Wrong** (inheritance will be overridden by theme):
 ```css
@@ -70,7 +70,7 @@ p {
   text-align: center;
 }
 h1 { text-align: center; }
-p { text-align: center; }
+p { text-align: left; max-width: 600px; margin: 0 auto; }
 ```
 
 ## Section Layout (with background image)
@@ -103,7 +103,7 @@ p { text-align: center; color: rgba(255, 255, 255, 0.85); }
 }
 .slidev-layout::before { display: none; }
 h1 { text-align: center; }
-p { text-align: center; }
+p { text-align: left; max-width: 600px; margin: 0 auto; }
 ```
 
 ## Fact Layout
@@ -141,7 +141,8 @@ p, div { text-align: center; }
 ## Statement / Center Layout
 
 ```css
-h1, h2, p { text-align: center; }
+h1, h2 { text-align: center; }
+p, li { text-align: left; max-width: 600px; margin: 0 auto; }
 blockquote, blockquote p { text-align: center; }
 ```
 

@@ -35,8 +35,8 @@ Named slide composition patterns for content-aware layout selection. Each archet
     <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.18em;color:var(--color-accent);font-weight:600;">{{LABEL}}</span>
   </div>
   <h1 style="font-size:3.4rem;font-weight:800;color:var(--color-text);margin:0 0 12px;font-family:var(--font-heading);line-height:1.08;">{{TITLE}}</h1>
-  <p style="font-size:1.15rem;color:var(--color-muted);margin:0 0 28px;font-family:var(--font-body);font-style:italic;">{{SUBTITLE}}</p>
-  <div style="display:flex;align-items:center;gap:16px;color:var(--color-muted);font-size:0.88rem;">
+  <p style="font-size:1.25rem;color:var(--color-muted);margin:0 0 28px;font-family:var(--font-body);font-style:italic;">{{SUBTITLE}}</p>
+  <div style="display:flex;align-items:center;gap:16px;color:var(--color-muted);font-size:1.25rem;">
     {{METADATA_DOTS_ROW}}
   </div>
 </div>
@@ -54,7 +54,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 <div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 80px;">
   <span style="display:block;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.18em;color:var(--color-accent);font-weight:600;margin-bottom:16px;">{{LABEL}}</span>
   <h1 style="font-size:3.5rem;font-weight:800;color:var(--color-text);margin:0 0 24px;font-family:var(--font-heading);line-height:1.1;">{{HEADING}}</h1>
-  <p style="font-size:1.05rem;color:var(--color-muted);max-width:700px;line-height:1.6;font-family:var(--font-body);">{{DESCRIPTION}}</p>
+  <p style="font-size:1.25rem;color:var(--color-muted);max-width:700px;line-height:1.6;font-family:var(--font-body);">{{DESCRIPTION}}</p>
 </div>
 ```
 
@@ -70,7 +70,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 <div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:48px 80px;">
   <span style="display:block;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.18em;color:var(--color-accent);font-weight:600;margin-bottom:16px;">{{LABEL}}</span>
   <h1 style="font-size:5.5rem;font-weight:800;color:var(--color-accent);margin:0;line-height:1;font-family:var(--font-heading);">{{HERO_NUMBER}}</h1>
-  <p style="font-size:1.1rem;color:var(--color-text);margin:8px 0 32px;font-family:var(--font-body);">{{SUPPORTING_CONTEXT}}</p>
+  <p style="font-size:1.25rem;color:var(--color-text);margin:8px 0 32px;font-family:var(--font-body);">{{SUPPORTING_CONTEXT}}</p>
   <div style="display:flex;gap:12px;">
     {{SUPPORTING_STATS_AS_PILLS}}
   </div>
@@ -108,7 +108,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
   <div style="display:flex;flex-direction:column;gap:10px;max-width:600px;width:100%;margin-bottom:32px;">
     {{NUMBERED_STEPS_AS_PILLS}}
   </div>
-  <div style="display:flex;align-items:center;gap:24px;color:var(--color-bg);font-size:0.9rem;">
+  <div style="display:flex;align-items:center;gap:24px;color:var(--color-bg);font-size:1.25rem;">
     {{CONTACT_INFO_ROW}}
   </div>
 </div>
@@ -132,8 +132,8 @@ Named slide composition patterns for content-aware layout selection. Each archet
       <div style="width:72px;height:72px;border-radius:50%;background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
         <Icon name="{{ICON}}" :size="28" color="var(--color-accent)" />
       </div>
-      <span style="font-size:1rem;font-weight:700;color:var(--color-text);margin-bottom:4px;">{{ITEM_TITLE}}</span>
-      <span style="font-size:0.82rem;color:var(--color-muted);line-height:1.4;">{{ITEM_DESC}}</span>
+      <span style="font-size:1.25rem;font-weight:700;color:var(--color-text);margin-bottom:4px;">{{ITEM_TITLE}}</span>
+      <span style="font-size:1.25rem;color:var(--color-muted);line-height:1.4;">{{ITEM_DESC}}</span>
     </div>
     }}
   </div>
@@ -247,7 +247,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
     {{REPEAT_STAGES:
     <div style="background:var(--color-surface);border:1px solid var(--color-surface-border);border-radius:12px;padding:14px 18px;display:flex;flex-direction:column;justify-content:center;">
       <span style="display:block;font-size:0.65rem;color:var(--color-accent);font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">{{STAGE_LABEL}}</span>
-      <span style="font-size:0.85rem;color:var(--color-text);line-height:1.35;">{{STAGE_CONTENT}}</span>
+      <span style="font-size:1.25rem;color:var(--color-text);line-height:1.35;">{{STAGE_CONTENT}}</span>
     </div>
     }}
   </div>
@@ -275,7 +275,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
       <div style="width:36px;height:36px;border-radius:50%;background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         <span style="font-size:0.8rem;font-weight:700;color:var(--color-accent);">{{STEP_NUM}}</span>
       </div>
-      <span style="font-size:0.88rem;color:var(--color-text);line-height:1.35;">{{STEP_TEXT}}</span>
+      <span style="font-size:1.25rem;color:var(--color-text);line-height:1.35;">{{STEP_TEXT}}</span>
     </div>
     }}
   </div>
@@ -300,7 +300,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
       <div style="width:40px;height:40px;border-radius:50%;background:var(--color-accent-bg);border:1px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         <Icon name="{{ICON}}" :size="20" color="var(--color-accent)" />
       </div>
-      <span style="font-size:0.88rem;color:var(--color-text);line-height:1.35;">{{MEMBER_INFO}}</span>
+      <span style="font-size:1.25rem;color:var(--color-text);line-height:1.35;">{{MEMBER_INFO}}</span>
     </div>
     }}
   </div>
@@ -322,7 +322,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;max-width:720px;width:100%;">
     {{METRIC_CARDS_AS_CENTERED_NUMBERS}}
   </div>
-  <p style="font-size:0.95rem;color:var(--color-accent);margin-top:20px;font-weight:600;">{{BOTTOM_CALLOUT}}</p>
+  <p style="font-size:1.25rem;color:var(--color-accent);margin-top:20px;font-weight:600;">{{BOTTOM_CALLOUT}}</p>
 </div>
 ```
 
@@ -342,7 +342,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
     {{REPEAT_ROWS:
     <div style="display:flex;align-items:center;gap:14px;background:transparent;border:1px solid var(--color-surface-border);border-radius:10px;padding:0 20px;">
       <Icon name="{{ICON}}" :size="20" color="var(--color-accent)" />
-      <span style="font-size:0.88rem;color:var(--color-text);">{{ROW_CONTENT}}</span>
+      <span style="font-size:1.25rem;color:var(--color-text);">{{ROW_CONTENT}}</span>
     </div>
     }}
   </div>
