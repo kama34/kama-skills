@@ -30,25 +30,38 @@ With ONE big idea — a quote, a key number, a provocative question. Minimal tex
 - When in doubt: add `radial-gradient(ellipse 80% 80% at 50% 50%, <lifted-color> 0%, <base> 75%)` as the background. Even 8% opacity center brightening creates perceptible differentiation.
 - **Multiple section slides rule**: If a presentation has 2+ section slides, they MUST use different color temperatures from each other. Example: Section 01 = lifted navy (`#0e1624`), Section 02 = deeper teal (`#080e14`) — NOT both the same dark navy. The color temperature shift between section slides signals structural progression in the narrative.
 
-**CRITICAL — Mandatory per-slide background variation for dark themes**: When `colorSchema: dark`, EVERY slide MUST have a visually distinguishable background. Use this concrete recipe:
+### Background Level System
 
-```
-Given base background #0B0F1A (or similar dark):
+Every presentation defines exactly 3 background levels in `styles/index.css`:
 
-Slide type          | Background recipe                                           | Luminance delta
---------------------|-------------------------------------------------------------|----------------
-Cover               | base + radial-gradient(accent glow at center, 8% opacity)  | +3-5%
-Content (odd)       | base                                                       | 0% (anchor)
-Content (even)      | base + 3% luminance lift (#0E1320)                         | +3%
-Section divider     | base + 12% luminance lift (#151B2E) + centered glow        | +12%
-Stat/fact hero      | base + accent radial glow (10% opacity)                    | +5% perceptual
-Problem slides      | base (darkest)                                             | 0%
-Solution slides     | base + 5% lift                                             | +5%
-Ask/CTA             | warm hue shift (amber/gold gradient with base overlay 30%) | different hue
-Penultimate         | base + 8% lift (pre-CTA warmup)                            | +8%
-```
+| Variable | Usage | Coverage |
+|----------|-------|----------|
+| `--bg-base` | Primary background for content slides | ~60% of slides |
+| `--bg-alt` | Alternative background for section dividers, alternating content | ~30% of slides |
+| `--bg-accent` | Cover and CTA/closing slides | ~10% of slides |
 
-**Visual QA must verify**: export PNGs of consecutive slides, compare backgrounds. If two adjacent slides have visually identical backgrounds (same hex within ±3 luminance points), flag as CRITICAL and fix before proceeding.
+**Rules:**
+1. All three levels must share the **same color temperature** (all warm OR all cool — never mixed)
+2. Luminance delta between `--bg-base` and `--bg-accent`: maximum 40%
+3. Pure `#000000` and `#FFFFFF` are **banned** — always use tinted variants (e.g., `#FAF9F6`, `#1A2332`, `#0C0E14`)
+4. If `--bg-accent` luminance < 30% (dark) and `--bg-base` luminance > 70% (light), the **pre-CTA slide** (immediately before the CTA/closing slide) must use `--bg-alt` as a visual bridge
+
+**Slide-type to bg-level mapping:**
+
+| Slide type | Background level |
+|------------|-----------------|
+| Cover | `--bg-accent` |
+| Content (odd) | `--bg-base` |
+| Content (even) | `--bg-alt` |
+| Section divider | `--bg-alt` |
+| Stat/fact hero | `--bg-base` |
+| Problem/Solution | `--bg-base` or `--bg-alt` (alternating) |
+| Ask/CTA | `--bg-accent` |
+| Pre-CTA | `--bg-alt` (bridge) |
+
+Archetypes reference `var(--bg-base)` / `var(--bg-alt)` / `var(--bg-accent)` — no hardcoded background colors.
+
+**Visual QA must verify**: export PNGs of consecutive slides, compare backgrounds. If two adjacent slides have visually identical backgrounds (same hex within ±3 luminance points), flag as CRITICAL and fix before proceeding. Also verify: no pure #000/#FFF, consistent color temperature across all slides.
 
 **Anti-pattern**: 8 consecutive `default` layout slides with the same structure. Also: 12 slides with the exact same `background-color` hex value.
 
@@ -674,6 +687,14 @@ These colors are statistically the most common AI-default choices (Tailwind trai
 - Specific: `#6366F1`, `#8B5CF6`, `#A855F7`, `#06B6D4`
 - Acceptable as secondary/ambient (≤10% coverage), never as primary.
 
+**Pure Black/White Ban:**
+Never use pure `#000000` for text or pure `#FFFFFF` for backgrounds. Replace with tinted alternatives:
+- Black text → `#1A2332` (dark navy) or `#1C1917` (warm charcoal)
+- White background → `#FAF9F6` (cream), `#F5F5F3` (warm gray), or `#EFF5F4` (cool mint)
+
+**Weakest Segment First (Muted Text Contrast):**
+When defining `--color-muted` (secondary/gray text), test its contrast ratio against **every** surface it will appear on: `--bg-base`, `--bg-alt`, `--color-accent-bg`, `--color-surface`. The **lowest contrast ratio** must pass WCAG AA (≥ 4.5:1). If it fails on any surface (typically accent cards), darken `--color-muted` **globally** until the weakest segment passes. Do not vary muted color per surface — one muted color everywhere.
+
 ---
 
 ## Quick Reference: Principle Checklist
@@ -713,5 +734,8 @@ What makes a presentation look AI-generated — avoid ALL of these:
 12. **Bar charts not starting at zero** — truncated Y-axis is a visual lie
 13. **Statistics without sources** — unsourced numbers signal hallucination
 14. **Sub-bullets 3+ levels deep** — max 2 levels, then restructure
+15. **Pure `#000000` or `#FFFFFF`** — always use tinted variants for text and backgrounds
+16. **Inconsistent background temperature** — mixing warm and cool backgrounds in the same deck
+17. **More than 3 background colors** — only `--bg-base`, `--bg-alt`, `--bg-accent` allowed
 
 **The test:** Would a professional presentation designer approve this slide? Would a McKinsey partner present it? If not — fix it.
