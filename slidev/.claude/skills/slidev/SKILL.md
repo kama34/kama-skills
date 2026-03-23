@@ -67,7 +67,7 @@ Usage:
    - **Mood**: "What mood? (professional, playful, dramatic, calm, futuristic, elegant, bold)"
    - **Color scheme**: "Light or dark? (dark, light, deep navy, warm cream...)"
    - **Accent color**: "Accent color? (#ff6b35, electric blue, warm coral...)"
-   - **Typography**: "Font personality? (geometric & modern, classic & refined, rounded & friendly, sharp & technical)"
+   - **Typography**: "Font personality? (geometric & modern, rounded & friendly, sharp & technical, humanist & classic, condensed & bold)"
    - **Density**: "Content density? (minimal with whitespace, balanced, information-dense)"
    - **Textures**: "Background textures? (subtle noise, gradient mesh, geometric patterns, clean flat, frosted glass)"
    - **Slide types**: "Какие типы слайдов чаще всего будут? (метрики/числа, таймлайны, команда, портфолио, сравнения, данные...)"
@@ -80,6 +80,12 @@ Usage:
    - **Global**: Create `~/.claude/slidev-presets/` if needed, write `<name>.preset.md` there
    - **Local**: Create `.slidev-presets/` in the current working directory if needed, write `<name>.preset.md` there
    Write per `references/preset-format.md`.
+4b. **Generate theme directory**: Based on the preset's CSS block and font/color choices, generate a `<name>-theme/` directory alongside the preset file with:
+   - `package.json` (Slidev theme metadata with font defaults — use Slidev's native `fonts.serif` key for body font slot even though value is sans-serif)
+   - `styles/index.css` (CSS variables, base layout, shape vocabulary from preset CSS block)
+   - `styles/layouts.css` (layout-specific text alignment, background overlay support)
+   - `layouts/none.vue`, `layouts/default.vue` (passthrough: `<template><div class="slidev-layout" style="padding:0;overflow:hidden;"><slot /></div></template>`)
+   - `layouts/cover.vue` (bg-accent background), `layouts/section.vue` (bg-alt), `layouts/end.vue` (bg-accent)
 5. Generate demo presentation using `assets/demo-outline.md` with that preset, output to `demo-<name>/`.
 6. **Visual QA** — Run the Visual QA Loop for `demo-<name>/`.
 7. Print summary: preset path (noting global vs local), demo path, Visual QA results, how to preview, how to use.
@@ -637,6 +643,7 @@ Triggered by `--learn=N --preset <name>` or `--learn=N` (with preset specified).
 **PL-5: Apply**
 - For each approved change: read `.preset.md`, apply via Edit tool, verify.
 - Only modify `.preset.md` (YAML frontmatter + CSS block). Do NOT change preset name.
+- After saving preset changes, regenerate the `<name>-theme/` directory from the updated CSS block. Subsequent test presentations use `theme: ./theme`.
 
 **PL-6: Report**
 ```
@@ -713,7 +720,7 @@ Critic output — write to `preset-deep-learn-<name>/cycle-<c>/critic-report.md`
 - `major` severity: always apply
 - `minor` severity: auto-apply only if the fix touches a single CSS property or font value; otherwise skip and log as deferred
 
-For each change: read `.preset.md`, apply via Edit tool, verify the edit took effect.
+For each change: read `.preset.md`, apply via Edit tool, verify the edit took effect. After applying changes to the preset, regenerate the `<name>-theme/` directory from the updated CSS block. Test presentations in PDL-2.2 must use `theme: ./theme` (not `theme: default`).
 
 Log all changes (applied and skipped) to `preset-deep-learn-<name>/cycle-<c>/changes-applied.md`:
 ```
