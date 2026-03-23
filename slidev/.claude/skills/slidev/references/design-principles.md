@@ -119,7 +119,7 @@ Typography creates visual hierarchy. Size contrast is the #1 tool for directing 
 - On fact/statement slides, the main text should be 3-5em minimum
 - Never make everything the same size — if everything is emphasized, nothing is
 - Pair font weights dramatically: 700 heading next to 300 body text
-- Use the serif font from the pair for quotes and statements (creates texture variety)
+- Both heading and body fonts MUST be sans-serif. Contrast through character (geometric vs humanist, condensed vs proportional, angular vs rounded), not through serif/sans category split.
 
 **When a slide has 3-4 key metrics**: DON'T put them all in equal-sized cards at the same scale. Pick the MOST impactful metric and make it hero-sized (centered, 3-6em), then place the remaining metrics below in a row of smaller supporting cards. If ALL metrics are equally important, use a 2x2 grid with each number at 2.5-3em minimum — never smaller than the heading text.
 
@@ -306,15 +306,30 @@ When the aesthetic calls for filled icons instead of outlined, adjust the compon
 
 ### Icon Container Variation
 
-When 3+ icons appear on one slide, their containers must **differ** on at least one dimension:
-- Size (e.g., 48px, 56px, 64px), OR
-- Shape (circle, rounded-square, no container), OR
-- Style (solid fill, ghost outline, accent bg), OR
-- Placement (not strictly equal-gap row)
+**CSS definitions** (include in `styles/index.css` for every deck):
 
-All containers with identical width + height + border-radius + border = **FAIL**.
+```css
+.icon-circle {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--color-accent-bg);
+  border: 1.5px solid var(--color-accent-dim);
+  display: flex; align-items: center; justify-content: center;
+}
+.icon-rounded {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: var(--color-accent-bg);
+  border: 1.5px solid var(--color-accent-dim);
+  display: flex; align-items: center; justify-content: center;
+}
+.icon-ghost {
+  display: inline-flex;
+  color: var(--color-accent);
+}
+```
 
-**Exception:** numbered steps (1, 2, 3) may use uniform containers — uniformity is semantically justified for sequential items.
+A deck MUST use at least 2 different icon container shapes. On a single slide (e.g., icon-trio), containers should be identical (Gestalt similarity). Between slides, containers must vary. The three available shapes are: icon-circle, icon-rounded, and icon-ghost.
 
 ---
 
