@@ -22,7 +22,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ## Archetypes
 
 ### cover-hero
-**Group:** hero | **Density:** low | **Bg-level:** `--bg-accent`
+**Group:** hero | **Density:** low
 **Content types:** intro
 **Focal point:** center (hero slide — center alignment justified)
 **Use when:** First slide of the presentation — title, company, key metadata.
@@ -44,7 +44,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ```
 
 ### section-divider
-**Group:** hero | **Density:** low | **Bg-level:** `--bg-alt`
+**Group:** hero | **Density:** low
 **Content types:** vision
 **Focal point:** center (breathing slide — center alignment justified)
 **Use when:** Transition between major sections. One big idea or section title.
@@ -60,7 +60,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ```
 
 ### stat-hero
-**Group:** hero | **Density:** low | **Bg-level:** `--bg-base`
+**Group:** hero | **Density:** low
 **Content types:** metric
 **Focal point:** center (breathing slide — center alignment justified)
 **Use when:** Slide has 1-2 key metrics to emphasize (budget, KPI, headline number).
@@ -79,7 +79,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ```
 
 ### quote-pull
-**Group:** hero | **Density:** low | **Bg-level:** `--bg-base`
+**Group:** hero | **Density:** low
 **Content types:** vision
 **Focal point:** center (breathing slide)
 **Use when:** Slide centers on a key quote, mission statement, or visionary text.
@@ -94,7 +94,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ```
 
 ### cta-warm
-**Group:** cta | **Density:** low | **Bg-level:** `--bg-accent`
+**Group:** cta | **Density:** low
 **Content types:** cta
 **Focal point:** center (CTA slide — center alignment justified)
 **Gradient slots:** background = STRUCTURAL (exempt from gradient type limit)
@@ -117,7 +117,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ```
 
 ### icon-trio
-**Group:** grid | **Density:** medium | **Bg-level:** `--bg-base` or `--bg-alt`
+**Group:** grid | **Density:** medium or `--bg-alt`
 **Content types:** credentials, scope, trust
 **Focal point:** left-third intersection (heading + primary content area)
 **Use when:** 3-5 features, benefits, or capabilities to present with icons.
@@ -143,7 +143,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ```
 
 ### bento-grid
-**Group:** grid | **Density:** medium-high | **Bg-level:** `--bg-base` or `--bg-alt`
+**Group:** grid | **Density:** medium-high or `--bg-alt`
 **Content types:** credentials, scope, portfolio, trust
 **Focal point:** upper-left third (featured card area)
 **Use when:** 3-5 items of varying importance — one featured, others supporting.
@@ -169,7 +169,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ```
 
 ### two-col-text
-**Group:** split | **Density:** medium | **Bg-level:** `--bg-base` or `--bg-alt`
+**Group:** split | **Density:** medium or `--bg-alt`
 **Content types:** context, scope, terms, trust
 **Focal point:** left-third intersection (heading above left column)
 **Use when:** Content splits naturally into 2 groups or a before/after comparison.
@@ -192,7 +192,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ```
 
 ### asymmetric-split
-**Group:** split | **Density:** medium | **Bg-level:** `--bg-base`
+**Group:** split | **Density:** medium
 **Content types:** context, vision
 **Focal point:** right-third intersection (text column offset from visual)
 **Use when:** One visual element (icon, illustration, metric) paired with explanatory text.
@@ -213,7 +213,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ```
 
 ### card-mosaic
-**Group:** grid | **Density:** medium-high | **Bg-level:** `--bg-base` or `--bg-alt`
+**Group:** grid | **Density:** medium-high or `--bg-alt`
 **Content types:** credentials, team, portfolio
 **Focal point:** upper-left third (heading + first card)
 **Use when:** 4 items of equal importance — portfolio pieces, team cards, project examples.
@@ -234,7 +234,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ```
 
 ### timeline-horizontal
-**Group:** timeline | **Density:** medium | **Bg-level:** `--bg-base`
+**Group:** timeline | **Density:** medium
 **Content types:** process
 **Focal point:** left-third (first step as entry point)
 **Use when:** 4-6 sequential steps or stages.
@@ -260,7 +260,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ```
 
 ### timeline-zigzag
-**Group:** timeline | **Density:** medium | **Bg-level:** `--bg-base`
+**Group:** timeline | **Density:** medium
 **Content types:** process
 **Focal point:** upper-left third (heading + first zigzag item)
 **Use when:** Long process (6+ steps) that needs compact vertical presentation.
@@ -285,7 +285,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ```
 
 ### profile-grid
-**Group:** grid | **Density:** medium | **Bg-level:** `--bg-base`
+**Group:** grid | **Density:** medium
 **Content types:** team
 **Focal point:** upper-left third (heading + first profile card)
 **Use when:** Showing team members, advisors, or key personnel.
@@ -310,7 +310,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ```
 
 ### data-spotlight
-**Group:** table | **Density:** high | **Bg-level:** `--bg-base`
+**Group:** table | **Density:** high
 **Content types:** metric, trust
 **Focal point:** upper-left third (heading + primary metric)
 **Use when:** Detailed breakdown — cost table, statistics grid, KPI dashboard.
@@ -329,7 +329,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 ```
 
 ### comparison-table
-**Group:** table | **Density:** high | **Bg-level:** `--bg-base` or `--bg-alt`
+**Group:** table | **Density:** high or `--bg-alt`
 **Content types:** terms, scope
 **Focal point:** upper-left third (heading + first comparison row)
 **Use when:** Side-by-side comparison or structured list of conditions/features.

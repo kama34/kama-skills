@@ -117,7 +117,7 @@ Describe the mood, visual metaphors, textures, and overall feel.
 | `theme` | No | Slidev theme package name. Default: `default` |
 | `colorSchema` | No | `light`, `dark`, or `auto`. Default: `auto` |
 | `fonts.sans` | No | Primary sans-serif font (Google Fonts) |
-| `fonts.serif` | No | Serif font for accents/headings |
+| `fonts.body` | No | Body font family (sans-serif). **Renamed from `fonts.serif`.** If parser encounters `fonts.serif`, treat as `fonts.body`. Must be sans-serif — serif fonts are banned. |
 | `fonts.mono` | No | Monospace font for code blocks |
 | `aspectRatio` | No | Slide aspect ratio. Default: `16/9` |
 | `transition` | No | Default slide transition |
@@ -149,7 +149,7 @@ The body has two parts:
 
    ```shapes
    card_radius: 14px
-   icon_container: circle        # circle | rounded-square | hexagon | none
+   icon_container: [circle, rounded-square]  # Single value or array. Values: circle, rounded-square, ghost. Single → [value, ghost]. Mapping: circle→.icon-circle, rounded-square→.icon-rounded, ghost→.icon-ghost
    stat_display: typographic     # typographic | pill-badge | card-inset
    label_style: pill             # pill | uppercase-text | accent-line
    divider_style: diagonal       # diagonal | horizontal | gradient-fade | none
@@ -202,3 +202,14 @@ When creating presets via `--create-preset`, these named aesthetic trends can be
 | `broken-grid` | Overlapping text and images, angular sections, diagonal dividers, dynamic and editorial feel |
 
 Reference in preset body as: "This preset follows the `bold-minimalism` trend..."
+
+## Theme Directory
+
+Presets may include a `<preset-name>-theme/` directory alongside the .preset.md file (e.g., `boardroom.preset.md` → `boardroom-theme/`). When present, the theme is copied to the presentation output and referenced via `theme: ./theme` in slides.md frontmatter.
+
+The theme encapsulates:
+- CSS variables and base styles (from the preset CSS block)
+- Layout Vue components with correct positioning
+- Shape vocabulary CSS classes
+
+The CSS block in the preset body remains the source of truth. The theme directory is generated from it and should not be hand-edited — regenerate the theme directory if changes are needed.
