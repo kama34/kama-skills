@@ -807,6 +807,9 @@ A reusable subroutine for visual quality assurance. Input: `<dir>` (project dire
 - **Background image slides**: confirm the background is set via per-slide CSS (`background: url(...) center/cover no-repeat !important` on `.slidev-layout`), NOT via frontmatter `background:` prop. If using frontmatter prop, switch to CSS approach. Confirm `::before` overlay is present for readability. Confirm text colors are white/near-white.
 - **Text-on-image contrast**: if a slide has a background image or dark background, confirm text colors are explicitly set to white/light values.
 - **No reliance on CSS inheritance** for text alignment, colors, or font properties on centered layouts — all must be explicit due to Slidev theme specificity overrides.
+- **layout:none enforcement (Rule 25)**: Global frontmatter must contain `layout: none`. Every slide with raw HTML using `position:absolute;inset:0` must have `layout: none` in per-slide frontmatter. Every slide with `layout: none` must have a `<style>` block containing `.slidev-layout { padding: 0 !important; overflow: hidden; }`. Auto-fix: add if missing. (Enforces Rule 25.)
+- **Pure #FFFFFF/#000000 scan**: Scan all inline `style="..."` for `#FFFFFF`, `#fff`, `#FFF`, `color:white`, `#000000`, `#000`, `color:black`. Exclude `rgba(255,255,255,...)` and `rgba(0,0,0,...)` (transparency OK). Auto-fix: `#FFFFFF`/`#fff` → preset's warm off-white (e.g., `var(--bg-base)` or `#FAFAF8`); `#000000`/`#000` → `var(--color-text)` or warm off-black. QA-0c retains its CRITICAL flag as defense-in-depth fallback.
+- **Pill line-height:1**: Find all elements where the SAME `style` contains ALL THREE: (1) `border-radius` 16-24px, (2) `padding` with values, (3) `display:inline-flex`. Check for `line-height:1`. Auto-fix: insert if missing. **Theme-class adaptation**: if pills use `class="label-pill"`, verify theme CSS `.label-pill` includes `line-height:1`.
 
 **QA-0b: Design Principles compliance** — Review the ENTIRE slides.md against `references/design-principles.md`:
 - **Principle 1 (Rhythm)**: Count consecutive dense content slides. If 3+ `default` layouts in a row without a breathing slide (`section`/`statement`/`fact`), insert one.
@@ -836,6 +839,10 @@ A reusable subroutine for visual quality assurance. Input: `<dir>` (project dire
 - [ ] **Rule of Thirds heuristic:** On non-breathing, non-cover, non-CTA slides: if heading has `text-align:center` AND no `grid-template-columns` with unequal fractions AND no asymmetric width splits = WARNING "dead center layout — consider Rule of Thirds"
 - [ ] **Pie chart segment count:** If slides.md contains pie/donut chart markup with >5 segments/items = FAIL "pie chart exceeds 5 segments — use bar chart instead"
 - [ ] **Caption proximity heuristic:** Within grid/flex containers, check that caption/label elements are in the same or immediately adjacent cell as their referent element. If separated by >1 cell = WARNING "Gestalt proximity violation"
+- [ ] **CSS Variables enforcement:** Parse CSS variable source (`styles/index.css` or `theme/styles/index.css`). Scan inline styles for hardcoded hex values matching defined CSS variables. Auto-replace exact matches with `var(--name)`. Warn if >30% hardcoded. QA-only warning.
+- [ ] **Body font size minimum:** Find all `font-size:` in inline styles. Labels/eyebrows (has `text-transform:uppercase` or `letter-spacing:0.1em+` or inside pill) → min 0.65rem OK. Body text → min 1.25rem. Auto-fix: raise to 1.25rem. **Overflow caveat (Rule 20):** if overflow → flag MAJOR "split slide" instead.
+- [ ] **bg-level distribution** (non-blocking): Count slides per bg-level. Warn if bg-base < 50%, bg-alt > 40%, or strict alternating across 4+ slides. No auto-fix — logged to QA-11 report.
+- [ ] **Icon diversity:** Collect all icon containers across deck. If 100% identical shape → warn "All icon containers identical. Use at least 2 shapes (icon-circle, icon-rounded, icon-ghost)."
 
 Fix any issues found before proceeding to visual review.
 
@@ -1368,7 +1375,24 @@ Before writing slides, create a Composition Plan that maps each outline slide to
    f. Select the most suitable remaining candidate
    g. **Fallback**: if empty after filtering → relax entropy window to 2 and retry. If still empty → ignore density filter AND entropy window, select the candidate with the lowest recent-use count.
 
-4. **Validate deck-level constraints**:
+4. **Cost-of-Inaction Check** — After classifying content types, if presentation type is pitch/investor/sales/proposal/fundraising/business case:
+   - Check if any slide addresses cost of inaction (keywords: "risk of inaction", "what happens if", "without this", "status quo cost", "стоимость бездействия", "если ничего не делать", "текущие потери")
+   - If no such slide → insert a cost-of-inaction slide after the problem/pain slide (or after slide 2 if no pain slide)
+   - Title pattern: "Стоимость бездействия: [quantified impact]"
+   - Use numbers from outline if available; otherwise directional language. Never hallucinate company-specific statistics.
+   - Log: "Added cost-of-inaction slide not present in original outline."
+   - **Hard Constraint exemption:** cost-of-inaction auto-insert is an explicit exception to the "same number of slides as outline" constraint.
+
+5. **Layout Budget Rule** — After assigning archetypes, validate composition variety:
+   - Mandatory archetypes (EXEMPT from budget): cover-hero (slide 1), cta-warm (last slide).
+   - For non-exempt content slides:
+     a. No single layout-group may exceed 40% of content slides
+     b. Split-group (two-col-text, asymmetric-split) specifically: max 30%
+     c. No more than 2 consecutive slides from the same layout-group
+   - Layout groups: hero (section-divider, stat-hero, quote-pull), grid (icon-trio, bento-grid, card-mosaic, profile-grid), split (two-col-text, asymmetric-split), timeline (timeline-horizontal, timeline-zigzag), table (data-spotlight, comparison-table).
+   - If violated: replace excess slides with archetypes from under-represented groups. Prefer breathing slides (stat-hero, quote-pull) to break monotony.
+
+6. **Validate deck-level constraints**:
    - Every 10-slide deck contains minimum: 1 low-density, 1 medium, 1 high-density archetype
    - No more than 2 consecutive high-density archetypes
    - At least 3 different archetype groups (hero/grid/split/timeline/table/cta) in any 10-slide deck
@@ -1378,17 +1402,19 @@ Before writing slides, create a Composition Plan that maps each outline slide to
    - **Ghost Deck test**: After creating the Composition Plan, read the planned action titles in sequence. They must tell a coherent argument. If the title sequence is a list of labels ("About", "Team", "Product"), rewrite as statements.
    - Cover archetype always first, CTA archetype always last
 
-5. **Assign background levels** to each slide:
+5. **Assign background levels** using distribution algorithm (replaces per-archetype table):
 
-   | Archetype | Default bg-level |
-   |-----------|-----------------|
-   | cover-hero | `--bg-accent` |
-   | section-divider | `--bg-alt` |
-   | stat-hero, quote-pull | `--bg-base` |
-   | icon-trio, bento-grid, two-col-text, card-mosaic, comparison-table | `--bg-base` or `--bg-alt` (alternate) |
-   | timeline-horizontal, timeline-zigzag, asymmetric-split, data-spotlight, profile-grid | `--bg-base` |
-   | cta-warm | `--bg-accent` |
-   | Pre-CTA slide (N-1 before cta-warm) | `--bg-alt` (bridge, if bg-accent is dark) |
+   ```
+   1. Slide 1 (cover) → bg-accent
+   2. Last slide (CTA/end) → bg-accent
+   3. Breathing/statement slides (quote-pull, stat-hero with "breathing" annotation) → bg-alt
+   4. Section dividers → bg-alt
+   5. Count remaining unassigned slides as R
+   6. Assign bg-alt to ceil(R * 0.2) additional slides, spaced evenly (every 4th-5th)
+   7. All remaining slides → bg-base
+
+   Validation: bg-base must be ≥50% of total. If not, convert the most recent bg-alt to bg-base.
+   ```
 
    No inline background colors — only `var(--bg-*)` tokens.
 
@@ -1451,6 +1477,12 @@ For each slide in the outline:
 7. **Apply Vertical Spacing (Principle 11)**: Content should feel vertically balanced. Use flexbox centering or generous padding. Content should not cram to the top leaving empty bottom space.
 
 8. **Apply Decorative Layer (Principle 6)**: Add the chosen decorative motifs to 30-50% of slides as CSS pseudo-elements or background layers. Vary placement (corner circles, bottom blobs, side lines) for visual interest.
+
+9. **Icon Container Selection (Principle 4)**: For each slide with icons:
+   a. Check the deck's icon container history so far
+   b. If all previous icons used the same shape → pick a different one
+   c. Match shape to archetype: stat-hero/cover-hero → icon-circle; card-mosaic/comparison-table/bento-grid → icon-rounded; icon-trio/timeline → icon-ghost OR icon-circle (alternate)
+   d. A deck MUST use at least 2 different icon container shapes (icon-circle, icon-rounded, icon-ghost).
 
 ### Step 6: Write Custom Components (REQUIRED)
 
