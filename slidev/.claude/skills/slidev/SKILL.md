@@ -1102,6 +1102,8 @@ Preset "<name>" not found. Tried:
 
 Parse the preset's YAML frontmatter and body:
 - Map frontmatter fields to Slidev headmatter (theme, colorSchema, fonts, aspectRatio, transition)
+- When resolving fonts from a preset: `fonts.body` (or legacy `fonts.serif`) maps to Slidev headmatter `fonts.serif` key — Slidev uses this key name internally for the second font slot regardless of whether the font is actually serif.
+- Validation: if the `fonts.body` value matches any font in the Serif Blacklist → replace with nearest sans-serif equivalent. Log: "Preset font [name] is serif — replaced with [replacement]."
 - Use `accentColor` for CSS variable `--slidev-theme-primary`
 - Use the aesthetic description to guide layout choices, background treatments, and styling decisions
 - If the preset contains a fenced `css` block, write it verbatim to `styles/index.css`
@@ -1138,11 +1140,19 @@ Generate a completely unique design. Apply `/frontend-design` aesthetic principl
 
 ### Font Selection
 - Choose fonts that are beautiful, unique, and interesting — unexpected, characterful choices that elevate the presentation
-- NEVER use generic fonts: Inter, Roboto, Arial, Open Sans, Lato, or system fonts
-- NEVER converge on common AI-favorite choices (e.g., Space Grotesk) across generations
-- Pair a distinctive display font with a refined body font from Google Fonts
-- Good pairs: Outfit + Source Serif 4, Syne + Literata, Cabinet Grotesk + Newsreader, Plus Jakarta Sans + Fraunces, Instrument Serif + DM Sans, Bricolage Grotesque + Lora, Familjen Grotesk + Crimson Pro
-- Vary between geometric/humanist sans + old-style/transitional serif
+- NEVER use generic fonts: Inter, Roboto, Arial, Open Sans, Space Grotesk, or system fonts
+- NEVER converge on common AI-favorite choices across generations
+- **CRITICAL: Never use a serif font.** All fonts must be sans-serif. Blacklisted serif families include (non-exhaustive): Source Serif 4, Newsreader, Merriweather, Playfair Display, DM Serif Display, Garamond, Georgia, Lora, Noto Serif, Crimson Text, EB Garamond, Libre Baskerville, Cormorant, Spectral, Bitter, Zilla Slab, Roboto Slab, Rockwell. If a preset specifies a serif font, replace it with the nearest sans-serif equivalent before generation.
+- Pair a distinctive sans-display font (geometric/condensed, for headings) with a sans-text font (humanist/rounded, for body) from Google Fonts. Contrast through character (geometric vs humanist, condensed vs proportional, angular vs rounded), not through serif/sans category split.
+- Good sans+sans pairs:
+  | Heading (display) | Body (text) | Contrast type |
+  |-------------------|-------------|---------------|
+  | Outfit | DM Sans | Geometric vs Humanist |
+  | Manrope | Source Sans Pro | Semi-rounded vs Neutral |
+  | Plus Jakarta Sans | Nunito | Modern geometric vs Rounded friendly |
+  | Barlow | Lato | Slightly condensed vs Classic humanist |
+  | Sora | IBM Plex Sans | Technical vs Corporate humanist |
+  | Urbanist | Noto Sans | Modern geometric vs Universal neutral |
 - Monospace: JetBrains Mono, Fira Code, IBM Plex Mono, Source Code Pro
 
 ### Font Number Blacklist
@@ -1151,7 +1161,7 @@ Generate a completely unique design. Apply `/frontend-design` aesthetic principl
 - Before selecting a heading font, check if the outline contains 3+ slides with prominent numbers (budgets, metrics, percentages). If yes, verify the chosen font is NOT on the blacklist. For fonts not on the blacklist: if font's bold-regular weight delta < 300 = WARNING.
 
 ### Strict 2-Font Rule
-- **Maximum 2 visual font identities in the entire presentation.** Heading font (sans) for: headings, numbers, labels, hero text. Body font (serif) for: descriptions, bullets, supporting text.
+- **Maximum 2 visual font identities in the entire presentation.** Heading font (sans-display) for: headings, numbers, labels, hero text. Body font (sans-text) for: descriptions, bullets, supporting text.
 - Labels differ from headings only via `text-transform`, `letter-spacing`, `font-size` — same font-family.
 - Hero numbers use heading font, just larger. Not a separate visual style.
 - Monospace fonts used exclusively in code blocks (`<code>`, `<pre>`) do not count as a visual font identity — they serve a functional role.
@@ -1232,12 +1242,25 @@ Rules about `@slidev/theme-default` CSS specificity (Rules 9, 10, 24, 29, 32) be
 Apply the Design Thinking section above (for Unique/Custom Style modes) or parse the preset (for Preset mode). Based on mode, determine:
 - `theme`: Slidev theme (usually `default`)
 - `colorSchema`: `light` or `dark`
-- `fonts`: `{ sans, serif, mono }` from Google Fonts
+- `fonts`: `{ sans, body, mono }` from Google Fonts (all must be sans-serif)
 - `palette`: CSS variables for colors
 - `transition`: default slide transition
 - `aspectRatio`: usually `16/9`
 - `backgroundCSS`: CSS for backgrounds/textures
 - `aesthetic`: free-text description for guiding per-slide decisions
+
+### Step 1.5: Theme Resolution
+
+1. Check if the resolved preset has a co-located theme directory (`<preset-name>-theme/` sibling to the .preset.md file)
+2. If theme directory exists:
+   a. Copy it to the output presentation directory as `theme/`
+   b. Set slides.md frontmatter: `theme: ./theme`
+   c. Skip `styles/index.css` generation (styles live in theme/)
+   d. Skip `components/Icon.vue` generation IF theme provides it
+3. If theme directory does not exist:
+   a. Set slides.md frontmatter: `theme: default`
+   b. Generate `styles/index.css` as before (current behavior)
+   c. Generate `components/Icon.vue` as before
 
 ### Step 2: Scaffold package.json
 
