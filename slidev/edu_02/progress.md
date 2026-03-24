@@ -3,14 +3,16 @@
 | Цикл | Тема | Оценка | AI-детекция | Лучший? | Git тег | PDF |
 |------|------|--------|-------------|---------|---------|-----|
 | 1 | Логистика 4.0 | 4.2/10 | 31/50 | — | learn-cycle-1-score-4 | edu_02/learn_1/slides.pdf |
-| 2 | AI в образовании | 8.0/10 | — | ★ | learn-cycle-2-score-8 | edu_02/learn_2/slides.pdf |
+| 2 | AI в образовании | 5.8/10 | 31/50 | ✓ лучший | learn-cycle-2-score-5 | edu_02/learn_2/slides.pdf |
+| 3 | Телемедицина | 6.2/10 | 6/10 | ✓ лучший | learn-cycle-3-score-6 | edu_02/learn_3/slides.pdf |
 
-## Лучший цикл: 2 (8.0/10)
-Откат к лучшему: `git checkout learn-cycle-2-score-8 -- .claude/skills/slidev/`
+## Лучший цикл: 3 (6.2/10)
+Откат к лучшему: `git checkout learn-cycle-3-score-6 -- .claude/skills/slidev/`
 
 ## Ключевые изменения по циклам
 - Цикл 1: +6 правил (bg-accent fallback, section bg-accent на light, counting titles FAIL, eyebrow 30%, decorative opacity 3x, icon diversity)
-- Цикл 2: Все правила цикла 1 применены корректно. +icon diversity (circle/rounded/ghost), 2x2 timeline grid вместо 3x2, stat-hero с текстовым hero ("потерянный семестр"), cta-variant-left на финальном слайде.
+- Цикл 2: +4 правила (icon bg-level adaptation, visual structure dedup, section differentiation, stat-hero variation)
+- Цикл 3: +4 правила (adjacent fingerprint check, section decorative weight, icon semantic purpose, bg-alt decorative opacity 1.5x)
 
 ## Как откатиться
 1. Посмотри PDF лучшего цикла: откройте файл из колонки PDF
