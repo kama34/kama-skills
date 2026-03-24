@@ -464,7 +464,31 @@ OUTPUT FORMAT — write to <edu_dir>/learn_<i>/critique.md:
 - **Weakest axis**: [which scoring axis scored lowest on average]
 ```
 
-**L-3c2: A/B on weakest slides** — After critique, if any slide scores < 6, run the A/B Testing Subroutine (`references/ab-testing.md`) on the 2 weakest slides. Include the variant comparison in `critique.md` under a "## A/B Alternatives" section showing what could have been done differently. This provides concrete before/after examples for the improvement spec.
+**L-3c2: INTERIM REPORT — Critique results** — Print to the user IMMEDIATELY after critique completes:
+```
+━━━ Learn Iteration <i>/<N> — CRITIQUE REPORT ━━━
+
+📊 Score: X/10
+🔍 AI Detection Score: XX/50 (>16 = still looks AI)
+
+CRITICAL issues found: [count]
+  • [issue 1 title] — [frequency] slides affected
+  • [issue 2 title] — ...
+
+MAJOR issues found: [count]
+  • [issue 1 title] — [frequency] slides affected
+  • ...
+
+What worked well:
+  ✓ [item 1]
+  ✓ [item 2]
+
+Full critique: <edu_dir>/learn_<i>/critique.md
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+Wait for the user to read before proceeding to fixes.
+
+**L-3c3: A/B on weakest slides** — After critique, if any slide scores < 6, run the A/B Testing Subroutine (`references/ab-testing.md`) on the 2 weakest slides. Include the variant comparison in `critique.md` under a "## A/B Alternatives" section showing what could have been done differently. This provides concrete before/after examples for the improvement spec.
 
 **L-3d: Generate improvement spec** — Based on the critique, create `<edu_dir>/learn_<i>/improvements.md`:
 
@@ -491,6 +515,23 @@ OUTPUT FORMAT — write to <edu_dir>/learn_<i>/critique.md:
 - Before applying, verify the change doesn't contradict an existing rule
 - If a contradiction is detected, note it in improvements.md and skip that change
 - Use the Edit tool for surgical modifications
+
+**L-3e2: INTERIM REPORT — Applied fixes** — Print to the user IMMEDIATELY after applying improvements:
+```
+━━━ Learn Iteration <i>/<N> — FIXES APPLIED ━━━
+
+Applied [count] changes:
+  1. [change title] → [file]:[section]
+     Before: "[excerpt]"
+     After:  "[new text]"
+  2. ...
+
+Deferred [count] minor issues:
+  • [issue] — reason: [why deferred]
+
+Full details: <edu_dir>/learn_<i>/improvements.md
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
 After applying improvements, write the iteration's design pattern to Design Memory using the overall score from `critique.md`. Follow the Write Protocol in `references/design-memory.md`. Only write if score >= 8 (type "high") or score < 6 (type "low"). Skip write for scores 6-8 (not distinctive enough to learn from).
 
