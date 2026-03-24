@@ -840,7 +840,7 @@ What makes a presentation look AI-generated — avoid ALL of these:
 6. **"Thank You" ending** — last slide must be CTA with specific action, not gratitude
 7. **Recommendation at the end** — main conclusion by slide 2-3, not buried in final third
 8. **Body text centered on multiple lines** — multi-line body MUST be left-aligned
-9. **Font below 20px (1.25rem) for body** — audience can't read small text on projected slides
+9. **Font below 40px (2.5rem) for body** — audience can't read small text on projected slides
 10. **>40 words on a content slide** — that's a document, not a slide
 11. **>15% of text bold** — over-emphasis kills emphasis
 12. **Bar charts not starting at zero** — truncated Y-axis is a visual lie
