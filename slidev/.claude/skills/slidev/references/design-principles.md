@@ -110,18 +110,18 @@ On non-breathing, non-hero slides, place the dominant element at a thirds-grid i
 Typography creates visual hierarchy. Size contrast is the #1 tool for directing attention.
 
 **Rule**: Each presentation must use at least 3 distinct type scales:
-- **Hero scale** (4-8em): for key numbers, dramatic statements, slide titles on statement/fact slides
-- **Heading scale** (1.8-2.5em): for regular slide titles
-- **Body scale** (0.85-1.1em): for descriptions, bullets, labels
+- **Hero scale** (8-16rem): for key numbers, dramatic statements, slide titles on statement/fact slides
+- **Heading scale** (4.4-5rem): for regular slide titles
+- **Body scale** (2.5-3rem): for descriptions, bullets, labels
 
 **Implementation**:
 - Key metrics ($1.5M, 45 min, +20%) → hero scale, accent color, bold weight
-- On fact/statement slides, the main text should be 3-5em minimum
+- On fact/statement slides, the main text should be 6-10rem minimum
 - Never make everything the same size — if everything is emphasized, nothing is
 - Pair font weights dramatically: 700 heading next to 300 body text
 - Both heading and body fonts MUST be sans-serif. Contrast through character (geometric vs humanist, condensed vs proportional, angular vs rounded), not through serif/sans category split.
 
-**When a slide has 3-4 key metrics**: DON'T put them all in equal-sized cards at the same scale. Pick the MOST impactful metric and make it hero-sized (centered, 3-6em), then place the remaining metrics below in a row of smaller supporting cards. If ALL metrics are equally important, use a 2x2 grid with each number at 2.5-3em minimum — never smaller than the heading text.
+**When a slide has 3-4 key metrics**: DON'T put them all in equal-sized cards at the same scale. Pick the MOST impactful metric and make it hero-sized (centered, 6-12rem), then place the remaining metrics below in a row of smaller supporting cards. If ALL metrics are equally important, use a 2x2 grid with each number at 5-6rem minimum — never smaller than the heading text.
 
 **Non-duplication rule for consecutive slides:**
 If a fact/statement slide immediately follows a data/traction slide, the two slides MUST NOT feature the same headline metric. Either:
