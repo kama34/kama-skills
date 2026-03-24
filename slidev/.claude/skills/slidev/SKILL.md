@@ -1549,7 +1549,7 @@ Before writing slides, create a Composition Plan that maps each outline slide to
    3. Breathing/statement slides (quote-pull, stat-hero with "breathing" annotation) → bg-alt
    4. Section dividers → bg-alt
    5. Count remaining unassigned slides as R
-   6. Assign bg-alt to floor(R * 0.15) additional slides, spaced every 5th-6th
+   6. Assign bg-alt to floor(R * 0.25) additional slides, spaced every 3rd-4th content slide. bg-alt MUST appear on at least 25% of non-cover/CTA slides (minimum 2 in a 10-slide deck, minimum 3 in a 12+ slide deck)
    7. All remaining slides → bg-base
 
    Validation: bg-base must be ≥55% of total. If not, convert bg-alt to bg-base starting from the last assigned bg-alt slide.
@@ -1617,6 +1617,8 @@ For each slide in the outline:
 
    **CRITICAL — Layout Diversity (Principle 2)**: Do NOT repeat the same visual structure (heading position + content arrangement) on more than 2 consecutive slides. Rotate between: hero-left/content-right, cards grid, timeline/stepper, centered hero, asymmetric split, full-bleed visual, comparison table, quote/callout. Track your layout choices — if you used "title top-left + 2-column grid" on slide 3, use something different on slide 4.
 
+   **STRUCTURAL BREAK RULE**: Track the heading position pattern across consecutive content slides. After 2 content slides with "label-top-left + heading-below + grid/cards-below" structure, the 3rd MUST break the pattern using one of: (a) centered layout — heading centered at 3rem+, no label, content centered below (stat-hero, section-divider), (b) visual-dominant — a large metric or visual element occupies the left 40%, text is secondary on the right, (c) heading-only — no eyebrow label above the heading, heading speaks for itself. This rule applies regardless of archetype names — what matters is the VISUAL structure as rendered, not the archetype label.
+
 2. **Apply animations**:
    - Bullet lists → wrap in `<v-clicks>`
    - Code blocks → use step highlighting `{1|2-3|5}`
@@ -1632,7 +1634,7 @@ For each slide in the outline:
 
 7. **Apply Vertical Spacing (Principle 11)**: Content should feel vertically balanced. Use flexbox centering or generous padding. Content should not cram to the top leaving empty bottom space.
 
-8. **Apply Decorative Layer (Principle 6)**: Add the chosen decorative motifs to 30-50% of slides as CSS pseudo-elements or background layers. Vary placement (corner circles, bottom blobs, side lines) for visual interest.
+8. **Apply Decorative Layer (Principle 6)**: Add the chosen decorative motifs to 30-50% of slides as REAL HTML div elements with inline styles inside the background layer div (z-index:0). **CRITICAL: CSS pseudo-elements (::after, ::before) via class names DO NOT render reliably in Slidev's headless PNG export.** Instead, create actual positioned div elements within the background div. Example dot grid: `<div style="position:absolute;top:0;right:0;width:280px;height:280px;background-image:radial-gradient(circle,rgba(var(--accent-rgb),0.18) 1.2px,transparent 1.2px);background-size:18px 18px;pointer-events:none;"></div>`. Example radial glow: `<div style="position:absolute;bottom:-60px;right:-60px;width:400px;height:400px;background:radial-gradient(circle,rgba(var(--accent-rgb),0.10),transparent 65%);pointer-events:none;"></div>`. Example arc: `<div style="position:absolute;top:-100px;left:-100px;width:300px;height:300px;border:2.5px solid rgba(var(--accent-rgb),0.18);border-radius:50%;pointer-events:none;"></div>`. Rotate motif types across slides — no two adjacent slides use the same motif.
 
 9. **Icon Container Selection (Principle 4)**: For each slide with icons:
    a. Check the deck's icon container history so far
