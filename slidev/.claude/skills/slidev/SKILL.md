@@ -249,7 +249,7 @@ Procedure:
    - When adding slides: maintain the `---` separator convention, classify the new slide's content type, select an archetype from `references/composition-archetypes.md` that differs from neighboring slides, and use the archetype's HTML skeleton with `layout: none`
    - When changing composition (user asks to change an archetype): look up the requested archetype in `references/composition-archetypes.md`, replace the slide's HTML with the new archetype's skeleton, preserve content but reflow it into the new structure
    - When changing design (colors, fonts, backgrounds), update all relevant locations: CSS variables, headmatter fonts, per-slide styles. Respect shape vocabulary from preset.
-   - When editing content: verify word count ≤40, font size ≥1.25rem for body, ≥2.2rem for headings
+   - When editing content: verify word count ≤40, font size ≥2.5rem for body, ≥4.4rem for headings
    - When changing images: verify visual style consistency with existing images (same color temperature, contrast)
    - When editing layout: verify whitespace ≥30%, padding ≥44px, gap ≥16px
 5. **Verify consistency** after edits:
@@ -409,7 +409,7 @@ ANALYSIS PROCESS:
    - "Thank You" ending instead of CTA
    - Recommendation buried after slide 5
    - Body text centered on multi-line content
-   - Font sizes below 1.25rem for body, below 2.2rem for headings
+   - Font sizes below 2.5rem for body, below 4.4rem for headings
    - >40 words on a content slide
    - Bold on >15% of text
    - Bar charts not starting at zero
@@ -706,7 +706,7 @@ Triggered by `--deep_learn=N` (with or without `--preset <name>`). Creates/refin
    - "Thank You" ending instead of CTA
    - Recommendation buried after slide 5
    - Body text centered on multi-line content
-   - Font sizes below 1.25rem for body, below 2.2rem for headings
+   - Font sizes below 2.5rem for body, below 4.4rem for headings
    - >40 words on a content slide
    - Bold on >15% of text
    - Bar charts not starting at zero
@@ -821,7 +821,7 @@ A reusable subroutine for visual quality assurance. Input: `<dir>` (project dire
 **QA-0b: Design Principles compliance** — Review the ENTIRE slides.md against `references/design-principles.md`:
 - **Principle 1 (Rhythm)**: Count consecutive dense content slides. If 3+ `default` layouts in a row without a breathing slide (`section`/`statement`/`fact`), insert one.
 - **Principle 2 (Layout diversity)**: Check that consecutive slides have different visual structures. If 2+ slides share the same pattern (e.g., "label + line + 2-column grid"), restructure one.
-- **Principle 3 (Typography)**: Verify at least 3 type scales exist. Key metrics should be hero-sized (4-8em). If all headings are the same size, fix it. **CRITICAL**: Measure statement/fact/section slide main text against 3em minimum — if below, flag as critical and fix immediately.
+- **Principle 3 (Typography)**: Verify at least 3 type scales exist. Key metrics should be hero-sized (8-16rem). If all headings are the same size, fix it. **CRITICAL**: Measure statement/fact/section slide main text against 6rem minimum — if below, flag as critical and fix immediately.
 - **Principle 4 (Icons)**: Search for emoji characters (📱💳⭐🧠📊🚗 etc.). If found, replace with `<Icon>` component. Ensure `components/Icon.vue` exists.
 - **Principle 5 (Cards)**: Check if all cards use identical styling. If yes, differentiate with at least 2 card styles.
 - **Principle 7 (Visual arc)**: Confirm the climax slide (Ask/CTA) has distinct visual treatment — different background, larger type, or unique color.
@@ -832,7 +832,7 @@ A reusable subroutine for visual quality assurance. Input: `<dir>` (project dire
 - **Principle 11 (Spacing)**: Check content vertical distribution — should not be crammed to top.
 - **Principle 12 (Accent hierarchy)**: Verify accent color is used at varying intensities, not full saturation everywhere.
 - **HTML nesting depth (Rule 17)**: Scan for HTML nesting deeper than 3 levels (3+ opening `<div>` tags before content). Slidev will render these as raw HTML code. Flatten immediately.
-- **Font size minimum (Rule 20)**: Check all font sizes. Body text below `1.25rem` (20px) = CRITICAL — raise to minimum. Headings below `2.2rem` = CRITICAL. Use `text-xs` (12px) ONLY for footnotes/source attributions. If raising font size causes content overflow, the slide has too much content — split it.
+- **Font size minimum (Rule 20) — BLOCKING**: Check all font sizes. Body text below `2.5rem` = CRITICAL — raise to minimum. Headings below `4.4rem` = CRITICAL. Labels/eyebrows below `1.3rem` = CRITICAL. If ANY violation → STOP pipeline. Auto-fix: raise to minimum. If content overflows → shorten text first, then move to speaker notes, then split slide (per Font Size Exemption). NEVER reduce font below minimum.
 - **Content density (Rule 22)**: Count visual blocks per slide. If any slide has 6+ distinct elements (cards, tables, charts, lists), split or remove secondary content.
 - **Breathing slides (Visual Rhythm Override)**: Count consecutive dense `default` layout slides. If 4+ in a row, convert 1-2 to statement/fact layout.
 - **Background image overlays (Rule P-5)**: If cover/section slides have background images, verify overlay uses gradient (not uniform opacity) with minimum 0.85 in text zones.
@@ -846,9 +846,10 @@ A reusable subroutine for visual quality assurance. Input: `<dir>` (project dire
 - [ ] **Rule of Thirds heuristic:** On non-breathing, non-cover, non-CTA slides: if heading has `text-align:center` AND no `grid-template-columns` with unequal fractions AND no asymmetric width splits = WARNING "dead center layout — consider Rule of Thirds"
 - [ ] **Pie chart segment count:** If slides.md contains pie/donut chart markup with >5 segments/items = FAIL "pie chart exceeds 5 segments — use bar chart instead"
 - [ ] **Caption proximity heuristic:** Within grid/flex containers, check that caption/label elements are in the same or immediately adjacent cell as their referent element. If separated by >1 cell = WARNING "Gestalt proximity violation"
-- [ ] **CSS Variables enforcement:** Parse CSS variable source (`styles/index.css` or `theme/styles/index.css`). Scan inline styles for hardcoded hex values matching defined CSS variables. Auto-replace exact matches with `var(--name)`. Warn if >30% hardcoded. QA-only warning.
-- [ ] **Body font size minimum:** Find all `font-size:` in inline styles. Labels/eyebrows (has `text-transform:uppercase` or `letter-spacing:0.1em+` or inside pill) → min 0.65rem OK. Body text → min 1.25rem. Auto-fix: raise to 1.25rem. **Overflow caveat (Rule 20):** if overflow → flag MAJOR "split slide" instead.
-- [ ] **bg-level distribution** (non-blocking): Count slides per bg-level. Warn if bg-base < 50%, bg-alt > 40%, or strict alternating across 4+ slides. No auto-fix — logged to QA-11 report.
+- [ ] **CSS Variables enforcement (BLOCKING):** Scan all inline style="..." for hardcoded hex (#XXXXXX, #XXX). Exclude: inside url(), CSS comments. If ANY hardcoded hex in color/background/border-color → STOP. Auto-fix: replace with matching var(--name). If no matching variable → create one in styles/index.css, then use it. Zero tolerance.
+- [ ] **Body font size minimum (BLOCKING):** Find all `font-size:` in inline styles. Labels/eyebrows (text-transform:uppercase or letter-spacing:0.1em+ or inside pill) → min 1.3rem. Pill badge → min 1.4rem. Body text → min 2.5rem. Headings → min 4.4rem. If ANY violation → STOP. Auto-fix: raise to minimum. If overflow → shorten text first → speaker notes → split (per Font Size Exemption). NEVER shrink font.
+- [ ] **bg-level distribution** (non-blocking): Count slides per bg-level. Warn if bg-base < 55%, bg-alt > 35%, or strict alternating across 4+ slides. No auto-fix — logged to QA-10 report.
+- [ ] **Action titles check** (WARNING): For each h1/h2 slide title: if 1-2 words → WARNING "topic label". If noun phrase without verb/number/comparison → WARNING "weak title". Not auto-fixable. Logged to QA-10 report. Cover and CTA slides exempt (Rule 30).
 - [ ] **Icon diversity:** Collect all icon containers across deck. If 100% identical shape → warn "All icon containers identical. Use at least 2 shapes (icon-circle, icon-rounded, icon-ghost)."
 
 Fix any issues found before proceeding to visual review.
@@ -864,8 +865,8 @@ Fix any issues found before proceeding to visual review.
 - [ ] Text lines per slide ≤6
 
 **Typography:**
-- [ ] Body text ≥1.25rem (CRITICAL if smaller) (redundant with QA-0b)
-- [ ] Headings ≥2.2rem (CRITICAL if smaller)
+- [ ] Body text ≥2.5rem (CRITICAL if smaller) (redundant with QA-0b BLOCKING check)
+- [ ] Headings ≥4.4rem (CRITICAL if smaller)
 - [ ] Line-height 1.3–1.45 for body text
 - [ ] Bold usage ≤15% of total text
 - [ ] No centered multi-line body text (CRITICAL) (redundant with QA-0a)
@@ -1083,6 +1084,14 @@ Extract the outline: a structured list of slides with titles and content points.
 ## Hard Constraint
 
 **The generated presentation MUST have exactly the same number of slides, in exactly the same order, with exactly the same content as the outline.** Never add, remove, merge, or reorder slides. The outline is the contract.
+
+### Font Size Exemption
+
+When text at the required minimum font size overflows the slide:
+1. **Shorten text** to the core message (rephrasing is allowed)
+2. **Move secondary details** to speaker notes
+3. **Split slide** into two if core message cannot be shortened
+Priority: shorten first → speaker notes second → split last. **NEVER reduce font below the minimum.**
 
 ### Visual Rhythm Override
 
@@ -1315,7 +1324,7 @@ Customize shortcuts based on the design aesthetic.
 ### Step 4: Write styles/index.css
 
 Include:
-- CSS variable definitions (palette) — **MUST include 3-level accent hierarchy** (Principle 12): `--color-accent` (full), `--color-accent-dim` (40-60% opacity), `--color-accent-bg` (8-15% opacity)
+- CSS variable definitions (palette) — **MUST include 3-level accent hierarchy** (Principle 12): `--color-accent` (full), `--color-accent-dim` (40-60% opacity), `--color-accent-bg` (8-15% opacity). **MUST also include decomposed RGB variables** for rgba() composability: `--accent-rgb: R, G, B;` (from --color-accent), `--bg-base-rgb: R, G, B;` (from --bg-base), `--text-rgb: R, G, B;` (from --color-text)
 - Background textures/gradients
 - Font overrides if needed
 - Custom utility classes
@@ -1382,10 +1391,16 @@ Before writing slides, create a Composition Plan that maps each outline slide to
    f. Select the most suitable remaining candidate
    g. **Fallback**: if empty after filtering → relax entropy window to 2 and retry. If still empty → ignore density filter AND entropy window, select the candidate with the lowest recent-use count.
 
-4. **Cost-of-Inaction Check** — After classifying content types, if presentation type is pitch/investor/sales/proposal/fundraising/business case:
+4. **Cost-of-Inaction Check** — After classifying content types, check if COI applies:
+   - **Explicit types:** pitch, investor, sales, proposal, fundraising, business case, report, quarterly, annual, workshop, training, educational
+   - **Keyword detection:** if the full outline text (titles + bullet content) contains 3+ of: "рост", "выручка", "инвестор", "revenue", "ROI", "клиенты", "рынок", "прибыль", "метрики", "KPI", "конкуренты", "growth", "market", "profit", "traction", "отчёт", "результаты" → treat as business
    - Check if any slide addresses cost of inaction (keywords: "risk of inaction", "what happens if", "without this", "status quo cost", "стоимость бездействия", "если ничего не делать", "текущие потери")
    - If no such slide → insert a cost-of-inaction slide after the problem/pain slide (or after slide 2 if no pain slide)
-   - Title pattern: "Стоимость бездействия: [quantified impact]"
+   - **COI framing by type** (language matches slide content):
+     - pitch/investor/fundraising: "Что потеряет инвестор, не присоединившись сейчас" / "What investors lose by waiting"
+     - report/quarterly/annual: "Что произойдёт, если не масштабировать текущие результаты" / "The cost of not scaling these results"
+     - sales/proposal: "Сколько стоит каждый месяц без этого решения" / "Every month without this costs [X]"
+     - workshop/training/educational: "Что произойдёт, если участники не применят знания" / "What happens if you don't apply this"
    - Use numbers from outline if available; otherwise directional language. Never hallucinate company-specific statistics.
    - Log: "Added cost-of-inaction slide not present in original outline."
    - **Hard Constraint exemption:** cost-of-inaction auto-insert is an explicit exception to the "same number of slides as outline" constraint.
@@ -1406,7 +1421,14 @@ Before writing slides, create a Composition Plan that maps each outline slide to
    - `profile-grid` appears at most once per deck
    - `icon-trio` appears at most once per deck (same as `profile-grid`)
    - For business presentations (KP, pitch, report): main conclusion must be surfaced as action title by slide 2-3. If outline buries it after slide 5, formulate action titles that bring the conclusion forward.
-   - **Ghost Deck test**: After creating the Composition Plan, read the planned action titles in sequence. They must tell a coherent argument. If the title sequence is a list of labels ("About", "Team", "Product"), rewrite as statements.
+   - **Ghost Deck test — ENHANCED**: After creating the Composition Plan, read all planned action titles in sequence.
+     **FAIL conditions** (any one = rewrite the title immediately):
+     - Title is 1-2 words ("Продукт", "Команда", "Рынок") → FAIL
+     - Title is a noun phrase without verb or claim ("Финансовый прогноз", "Конкурентный анализ") → FAIL
+     - Title could apply to any company in the sector without change → FAIL
+     - Title does not contain a number, comparison, or outcome → WEAK (rewrite recommended)
+     **GOOD title patterns:** specific number ("Выручка 72 млн ₽ к 2027 году"), claim ("Enterprise растёт в 2,5 раза быстрее рынка"), outcome ("Каждый рубль инвестиций с конкретным возвратом"), question ("Готовы к партнёрству?"), verb ("Подключите первый объект бесплатно").
+     Cover slide (slide 1) and CTA slide (last slide) are exempt (aligns with Rule 30).
    - Cover archetype always first, CTA archetype always last
 
 5. **Assign background levels** using distribution algorithm (replaces per-archetype table):
@@ -1417,10 +1439,10 @@ Before writing slides, create a Composition Plan that maps each outline slide to
    3. Breathing/statement slides (quote-pull, stat-hero with "breathing" annotation) → bg-alt
    4. Section dividers → bg-alt
    5. Count remaining unassigned slides as R
-   6. Assign bg-alt to ceil(R * 0.2) additional slides, spaced evenly (every 4th-5th)
+   6. Assign bg-alt to floor(R * 0.15) additional slides, spaced every 5th-6th
    7. All remaining slides → bg-base
 
-   Validation: bg-base must be ≥50% of total. If not, convert the most recent bg-alt to bg-base.
+   Validation: bg-base must be ≥55% of total. If not, convert bg-alt to bg-base starting from the last assigned bg-alt slide.
    ```
 
    No inline background colors — only `var(--bg-*)` tokens.
@@ -1437,6 +1459,24 @@ Before writing slides, create a Composition Plan that maps each outline slide to
 This plan is consumed by Step 5: for each slide, use the archetype's HTML skeleton from `references/composition-archetypes.md` and fill `{{SLOT}}` markers with content from the outline. Apply the preset's shape vocabulary when rendering elements.
 
 ### Step 5: Write slides.md
+
+**FONT SIZE FLOOR** — NEVER set any inline font-size below these minimums:
+- Hero/stat numbers: ≥8rem (was 4em)
+- Headings (h1, h2): ≥4.4rem (was 2.2rem)
+- Body text (descriptions, paragraphs, card content): ≥2.5rem (was 1.25rem)
+- Labels/eyebrows (uppercase, pill text): ≥1.3rem (was 0.65rem)
+- Pill badge text: ≥1.4rem (was 0.7rem)
+- **High-density exception:** For comparison-table, data-spotlight, bento-grid table cells → label minimum (1.3rem) is acceptable instead of body minimum.
+If content doesn't fit at these sizes — SHORTEN THE TEXT, never shrink the font. Maximum words per card: 15. Maximum words per bullet: 10.
+
+**CSS VARIABLE ENFORCEMENT** — When writing inline styles in slides.md:
+- NEVER hardcode hex color values (#XXXXXX or #XXX). Always use var(--name).
+- Required COLOR variables: var(--color-accent), var(--color-text), var(--color-muted), var(--bg-base), var(--bg-alt), var(--bg-accent), var(--color-surface), var(--color-surface-border), var(--color-accent-dim), var(--color-accent-bg).
+- Required FONT variables: var(--font-heading), var(--font-body).
+- For rgba: use var(--accent-rgb) → rgba(var(--accent-rgb), 0.15). Also use --bg-base-rgb, --text-rgb.
+- rgba() with numeric literals like rgba(255,255,255,0.1) is ALSO a violation if it corresponds to a defined color. Exception: generic transparency overlays rgba(255,255,255,...) and rgba(0,0,0,...) NOT tied to the palette are acceptable.
+- The ONLY acceptable hardcoded values: pixel sizes, rem values, percentages.
+- Hardcoded hex in color/background/border-color/font-family = VIOLATION.
 
 Structure:
 1. **Headmatter** — theme, title, fonts, colorSchema, transition, aspectRatio, etc.
@@ -1577,7 +1617,7 @@ To run:
 
     **Icon centering**: When an `<Icon>` must appear centered (e.g., in a card header or feature cell), always wrap it in an explicit flex div: `<div style="display:flex;justify-content:center;align-items:center;margin-bottom:8px;"><Icon name="..." /></div>`. Do NOT rely on the card's parent flex/grid container to center an inline SVG element — `<Icon>` renders as `display:inline` by default and will left-align within block containers without an explicit centering wrapper.
 19. **CRITICAL — HTML nesting depth limit**: Keep HTML nesting to maximum 3 levels deep inside slides. Slidev's markdown parser fails to render deeply nested HTML — it outputs raw source code instead of rendered content. Flatten structures: instead of `<div><div><div><table>...</table></div></div></div>`, use `<table>` directly at the top level of the slide. Use UnoCSS utility classes on elements themselves instead of wrapping in container divs. When a complex layout is needed, prefer CSS Grid/Flexbox on a single wrapper div rather than nesting multiple wrappers. **Test pattern**: if you count more than 3 opening `<div>` tags before reaching the actual content element, you need to flatten.
-20. **CRITICAL — Font size minimums**: Body text minimum `1.25rem` (20px). Headings minimum `2.2rem` (35px). Labels/captions minimum `0.85rem` (13.6px). Hero numbers minimum `4rem` (64px). Footnotes (only exception) minimum `0.75rem` (12px). Use `text-xs` (12px) ONLY for footnotes and source attributions — never for audience-readable content. If content doesn't fit at 1.25rem, the slide has too much content — split it or move details to speaker notes.
+20. **CRITICAL — Font size minimums**: Body text minimum `2.5rem` (40px). Headings minimum `4.4rem` (70px). Labels/eyebrows minimum `1.3rem` (21px). Pill badge minimum `1.4rem` (22px). Hero numbers minimum `8rem` (128px). High-density archetype cells (comparison-table, data-spotlight) may use label minimum (1.3rem). If content doesn't fit — shorten text first, move to speaker notes second, split slide last. NEVER reduce font below minimum.
 21. **Maximum items per action/list slide**: A single content slide MUST NOT exceed 4 distinct items or bullet points with descriptions. If an outline section has 5+ items, split across 2 slides with a clear part indicator, or reduce to the 3 most critical items and place others in speaker notes. Action plan slides with 5+ steps are particularly prone to density failure.
 22. **Maximum visual blocks per slide**: A content slide should contain at most 4-5 distinct visual elements (cards, chart sections, tables, list groups). If the outline demands more content on one slide, SPLIT it into 2 slides or PRIORITIZE the 3-4 most impactful elements and move details to presenter notes. Exception: a single data table counts as one visual block even if it has many rows.
 23. **CRITICAL — Per-slide CSS reliability hierarchy**: When styling slides with custom HTML layouts, follow this reliability order from most to least reliable: (1) Per-slide `<style>` with a SINGLE root wrapper div containing all content — works reliably when all slide content is inside one top-level element. (2) 100% inline styles on every element — most reliable for complex multi-column or deeply nested layouts. (3) Never rely on per-slide CSS classes applying to elements more than 2 nesting levels deep. If a slide requires 3+ levels of nesting, use 100% inline styles instead of CSS class names. Note: this reliability constraint is separate from the nesting depth rendering limit (Rule 19) — both apply simultaneously.
