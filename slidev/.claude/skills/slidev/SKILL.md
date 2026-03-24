@@ -500,7 +500,53 @@ AI-детекция: XX/50 (>16 = всё ещё выглядит как AI)
 
 **L-3c3: A/B on weakest slides** — After critique, if any slide scores < 6, run the A/B Testing Subroutine (`references/ab-testing.md`) on the 2 weakest slides. Include the variant comparison in `critique.md` under a "## A/B Alternatives" section showing what could have been done differently. This provides concrete before/after examples for the improvement spec.
 
-**L-3d: Generate improvement spec** — Based on the critique, create `<edu_dir>/learn_<i>/improvements.md`:
+**L-3c4: Фаза исследования и продумывания** — Для каждой КРИТИЧЕСКОЙ и СЕРЬЁЗНОЙ проблемы из critique.md запустить многоступенчатый анализ:
+
+1. **Декомпозиция проблемы** — разбить на корневую причину и последствия. Спросить "почему?" 3 раза (метод 5 Why). Пример: "текст не помещается" → "потому что font-size слишком большой" → "потому что правило не учитывает плотность контента" → корень: "нет связи между количеством контента и допустимым font-size"
+
+2. **Поиск решений в research** — перечитать соответствующие секции из docs/research/:
+   - Если проблема с типографикой → beautiful-presentations-guide секции 2-3
+   - Если проблема с layout → ugly-presentations-anti-patterns секции 6-7
+   - Если проблема с AI-похожестью → ai-presentation-detection-guide часть 5 (Fix Playbook)
+   - Если не нашёл → запустить веб-поиск (WebSearch) по запросу "presentation design [проблема] best practice"
+
+3. **Веб-поиск** (опционально, для сложных проблем) — если research-документы не содержат решения:
+   - Искать: "[проблема] presentation design solution site:medium.com OR site:uxdesign.cc OR site:smashingmagazine.com"
+   - Искать: "slidev [проблема] fix" для Slidev-специфичных багов
+   - Сохранить найденное в `<edu_dir>/learn_<i>/research-notes.md`
+
+4. **Генерация 2-3 вариантов решения** — для каждой проблемы предложить минимум 2 подхода с trade-offs. Выбрать лучший на основе:
+   - Минимальность изменений (YAGNI)
+   - Совместимость с другими правилами
+   - Подтверждение из research
+
+5. **Записать план исправлений** в `<edu_dir>/learn_<i>/fix-plan.md`:
+```markdown
+# План исправлений — Итерация <i>
+
+## Проблема 1: [название]
+### Корневая причина (5 Why)
+1. [почему 1]
+2. [почему 2]
+3. [корень]
+
+### Источник решения
+- [research документ] секция [X] / [URL из веб-поиска]
+
+### Варианты
+A) [описание] — плюсы: ... минусы: ...
+B) [описание] — плюсы: ... минусы: ...
+
+### Выбранный вариант: [A/B] — причина: [...]
+
+### Конкретные правки
+- Файл: [путь]
+- Секция: [название]
+- Было: "[фрагмент]"
+- Стало: "[новый текст]"
+```
+
+**L-3d: Generate improvement spec** — На основе fix-plan.md (а не напрямую из critique.md), создать `<edu_dir>/learn_<i>/improvements.md`:
 
 ```markdown
 # Improvements from Learn Iteration <i>
