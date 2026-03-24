@@ -110,18 +110,18 @@ On non-breathing, non-hero slides, place the dominant element at a thirds-grid i
 Typography creates visual hierarchy. Size contrast is the #1 tool for directing attention.
 
 **Rule**: Each presentation must use at least 3 distinct type scales:
-- **Hero scale** (8-16rem): for key numbers, dramatic statements, slide titles on statement/fact slides
-- **Heading scale** (4.4-5rem): for regular slide titles
-- **Body scale** (2.5-3rem): for descriptions, bullets, labels
+- **Hero scale** (4-8rem): for key numbers, dramatic statements, slide titles on statement/fact slides
+- **Heading scale** (1.8-2.5rem): for regular slide titles
+- **Body scale** (1.0-1.25rem): for descriptions, bullets, labels
 
 **Implementation**:
 - Key metrics ($1.5M, 45 min, +20%) → hero scale, accent color, bold weight
-- On fact/statement slides, the main text should be 6-10rem minimum
+- On fact/statement slides, the main text should be 3-5rem minimum
 - Never make everything the same size — if everything is emphasized, nothing is
 - Pair font weights dramatically: 700 heading next to 300 body text
 - Both heading and body fonts MUST be sans-serif. Contrast through character (geometric vs humanist, condensed vs proportional, angular vs rounded), not through serif/sans category split.
 
-**When a slide has 3-4 key metrics**: DON'T put them all in equal-sized cards at the same scale. Pick the MOST impactful metric and make it hero-sized (centered, 6-12rem), then place the remaining metrics below in a row of smaller supporting cards. If ALL metrics are equally important, use a 2x2 grid with each number at 5-6rem minimum — never smaller than the heading text.
+**When a slide has 3-4 key metrics**: DON'T put them all in equal-sized cards at the same scale. Pick the MOST impactful metric and make it hero-sized (centered, 3-6rem), then place the remaining metrics below in a row of smaller supporting cards. If ALL metrics are equally important, use a 2x2 grid with each number at 2.5-3rem minimum — never smaller than the heading text.
 
 **Non-duplication rule for consecutive slides:**
 If a fact/statement slide immediately follows a data/traction slide, the two slides MUST NOT feature the same headline metric. Either:
@@ -840,7 +840,7 @@ What makes a presentation look AI-generated — avoid ALL of these:
 6. **"Thank You" ending** — last slide must be CTA with specific action, not gratitude
 7. **Recommendation at the end** — main conclusion by slide 2-3, not buried in final third
 8. **Body text centered on multiple lines** — multi-line body MUST be left-aligned
-9. **Font below 40px (2.5rem) for body** — audience can't read small text on projected slides
+9. **Font below 20px (1.25rem) for body** — audience can't read small text on projected slides
 10. **>40 words on a content slide** — that's a document, not a slide
 11. **>15% of text bold** — over-emphasis kills emphasis
 12. **Bar charts not starting at zero** — truncated Y-axis is a visual lie
