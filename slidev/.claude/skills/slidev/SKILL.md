@@ -566,11 +566,54 @@ B) [описание] — плюсы: ... минусы: ...
 - [minor issue 2]
 ```
 
-**L-3e: Apply improvements** — Read the improvements.md and apply changes to the skill files:
-- Only apply changes marked as critical or major severity
-- Before applying, verify the change doesn't contradict an existing rule
-- If a contradiction is detected, note it in improvements.md and skip that change
-- Use the Edit tool for surgical modifications
+**L-3e: Apply improvements via script** — Read the improvements.md and generate a Python script to apply changes:
+
+1. Create `<edu_dir>/learn_<i>/apply-fixes.py` with all changes as string replacements:
+```python
+#!/usr/bin/env python3
+"""Auto-generated fix script for learn iteration <i>"""
+import pathlib, sys
+
+def apply(path, old, new, description):
+    p = pathlib.Path(path)
+    text = p.read_text(encoding='utf-8')
+    if old not in text:
+        print(f"  SKIP: '{description}' — old text not found in {path}")
+        return False
+    text = text.replace(old, new, 1)
+    p.write_text(text, encoding='utf-8')
+    print(f"  OK: {description}")
+    return True
+
+changes = 0
+total = 0
+
+# --- Change 1: [description] ---
+total += 1
+if apply(
+    ".claude/skills/slidev/SKILL.md",
+    """old text fragment here""",
+    """new text fragment here""",
+    "Change 1: [description]"
+): changes += 1
+
+# --- Change 2: [description] ---
+# ... repeat for each change ...
+
+print(f"\nApplied {changes}/{total} changes")
+if changes < total:
+    print("Some changes were skipped — check output above")
+    sys.exit(1)
+```
+
+2. Only include changes marked as critical or major severity
+3. Before generating each replacement, verify the old text doesn't contradict an existing rule
+4. Run the script:
+```bash
+cd <project_root> && python3 <edu_dir>/learn_<i>/apply-fixes.py
+```
+5. If script exits with error (some changes skipped) — log in improvements.md and continue
+6. Delete the script after successful execution: `rm <edu_dir>/learn_<i>/apply-fixes.py`
 
 **L-3e2: ПРОМЕЖУТОЧНЫЙ ОТЧЁТ — Применённые исправления** — Напечатать пользователю СРАЗУ после применения исправлений:
 ```
