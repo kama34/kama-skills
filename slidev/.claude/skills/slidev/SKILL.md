@@ -464,29 +464,29 @@ OUTPUT FORMAT — write to <edu_dir>/learn_<i>/critique.md:
 - **Weakest axis**: [which scoring axis scored lowest on average]
 ```
 
-**L-3c2: INTERIM REPORT — Critique results** — Print to the user IMMEDIATELY after critique completes:
+**L-3c2: ПРОМЕЖУТОЧНЫЙ ОТЧЁТ — Результаты критики** — Напечатать пользователю СРАЗУ после завершения критики:
 ```
-━━━ Learn Iteration <i>/<N> — CRITIQUE REPORT ━━━
+━━━ Итерация обучения <i>/<N> — ОТЧЁТ КРИТИКА ━━━
 
-📊 Score: X/10
-🔍 AI Detection Score: XX/50 (>16 = still looks AI)
+Оценка: X/10
+AI-детекция: XX/50 (>16 = всё ещё выглядит как AI)
 
-CRITICAL issues found: [count]
-  • [issue 1 title] — [frequency] slides affected
-  • [issue 2 title] — ...
+Найдено КРИТИЧЕСКИХ проблем: [кол-во]
+  - [название проблемы 1] — затронуто [кол-во] слайдов
+  - [название проблемы 2] — ...
 
-MAJOR issues found: [count]
-  • [issue 1 title] — [frequency] slides affected
-  • ...
+Найдено СЕРЬЁЗНЫХ проблем: [кол-во]
+  - [название проблемы 1] — затронуто [кол-во] слайдов
+  - ...
 
-What worked well:
-  ✓ [item 1]
-  ✓ [item 2]
+Что сработало хорошо:
+  + [пункт 1]
+  + [пункт 2]
 
-Full critique: <edu_dir>/learn_<i>/critique.md
+Полный отчёт: <edu_dir>/learn_<i>/critique.md
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
-Wait for the user to read before proceeding to fixes.
+Дождаться, пока пользователь прочитает, прежде чем переходить к исправлениям.
 
 **L-3c3: A/B on weakest slides** — After critique, if any slide scores < 6, run the A/B Testing Subroutine (`references/ab-testing.md`) on the 2 weakest slides. Include the variant comparison in `critique.md` under a "## A/B Alternatives" section showing what could have been done differently. This provides concrete before/after examples for the improvement spec.
 
@@ -516,20 +516,20 @@ Wait for the user to read before proceeding to fixes.
 - If a contradiction is detected, note it in improvements.md and skip that change
 - Use the Edit tool for surgical modifications
 
-**L-3e2: INTERIM REPORT — Applied fixes** — Print to the user IMMEDIATELY after applying improvements:
+**L-3e2: ПРОМЕЖУТОЧНЫЙ ОТЧЁТ — Применённые исправления** — Напечатать пользователю СРАЗУ после применения исправлений:
 ```
-━━━ Learn Iteration <i>/<N> — FIXES APPLIED ━━━
+━━━ Итерация обучения <i>/<N> — ИСПРАВЛЕНИЯ ━━━
 
-Applied [count] changes:
-  1. [change title] → [file]:[section]
-     Before: "[excerpt]"
-     After:  "[new text]"
+Применено изменений: [кол-во]
+  1. [название] → [файл]:[секция]
+     Было: "[фрагмент]"
+     Стало: "[новый текст]"
   2. ...
 
-Deferred [count] minor issues:
-  • [issue] — reason: [why deferred]
+Отложено незначительных: [кол-во]
+  - [проблема] — причина: [почему отложено]
 
-Full details: <edu_dir>/learn_<i>/improvements.md
+Подробности: <edu_dir>/learn_<i>/improvements.md
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
