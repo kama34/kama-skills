@@ -1611,6 +1611,7 @@ Before writing slides, create a Composition Plan that maps each outline slide to
    - At least 3 different archetype groups (hero/grid/split/timeline/table/cta) in any 10-slide deck
    - `profile-grid` appears at most once per deck
    - `icon-trio` appears at most once per deck (same as `profile-grid`)
+   - **Visual structure dedup**: After assigning archetypes, check the RENDERED visual structure (not archetype names). Two-col-text, card-mosaic (2×2), and timeline-horizontal (2×2 grid) all render as "4-cell grid" visually. Count slides that will render as a 2×2 or similar grid — if >30% of content slides share this visual pattern, replace excess with non-grid archetypes (asymmetric-split, stat-hero, quote-pull, bento-grid with asymmetric sizing).
    - For business presentations (KP, pitch, report): main conclusion must be surfaced as action title by slide 2-3. If outline buries it after slide 5, formulate action titles that bring the conclusion forward.
    - **Ghost Deck test — ENHANCED**: After creating the Composition Plan, read all planned action titles in sequence.
      **FAIL conditions** (any one = rewrite the title immediately):
@@ -1622,6 +1623,7 @@ Before writing slides, create a Composition Plan that maps each outline slide to
      **GOOD title patterns:** specific number ("Выручка 72 млн ₽ к 2027 году"), claim ("Enterprise растёт в 2,5 раза быстрее рынка"), outcome ("Каждый рубль инвестиций с конкретным возвратом"), question ("Готовы к партнёрству?"), verb ("Подключите первый объект бесплатно").
      Cover slide (slide 1) and CTA slide (last slide) are exempt (aligns with Rule 30).
    - Cover archetype always first, CTA archetype always last
+   - **Section divider differentiation**: When a deck has 2+ section-divider slides, they MUST differ visually. Alternate between: (A) centered heading with radial glow (current template), (B) left-aligned heading at 3.5rem+ with a large decorative number or geometric shape on the right side, (C) full-width heading with a horizontal accent line below. No two section slides may use the same composition variant.
 
 5. **Assign background levels** using distribution algorithm (replaces per-archetype table):
 
@@ -1697,6 +1699,8 @@ For each slide in the outline:
    - **Background colors**: Use only `var(--bg-base)`, `var(--bg-alt)`, `var(--bg-accent)` as assigned in the Composition Plan. No hardcoded hex background colors.
    - **CRITICAL — bg-accent export fallback**: For slides using `--bg-accent` as full-slide background (cover, CTA), ALWAYS include the hex fallback value in the var() function: `background:var(--bg-accent, #0D9488)` (replace #0D9488 with the actual accent hex from the preset). Slidev's headless PNG export may fail to resolve CSS custom properties on absolutely-positioned inner divs. The fallback ensures the background renders even if variable resolution fails. Apply the same pattern to ALL color variables on bg-accent slides: `color:var(--color-text, #FAF9F6)` for white text on accent backgrounds.
 
+   **Stat-hero variation rule**: When a deck has 2+ stat-hero slides, they MUST differ structurally. Use at least 2 of: (A) centered hero number + supporting pills below (standard), (B) asymmetric — hero number on left 40%, supporting context stacked on right 60%, (C) comparison — two numbers side by side with a divider, (D) text hero — a statement/phrase as the hero element instead of a number. Track stat-hero usage and enforce alternation.
+
    **CRITICAL — Visual Rhythm (Principle 1)**: Insert `section`, `statement`, or `fact` breathing slides every 2-3 content slides. If the outline doesn't explicitly include them, use section dividers between major topic shifts, or promote a key insight from a content slide into a standalone statement/fact slide.
 
    **CRITICAL — Layout Diversity (Principle 2)**: Do NOT repeat the same visual structure (heading position + content arrangement) on more than 2 consecutive slides. Rotate between: hero-left/content-right, cards grid, timeline/stepper, centered hero, asymmetric split, full-bleed visual, comparison table, quote/callout. Track your layout choices — if you used "title top-left + 2-column grid" on slide 3, use something different on slide 4.
@@ -1726,6 +1730,7 @@ For each slide in the outline:
    c. Match shape to archetype: stat-hero/cover-hero → icon-circle; card-mosaic/comparison-table/bento-grid → icon-rounded; icon-trio/timeline → icon-ghost OR icon-circle (alternate)
    d. A deck MUST use at least 2 different icon container shapes (icon-circle, icon-rounded, icon-ghost).
    e. NEVER use 3+ identical icon containers on a single slide — this is the strongest AI-generation tell. On icon-trio slides, alternate: first icon = icon-circle, second = icon-rounded, third = icon-ghost. On bento-grid/card-mosaic slides, vary container shapes across cards.
+   f. **Icon container bg-level adaptation**: icon-ghost (transparent bg + thin border) is INVISIBLE on bg-alt backgrounds where the border blends into warm grey. Rule: on bg-alt slides, replace icon-ghost with icon-circle or icon-rounded (both have opaque backgrounds). On bg-accent slides, use icon-container-cover (white-forward). Only use icon-ghost on bg-base slides where the border has sufficient contrast.
 
 ### Step 6: Write Custom Components (REQUIRED)
 
