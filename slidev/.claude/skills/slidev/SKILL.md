@@ -347,7 +347,17 @@ Stop here — do not proceed to generation.
 
 **L-0: Deep Learn phase** — Before any generation, run the Preset Deep Learning Procedure (PDL-1 through PDL-7) with N=3 cycles:
 - If `--preset <name>` was provided → deep_learn that preset
-- If no preset → interactive wizard creates one (same as `--create-preset`)
+- If no preset → **auto-create preset WITHOUT asking questions.** Analyze the outlines from L-2 (generate them first, then analyze). Based on outline content, autonomously decide:
+  - **Mood**: infer from topic (finance → professional, kids → playful, tech → modern)
+  - **Color scheme**: light for business/education, dark for tech/creative
+  - **Accent color**: pick from safe palette (teal, amber, emerald, rose — never purple)
+  - **Typography**: geometric heading + humanist body (pick pair from Good sans+sans pairs table)
+  - **Density**: balanced by default, minimal for keynotes, dense for reports
+  - **Textures**: clean flat by default
+  - **Archetypes**: based on outline slide types
+  - **Transitions**: fade by default
+  - Save as `learn-auto-<timestamp>.preset.md` locally
+  - Do NOT ask any questions — decide everything autonomously
 - This produces a refined preset with optimized CSS, fonts, colors, and shapes
 - The refined preset is used for ALL subsequent learn iterations
 
