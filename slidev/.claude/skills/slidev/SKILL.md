@@ -339,11 +339,17 @@ In `styles/index.css`, add overlay support. But **each per-slide `<style>` must 
 
 Stop here — do not proceed to generation.
 
-**`--learn=N`**: Self-improving learning loop. Runs N autonomous cycles of generate → export → critique → improve. Each cycle creates a presentation from a unique outline, analyzes it visually and structurally, then applies improvements to the skill itself.
+**`--learn=N`**: Enhanced learning loop. First runs deep_learn to create/refine a preset, then runs N cycles of generate → export → research-grade critique → improve.
 
 **Maximum N**: 10. If N > 10, cap at 10 and notify the user.
 
 ### Learning Loop Procedure
+
+**L-0: Deep Learn phase** — Before any generation, run the Preset Deep Learning Procedure (PDL-1 through PDL-7) with N=3 cycles:
+- If `--preset <name>` was provided → deep_learn that preset
+- If no preset → interactive wizard creates one (same as `--create-preset`)
+- This produces a refined preset with optimized CSS, fonts, colors, and shapes
+- The refined preset is used for ALL subsequent learn iterations
 
 **L-1: Create education folder** — Scan for existing `edu_*` directories in the working directory. Create the next sequential one (e.g., `edu_01`, `edu_02`). All iterations for this learning run go inside this folder.
 
@@ -370,7 +376,7 @@ Each outline follows the standard outline format:
 - Uses the outline from `<edu_dir>/learn_<i>/outline.md`
 - Outputs the project to `<edu_dir>/learn_<i>/`
 - Runs the full generation procedure (Steps 1-7) including Visual QA
-- Uses unique mode (auto-generated design) — each iteration should produce a different aesthetic
+- **Uses the preset from L-0** (deep_learn phase) — NOT unique mode. This ensures all iterations use the refined, battle-tested preset
 
 **L-3b: Export** — After creation, export the presentation:
 ```bash
@@ -393,15 +399,22 @@ INPUTS:
 - Design principles: .claude/skills/slidev/references/design-principles.md
 - Scoring Subroutine: .claude/skills/slidev/references/scoring-subroutine.md
 - Content Review Subroutine: .claude/skills/slidev/references/content-review-subroutine.md
+- **RESEARCH CORPUS (read BEFORE scoring):**
+  - docs/research/ai-presentation-detection-guide-ru.md — 50-point AI detection rubric, 6 signatures of AI slides, fix playbook
+  - docs/research/ugly-presentations-anti-patterns-ru.md — 170+ anti-patterns with severity ratings (CRITICAL/MAJOR/MINOR)
+  - docs/research/beautiful-presentations-guide-ru.md — industry standards from Reynolds, Duarte, Tufte, McKinsey, TED, Apple, YC
 
 ANALYSIS PROCESS:
-1. Read slides.md — check compliance with ALL Slide Authoring Rules and Design Quality Rules
-2. Read EVERY exported PNG — apply the full QA-4 visual checklist + QA-8 critic checklist
-3. Cross-reference: do the rules in SKILL.md and design-principles.md actually produce good results? Are there gaps?
-4. Look for SYSTEMIC issues — patterns that appear across multiple slides, not just one-off problems
-5. Run the Scoring Subroutine — score each slide on 9 axes (composition variety, shape diversity, font discipline, visual impact, layout uniqueness, typography drama, color conviction, content clarity, decorative quality)
-6. Run the Content Review Subroutine — check 3-second test, narrative flow, redundancy, CTA clarity, information hierarchy
-7. Check for anti-patterns from industry research:
+1. Read ALL research documents FIRST — internalize the full detection rubric, anti-pattern checklist, and industry standards
+2. Read slides.md — check compliance with ALL Slide Authoring Rules and Design Quality Rules
+3. Read EVERY exported PNG — apply the full QA-4 visual checklist + QA-8 critic checklist
+4. **Apply the 50-point AI Detection Rubric** from the research — score the presentation on all 8 categories (color, typography, layout, visual effects, imagery, content structure, content quality, metadata). If total > 16 → flag as "still looks AI-generated"
+5. **Apply the Anti-Pattern Bible** — check every CRITICAL and MAJOR anti-pattern from the research. Each violation = a systemic issue
+6. Cross-reference: do the rules in SKILL.md and design-principles.md actually produce good results? Are there gaps?
+7. Look for SYSTEMIC issues — patterns that appear across multiple slides, not just one-off problems
+8. Run the Scoring Subroutine — score each slide on 9 axes
+9. Run the Content Review Subroutine — check 3-second test, narrative flow, redundancy, CTA clarity, information hierarchy
+10. Check for anti-patterns from industry research:
    - Generic label titles instead of action titles (Ghost Deck test: do titles tell a story?)
    - Purple/indigo as primary palette (AI color blacklist)
    - Three-column icon grid repeated >1 time
