@@ -345,22 +345,6 @@ Stop here — do not proceed to generation.
 
 ### Learning Loop Procedure
 
-**L-0: Deep Learn phase** — Before any generation, run the Preset Deep Learning Procedure (PDL-1 through PDL-7) with N=3 cycles:
-- If `--preset <name>` was provided → deep_learn that preset
-- If no preset → **auto-create preset WITHOUT asking questions.** Analyze the outlines from L-2 (generate them first, then analyze). Based on outline content, autonomously decide:
-  - **Mood**: infer from topic (finance → professional, kids → playful, tech → modern)
-  - **Color scheme**: light for business/education, dark for tech/creative
-  - **Accent color**: pick from safe palette (teal, amber, emerald, rose — never purple)
-  - **Typography**: geometric heading + humanist body (pick pair from Good sans+sans pairs table)
-  - **Density**: balanced by default, minimal for keynotes, dense for reports
-  - **Textures**: clean flat by default
-  - **Archetypes**: based on outline slide types
-  - **Transitions**: fade by default
-  - Save as `learn-auto-<timestamp>.preset.md` locally
-  - Do NOT ask any questions — decide everything autonomously
-- This produces a refined preset with optimized CSS, fonts, colors, and shapes
-- The refined preset is used for ALL subsequent learn iterations
-
 **L-1: Create education folder** — Scan for existing `edu_*` directories in the working directory. Create the next sequential one (e.g., `edu_01`, `edu_02`). All iterations for this learning run go inside this folder.
 
 **L-2: Generate N diverse outlines** — Create all outlines upfront to ensure diversity. Save each as `<edu_dir>/learn_<i>/outline.md`. **All outlines MUST be written in Russian** (titles, slide names, bullet points — everything in Russian). Outlines must vary across:
@@ -381,12 +365,19 @@ Each outline follows the standard outline format:
 
 **L-3: Learning iteration loop** — For i = 1 to N:
 
+**L-3-pdl: Run PDL (Deep Learn) for this iteration** — Each cycle starts with a fresh PDL run using the CURRENT (possibly improved) skill rules:
+- If i == 1 and no `--preset`: **auto-create preset WITHOUT asking questions.** Analyze the outlines from L-2. Based on outline content, autonomously decide: mood (infer from topic), color scheme (light/dark), accent color (safe palette — never purple), typography (sans+sans pair from Good pairs table), density, textures, archetypes, transitions. Save as `learn-auto-<timestamp>.preset.md`. Do NOT ask any questions.
+- If i == 1 and `--preset <name>` was provided: use that preset as starting point.
+- If i > 1: re-run PDL on the preset from the previous iteration, using the UPDATED SKILL.md rules (improvements from prior cycles feed back into PDL).
+- PDL runs with N=3 internal cycles (auto-critique of the preset itself).
+- Save the refined preset for this iteration as `<edu_dir>/learn_<i>/preset-cycle-<i>.preset.md`.
+
 **L-3a: Create presentation** — Launch a subagent (Agent tool) to run the full `/slidev` generation pipeline for `<edu_dir>/learn_<i>/outline.md`. The subagent:
 - Reads the current SKILL.md (to pick up any improvements from prior iterations)
 - Uses the outline from `<edu_dir>/learn_<i>/outline.md`
 - Outputs the project to `<edu_dir>/learn_<i>/`
 - Runs the full generation procedure (Steps 1-7) including Visual QA
-- **Uses the preset from L-0** (deep_learn phase) — NOT unique mode. This ensures all iterations use the refined, battle-tested preset
+- **Uses the preset from L-3-pdl** (this iteration's PDL output) — each cycle gets a progressively better preset
 
 **L-3b: Export** — After creation, export the presentation:
 ```bash
