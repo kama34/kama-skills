@@ -625,26 +625,59 @@ cd <project_root> && python3 <edu_dir>/learn_<i>/apply-fixes.py
 
 After applying improvements, write the iteration's design pattern to Design Memory using the overall score from `critique.md`. Follow the Write Protocol in `references/design-memory.md`. Only write if score >= 8 (type "high") or score < 6 (type "low"). Skip write for scores 6-8 (not distinctive enough to learn from).
 
-**L-3f: Git commit** — Stage and commit only the learning artifacts + skill changes:
+**L-3f: Git commit с тегом** — Commit после КАЖДОГО цикла. Тег позволяет откатиться к любому циклу:
 
 ```bash
-# Stage presentation artifacts (not Slidev system files)
-git add <edu_dir>/learn_<i>/outline.md
-git add <edu_dir>/learn_<i>/slides.md
-git add <edu_dir>/learn_<i>/slides/*.png
-git add <edu_dir>/learn_<i>/slides.pdf
-git add <edu_dir>/learn_<i>/critique.md
-git add <edu_dir>/learn_<i>/improvements.md
+# Stage presentation artifacts
+git add -f <edu_dir>/learn_<i>/outline.md
+git add -f <edu_dir>/learn_<i>/slides.md
+git add -f <edu_dir>/learn_<i>/slides/*.png
+git add -f <edu_dir>/learn_<i>/slides.pdf
+git add -f <edu_dir>/learn_<i>/critique.md
+git add -f <edu_dir>/learn_<i>/improvements.md
+git add -f <edu_dir>/learn_<i>/fix-plan.md
+git add -f <edu_dir>/learn_<i>/preset-cycle-<i>.preset.md
+git add -f <edu_dir>/progress.md
 
-# Stage skill changes (if any were made)
-git add .claude/skills/slidev/SKILL.md
-git add .claude/skills/slidev/references/design-principles.md
+# Stage skill changes
+git add -f .claude/skills/slidev/SKILL.md
+git add -f .claude/skills/slidev/references/design-principles.md
+git add -f .claude/skills/slidev/references/scoring-subroutine.md
 
-# Commit
-git commit -m "learn(<i>/<N>): [outline topic] — [brief summary of improvements]"
+# Commit with score in message
+git commit -m "learn(<i>/<N>): [topic] — score X/10 — [summary]"
+
+# Tag for rollback
+git tag "learn-cycle-<i>-score-X"
 ```
 
-**Do NOT stage**: `node_modules/`, `package.json`, `uno.config.ts`, `styles/`, `components/`, `dist/`, `slides-qa/`, or any other Slidev project files.
+**Do NOT stage**: `node_modules/`, `package.json`, `uno.config.ts`, `styles/`, `components/`, `dist/`, `slides-qa/`.
+
+**L-3g: Обновить сводную таблицу** — После каждого цикла обновлять `<edu_dir>/progress.md` (создать при первом цикле, дополнять при последующих):
+
+```markdown
+# Прогресс обучения
+
+| Цикл | Тема | Оценка | AI-детекция | Лучший? | Git тег | PDF |
+|------|------|--------|-------------|---------|---------|-----|
+| 1 | [тема] | 5.0/10 | 28/50 | — | learn-cycle-1-score-5 | edu_XX/learn_1/slides.pdf |
+| 2 | [тема] | 6.4/10 | 18/50 | ✓ лучший | learn-cycle-2-score-6 | edu_XX/learn_2/slides.pdf |
+| 3 | [тема] | 5.8/10 | 22/50 | ✗ регрессия | learn-cycle-3-score-5 | edu_XX/learn_3/slides.pdf |
+
+## Лучший цикл: 2 (6.4/10)
+Откат к лучшему: `git checkout learn-cycle-2-score-6 -- .claude/skills/slidev/`
+
+## Ключевые изменения по циклам
+- Цикл 1 → 2: +1.4 (декор inline HTML, structural break rule)
+- Цикл 2 → 3: -0.6 (регрессия — [причина])
+
+## Как откатиться
+1. Посмотри PDF лучшего цикла: откройте файл из колонки PDF
+2. Если устраивает: `git checkout learn-cycle-<N>-score-<X> -- .claude/skills/slidev/`
+3. Это вернёт SKILL.md и references к состоянию того цикла
+```
+
+Колонка "Лучший?" — сравнение текущей оценки с максимальной из предыдущих. progress.md коммитится ВМЕСТЕ с основным коммитом цикла (в L-3f).
 
 **L-4: Summary** — After all N iterations, create `<edu_dir>/summary.md`:
 
@@ -698,15 +731,29 @@ git commit -m "learn(summary): edu_XX — N iterations completed, [total changes
 
 **L-5: Report** — Print to the user:
 ```
-Learning complete: edu_XX
+━━━ Обучение завершено: edu_XX ━━━
 
-  Iterations: N
-  Outlines: [list topics]
-  Skill improvements: [count] changes applied
-  Deferred issues: [count] minor issues for review
+  Итераций: N
+  Темы: [список тем]
+  Улучшений скилла: [кол-во] изменений применено
+  Отложено: [кол-во] незначительных для ревью
 
-  Results: <edu_dir>/summary.md
-  Each iteration: <edu_dir>/learn_<i>/
+  Прогресс оценок:
+  | Цикл | Оценка | AI-детекция | Статус |
+  |------|--------|-------------|--------|
+  | 1    | X/10   | XX/50       | —      |
+  | 2    | X/10   | XX/50       | ✓/✗    |
+  | 3    | X/10   | XX/50       | ✓/✗    |
+
+  Лучший цикл: [N] (X/10)
+  PDF лучшего: <edu_dir>/learn_<N>/slides.pdf
+
+  Если текущее состояние хуже лучшего цикла:
+    git checkout learn-cycle-<N>-score-<X> -- .claude/skills/slidev/
+
+  Сводная таблица: <edu_dir>/progress.md
+  Все итерации: <edu_dir>/learn_<i>/
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 Stop here — do not proceed to generation.
