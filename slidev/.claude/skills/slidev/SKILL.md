@@ -56,6 +56,8 @@ Usage:
   /slidev --deep_learn=N                       Preset deep learning (auto-refine N cycles)
   /slidev --deep_learn=N --preset <name>       Deep learn a specific preset
   /slidev --add_archetype [name]              Add a new composition archetype
+  /slidev --stitch <outline>                   Generate with Stitch AI visual styles
+  /slidev --stitch --learn=N                   Learn with Stitch-generated presets
   /slidev --no-preset <outline>                Generate without auto-preset (Unique mode)
   /slidev --help                                 Show this help
 ```
@@ -106,6 +108,112 @@ Usage:
 7. Report: archetype name(s), density, content types served, and the test slide PNG path
 
 Stop here — do not proceed to generation.
+
+**`--stitch <outline>`**: Generate presentation using Google Stitch AI for visual style generation. Stitch creates multiple visual styles, our agent picks the best, then the standard pipeline generates the presentation.
+
+Can be combined with `--learn=N` for Stitch-powered learning.
+
+Follow the Stitch Procedure (ST-1 through ST-7):
+
+### Stitch Procedure
+
+**ST-1: Parse outline** — Read the outline (from argument or file). Classify: topic, industry, mood, audience. This informs the Stitch prompts.
+
+**ST-2: Generate 3 visual styles via Stitch** — Create 3 separate Stitch projects, each with a different visual direction. For each style:
+
+1. Create a Stitch project:
+   ```
+   mcp__stitch__create_project({ title: "slidev-style-<N>-<topic>" })
+   ```
+
+2. Create a design system for this project with a unique visual direction:
+   ```
+   mcp__stitch__create_design_system({
+     projectId: "<id>",
+     designSystem: {
+       displayName: "Style <N>",
+       theme: {
+         colorMode: "<LIGHT or DARK>",
+         headlineFont: "<font enum>",
+         bodyFont: "<font enum>",
+         roundness: "<ROUND_FOUR | ROUND_EIGHT | ROUND_TWELVE>",
+         customColor: "<hex accent>",
+         colorVariant: "<TONAL_SPOT | VIBRANT | NEUTRAL | MONOCHROME>",
+         designMd: "Presentation slide design system for <topic>. Professional, clean, high-contrast. Optimized for 16:9 projected slides with large readable text."
+       }
+     }
+   })
+   ```
+
+3. Generate a sample cover slide to see the visual style:
+   ```
+   mcp__stitch__generate_screen_from_text({
+     projectId: "<id>",
+     prompt: "A presentation cover slide for '<title>'. Full-bleed background, large centered title, subtitle below, decorative accent element. 16:9 aspect ratio, professional presentation design.",
+     deviceType: "DESKTOP",
+     modelId: "GEMINI_3_1_PRO"
+   })
+   ```
+
+4. Get the screen HTML:
+   ```
+   mcp__stitch__get_screen({ name: "projects/<id>/screens/<screen_id>", projectId: "<id>", screenId: "<screen_id>" })
+   ```
+
+**The 3 styles MUST differ on:**
+- Style 1: Light theme, geometric font (e.g., SORA + DM_SANS), teal/emerald accent, TONAL_SPOT
+- Style 2: Dark theme, humanist font (e.g., MANROPE + NUNITO_SANS), amber/warm accent, VIBRANT
+- Style 3: Light theme, modern font (e.g., PLUS_JAKARTA_SANS + IBM_PLEX_SANS), rose/coral accent, NEUTRAL
+
+**CRITICAL:** Always use `modelId: "GEMINI_3_1_PRO"` — the most capable Stitch model.
+
+**ST-3: Extract styles from HTML** — For each of the 3 generated screens:
+1. Read the HTML returned by `get_screen`
+2. Extract:
+   - Color palette (background, text, accent, surface colors)
+   - Font families (headline, body)
+   - Border-radius values (card roundness)
+   - Decorative patterns (gradients, shadows, borders)
+   - Layout approach (grid structure, spacing)
+3. Note the visual strengths: what makes this style distinctive?
+
+**ST-4: Agent selects the best style** — Evaluate all 3 styles against these criteria:
+- **Not AI-looking**: score against the 50-point AI detection rubric from docs/research/ai-presentation-detection-guide-ru.md
+- **Readable at distance**: contrast ratios, font sizes
+- **Distinctive**: would someone remember this style?
+- **Appropriate for topic**: matches the industry/audience
+
+Pick the winner. Log reasoning in `stitch-style-selection.md`.
+
+**ST-5: Convert to preset** — Transform the winning Stitch style into our `.preset.md` format:
+
+1. Map Stitch fonts to our font enum:
+   - Stitch `headlineFont` → preset `fonts.sans` (heading)
+   - Stitch `bodyFont` → preset `fonts.body`
+   - **Serif check**: if Stitch picked a serif font (NEWSREADER, NOTO_SERIF, EB_GARAMOND, LITERATA, SOURCE_SERIF_FOUR, DOMINE, LIBRE_CASLON_TEXT), replace with nearest sans-serif
+
+2. Map Stitch colors to our CSS variable system:
+   - Stitch primary → `--color-accent`
+   - Stitch background → `--bg-base`
+   - Derive `--bg-alt` (shift luminance -5%), `--bg-accent` (shift luminance -40% or invert)
+   - Derive `--color-accent-dim`, `--color-accent-bg`, `--color-muted`
+
+3. Map Stitch roundness to our shapes:
+   - ROUND_FOUR → `card_radius: 4px`, `icon_container: [rounded-square, ghost]`
+   - ROUND_EIGHT → `card_radius: 8px`, `icon_container: [rounded-square, circle]`
+   - ROUND_TWELVE/FULL → `card_radius: 14px`, `icon_container: [circle, ghost]`
+
+4. Write preset to `.slidev-presets/stitch-<timestamp>.preset.md`
+
+**ST-6: Standard pipeline** — From here, the standard pipeline takes over:
+- If `--stitch` alone: run PDL (3 cycles) on the Stitch-generated preset → generate presentation
+- If `--stitch --learn=N`: the Stitch preset becomes the starting point for learn cycles (PDL re-runs each cycle with improved rules)
+
+**ST-7: Cleanup** — Delete the 3 Stitch projects (they were temporary).
+
+**Fallback**: If Stitch API is unavailable (timeout, auth error), fall back to auto-preset creation (same as `--learn` without `--stitch`). Log: "Stitch unavailable, using auto-preset fallback."
+
+Stop here if only `--stitch` was specified. If combined with `--learn=N`, proceed to Learning Loop Procedure.
 
 **`--learn=N`**: Learning loop. Parse N from the argument (e.g., `--learn=5`).
 - **Without `--preset`**: Self-improving skill loop. Follow the Learning Loop Procedure (L-1 through L-5) — improves SKILL.md and design-principles.md based on visual critique.
