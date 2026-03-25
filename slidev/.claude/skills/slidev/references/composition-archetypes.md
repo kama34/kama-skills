@@ -146,7 +146,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 **Group:** grid | **Density:** medium-high or `--bg-alt`
 **Content types:** credentials, scope, portfolio, trust
 **Focal point:** upper-left third (featured card area)
-**Use when:** 3-5 items of varying importance — one featured, others supporting.
+**Use when:** 3-5 items of varying importance — one featured, others supporting. **CRITICAL**: Featured card primary metric MUST be ≥3.5rem — place icon ABOVE the metric in a separate row, NOT beside it. Side-by-side icon+number shrinks the number and defeats featured-card hierarchy.
 **Visual:** One large zone (60% width) + 2-3 smaller zones stacked beside it. Different card sizes create visual interest.
 **Shape elements:** Cards of different sizes (large featured + small supporting), accent card for the most important item.
 
