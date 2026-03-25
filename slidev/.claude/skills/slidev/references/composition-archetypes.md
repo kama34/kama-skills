@@ -120,7 +120,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 **Group:** grid | **Density:** medium or `--bg-alt`
 **Content types:** credentials, scope, trust
 **Focal point:** left-third intersection (heading + primary content area)
-**Use when:** 3-5 features, benefits, or capabilities to present with icons.
+**Use when:** 3-5 features, benefits, or capabilities to present with icons. **For 4+ items**: prefer a 2×2 grid layout (2 rows × 2 columns using `display:grid;grid-template-columns:1fr 1fr`) instead of a single horizontal row — single-row 4+ items causes cramped spacing and uneven text wrapping across descriptions of different lengths. When 4+ items must use a single row, limit each item description to max 8 words.
 **Visual:** 3 circle icon containers in a horizontal row with labels below each. Clean, spaced. **Title alignment rule**: Center-align ITEM_TITLE only when titles are ≤15 characters (1–2 words). For longer titles, switch the column to left-aligned: remove `align-items:center` from the column div, set `text-align:left` on title and description. This prevents the hourglass centering pattern (wide icon → narrow wrapped centered title → wide description).
 **Shape elements:** Circle containers for icons (not rectangles), short text labels.
 
