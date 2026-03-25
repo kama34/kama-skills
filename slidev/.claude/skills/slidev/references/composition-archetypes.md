@@ -150,13 +150,23 @@ Named slide composition patterns for content-aware layout selection. Each archet
 **Visual:** One large zone (60% width) + 2-3 smaller zones stacked beside it. Different card sizes create visual interest.
 **Shape elements:** Cards of different sizes (large featured + small supporting), accent card for the most important item.
 
+**FEATURED CELL LAYOUT RULE**: Icon MUST be in its own row ABOVE the metric number — never in a horizontal flex row beside it. Use `display:flex;flex-direction:column;align-items:flex-start` inside the featured cell. Side-by-side icon+number shrinks the perceived size of the metric and collapses hierarchy.
+
+**SIDE CARD DEDUP RULE**: When the featured cell contains a sub-grid of 3+ numbers (e.g., team breakdown), side cards MUST show DIFFERENT data — growth percentages, period comparisons, or qualitatively distinct metrics. NEVER repeat a number already shown in the featured sub-grid.
+
 ```html
 <div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;">
   <span style="display:block;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--color-accent);font-weight:600;margin-bottom:6px;">{{LABEL}}</span>
   <h1 style="font-size:2.1rem;font-weight:700;color:var(--color-text);margin:0 0 16px;font-family:var(--font-heading);">{{HEADING}}</h1>
   <div style="flex:1;display:grid;grid-template-columns:1.2fr 1fr;grid-template-rows:1fr 1fr;gap:14px;">
     <div style="grid-row:1/3;background:linear-gradient(135deg,rgba(var(--accent-rgb),0.12),var(--color-surface));border:1.5px solid var(--color-accent-dim);border-radius:14px;padding:24px;display:flex;flex-direction:column;justify-content:center;">
-      {{FEATURED_ITEM}}
+      <!-- CORRECT: icon in its own row ABOVE the number -->
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(var(--accent-rgb),0.12);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+        <Icon name="{{ICON}}" :size="22" color="var(--color-accent)" />
+      </div>
+      <div style="font-size:4rem;font-weight:800;color:var(--color-accent);line-height:1;font-family:var(--font-heading);">{{FEATURED_NUMBER}}</div>
+      <div style="font-size:1.1rem;color:var(--color-muted);font-family:var(--font-body);margin-top:4px;">{{FEATURED_LABEL}}</div>
+      {{FEATURED_SUPPORTING_CONTENT}}
     </div>
     <div style="background:var(--color-surface);border:1px solid var(--color-surface-border);border-radius:14px;padding:18px 22px;display:flex;align-items:center;gap:14px;">
       {{ITEM_2}}
