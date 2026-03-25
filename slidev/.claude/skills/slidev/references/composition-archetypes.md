@@ -121,7 +121,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 **Content types:** credentials, scope, trust
 **Focal point:** left-third intersection (heading + primary content area)
 **Use when:** 3-5 features, benefits, or capabilities to present with icons.
-**Visual:** 3 circle icon containers in a horizontal row with labels below each. Clean, spaced.
+**Visual:** 3 circle icon containers in a horizontal row with labels below each. Clean, spaced. **Title alignment rule**: Center-align ITEM_TITLE only when titles are ≤15 characters (1–2 words). For longer titles, switch the column to left-aligned: remove `align-items:center` from the column div, set `text-align:left` on title and description. This prevents the hourglass centering pattern (wide icon → narrow wrapped centered title → wide description).
 **Shape elements:** Circle containers for icons (not rectangles), short text labels.
 
 ```html

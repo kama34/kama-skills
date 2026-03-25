@@ -9,9 +9,10 @@
 | 5 | Креативное агентство | 7.2/10 | 14/50 | ✗ (-0.2) | learn-cycle-5-score-7 | edu_02/learn_5/slides.pdf |
 | 6 | TaskFlow SaaS онбординг | 7.2/10 | 12/50 | ~ (=5) | learn-cycle-6-score-7 | edu_02/learn_6/slides.pdf |
 | 7 | Фонд помощи детям (НКО) | 7.8/10 | 9/50 | ✓ лучший | learn-cycle-7-score-7 | edu_02/learn_7/slides.pdf |
+| 8 | E-grocery рынок России | 7.9/10 | 11/50 | ~ (=7) | learn-cycle-8-score-7 | edu_02/learn_8/slides.pdf |
 
-## Лучший цикл: 7 (7.8/10)
-Откат к лучшему: `git checkout learn-cycle-7-score-7 -- .claude/skills/slidev/`
+## Лучший цикл: 7/8 (7.8–7.9/10 — практически равны)
+Откат к лучшему: `git checkout learn-cycle-8-score-7 -- .claude/skills/slidev/`
 
 ## Ключевые изменения по циклам
 - Цикл 1: +6 правил (bg-accent fallback, section bg-accent на light, counting titles FAIL, eyebrow 30%, decorative opacity 3x, icon diversity)
@@ -21,6 +22,7 @@
 - Цикл 5: +2 правила (mandatory eyebrow counter, ghost deck test — section divider minimum standard)
 - Цикл 6: +2 правила (bento-grid global fingerprint dedup, section-divider left-variant lower anchor)
 - Цикл 7: +3 правила (bento-grid featured cell ≥3.5rem, split-layout heading cap 50 chars, bg-alt arc/border dark color rule)
+- Цикл 8: +3 правила (ghost number opacity 0.16 min на teal bg-accent, icon-trio left-align для длинных заголовков, glow несовместим с full-width layouts)
 
 ## Как откатиться
 1. Посмотри PDF лучшего цикла: откройте файл из колонки PDF
