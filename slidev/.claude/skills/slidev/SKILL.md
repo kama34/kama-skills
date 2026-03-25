@@ -1060,7 +1060,7 @@ A reusable subroutine for visual quality assurance. Input: `<dir>` (project dire
 - **Background image slides**: confirm the background is set via per-slide CSS (`background: url(...) center/cover no-repeat !important` on `.slidev-layout`), NOT via frontmatter `background:` prop. If using frontmatter prop, switch to CSS approach. Confirm `::before` overlay is present for readability. Confirm text colors are white/near-white.
 - **Text-on-image contrast**: if a slide has a background image or dark background, confirm text colors are explicitly set to white/light values.
 - **No reliance on CSS inheritance** for text alignment, colors, or font properties on centered layouts — all must be explicit due to Slidev theme specificity overrides.
-- **layout:none enforcement (Rule 25)**: Global frontmatter must contain `layout: none`. Every slide with raw HTML using `position:absolute;inset:0` must have `layout: none` in per-slide frontmatter. Every slide with `layout: none` must have a `<style>` block containing `.slidev-layout { padding: 0 !important; overflow: hidden; }`. Auto-fix: add if missing. (Enforces Rule 25.)
+- **layout:none enforcement (Rule 25)**: Global frontmatter must **NOT** contain `layout: none` — this creates a blank first slide. Only per-slide frontmatter should set `layout: none`. Every slide with raw HTML using `position:absolute;inset:0` must have `layout: none` in per-slide frontmatter. Every slide with `layout: none` must have a `<style>` block containing `.slidev-layout { padding: 0 !important; overflow: hidden; }`. Auto-fix: add if missing. (Enforces Rule 25.)
 - **Pure #FFFFFF/#000000 scan**: Scan all inline `style="..."` for `#FFFFFF`, `#fff`, `#FFF`, `color:white`, `#000000`, `#000`, `color:black`. Exclude `rgba(255,255,255,...)` and `rgba(0,0,0,...)` (transparency OK). Auto-fix: `#FFFFFF`/`#fff` → preset's warm off-white (e.g., `var(--bg-base)` or `#FAFAF8`); `#000000`/`#000` → `var(--color-text)` or warm off-black. QA-0c retains its CRITICAL flag as defense-in-depth fallback.
 - **Pill line-height:1**: Find all elements where the SAME `style` contains ALL THREE: (1) `border-radius` 16-24px, (2) `padding` with values, (3) `display:inline-flex`. Check for `line-height:1`. Auto-fix: insert if missing. **Theme-class adaptation**: if pills use `class="label-pill"`, verify theme CSS `.label-pill` includes `line-height:1`.
 
@@ -1155,6 +1155,12 @@ Fix all CRITICAL items before proceeding to visual review. Log WARNINGs for revi
 **QA-1: Prepare** — `npm install` if no `node_modules/` in `<dir>`, then `npx playwright install chromium`.
 
 **QA-2: Export PNGs** — `cd <dir> && npx slidev export --format png --output slides-qa` → produces `slides-qa/1.png, 2.png, ...`
+
+**QA-2b: Render verification (BLOCKING)** — After export, verify:
+1. **Slide count matches**: number of PNGs must equal the number of slides in `slides.md` (count `---` separators). If extra PNGs → blank slide from global headmatter (Rule 46). Fix: remove `layout` from global frontmatter.
+2. **No blank slides**: Read slide 1 PNG visually. If blank/white → global headmatter has `layout: none`. Fix immediately.
+3. **No raw HTML**: Read 2-3 content slide PNGs. If any shows `<div style="..."` text → HTML rendering failure (Rule 45 violation). Fix: move visual properties from inline styles to per-slide `<style>` CSS classes, then re-export.
+If ANY of these checks fail → fix and re-export before proceeding to QA-3.
 
 **QA-3: Count slides** — glob `<dir>/slides-qa/*.png` to get the list.
 
@@ -2024,6 +2030,8 @@ These rules combine `/frontend-design` aesthetic principles with the Gamma-level
 42. **Statistics source citations**: Every statistic from external sources needs footnote or inline citation: `(source: McKinsey, 2024)`. Unsourced large numbers are a hallucination tell.
 43. **Whitespace minimum**: Minimum 30% of slide area must be whitespace (empty space without text, icons, or cards). Padding from edges minimum 44px. Gap between elements minimum 16px. Maximum 2 large/dominant elements per slide.
 44. **Image style consistency**: All photos in a presentation must share unified visual style — same color temperature, contrast level, and compositional approach. Do not mix photos and illustrations. If images vary, apply CSS filter to harmonize (e.g., `filter: saturate(0.8) contrast(1.1)` on all images).
+45. **CRITICAL — Inline style property whitelist**: Slidev's markdown-to-Vue parser FAILS to render HTML blocks containing deeply nested inline `style="..."` attributes with CSS variable references like `var(--color-accent)`. The parser emits these as raw text instead of DOM elements. **Rule**: Inline `style="..."` attributes may ONLY contain structural layout properties: `position`, `inset`, `top/right/bottom/left`, `z-index`, `display`, `flex-direction`, `flex`, `align-items`, `justify-content`, `gap`, `padding`, `margin`, `width`, `height`, `max-width`, `min-height`, `grid-template-columns`, `grid-template-rows`, `overflow`. ALL visual properties — `color`, `background`, `border`, `border-radius`, `font-size`, `font-weight`, `font-family`, `opacity`, `box-shadow`, `text-transform`, `letter-spacing`, `line-height` — MUST be set via CSS classes in per-slide `<style>` blocks. Each slide defines unique class names (e.g., `.s2-hero`, `.s2-card`, `.s2-pill`) and applies them to elements. This separation ensures Slidev's parser processes the HTML as layout, not as text.
+46. **CRITICAL — Global headmatter must NOT contain `layout: none`**: Setting `layout: none` in the global (first) frontmatter block creates a blank first slide because Slidev treats the global frontmatter as slide 1. Only per-slide frontmatter (after `---` separators) should set `layout: none`. The global frontmatter should contain: `theme`, `title`, `fonts`, `colorSchema`, `aspectRatio`, `transition` — but NEVER `layout`.
 
 ## Output Directory
 
