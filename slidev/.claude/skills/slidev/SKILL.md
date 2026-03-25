@@ -56,8 +56,10 @@ Usage:
   /slidev --deep_learn=N                       Preset deep learning (auto-refine N cycles)
   /slidev --deep_learn=N --preset <name>       Deep learn a specific preset
   /slidev --add_archetype [name]              Add a new composition archetype
-  /slidev --stitch <outline>                   Generate with Stitch AI visual styles
-  /slidev --stitch --learn=N                   Learn with Stitch-generated presets
+  /slidev --stitch=design <outline>             Stitch придумывает стиль → наш pipeline генерирует
+  /slidev --stitch=full <outline>              Stitch генерирует ВСЮ презу → адаптируем в Slidev
+  /slidev --stitch=improve <dir>               Stitch делает variants каждого слайда готовой презы
+  /slidev --stitch=design --learn=N            Learn с Stitch-стилями
   /slidev --no-preset <outline>                Generate without auto-preset (Unique mode)
   /slidev --help                                 Show this help
 ```
@@ -109,111 +111,186 @@ Usage:
 
 Stop here — do not proceed to generation.
 
-**`--stitch <outline>`**: Generate presentation using Google Stitch AI for visual style generation. Stitch creates multiple visual styles, our agent picks the best, then the standard pipeline generates the presentation.
+**`--stitch=<mode> <outline>`**: Use Google Stitch AI as a design partner. Three modes:
 
-Can be combined with `--learn=N` for Stitch-powered learning.
+```
+/slidev --stitch=design <outline>    Stitch придумывает визуальный стиль → мы делаем презу
+/slidev --stitch=full <outline>      Stitch генерирует ВСЮ презу → мы адаптируем в Slidev
+/slidev --stitch=improve <dir>       Stitch делает variants каждого слайда готовой презы
+```
 
-Follow the Stitch Procedure (ST-1 through ST-7):
+Can be combined with `--learn=N`: `/slidev --stitch=design --learn=7`
 
-### Stitch Procedure
+**CRITICAL:** Always use `modelId: "GEMINI_3_1_PRO"` for all Stitch calls — самая умная модель.
 
-**ST-1: Parse outline** — Read the outline (from argument or file). Classify: topic, industry, mood, audience. This informs the Stitch prompts.
+### Stitch Mode: design
 
-**ST-2: Generate 3 visual styles via Stitch** — Create 3 separate Stitch projects, each with a different visual direction. For each style:
+Stitch придумывает визуальный стиль (мы НЕ задаём ему цвета/шрифты — он сам). Мы получаем от него стиль и конвертируем в пресет.
 
-1. Create a Stitch project:
-   ```
-   mcp__stitch__create_project({ title: "slidev-style-<N>-<topic>" })
-   ```
+**ST-D1: Parse outline** — Прочитать outline. Сформировать описание презентации на английском: тема, аудитория, настроение, количество слайдов.
 
-2. Create a design system for this project with a unique visual direction:
-   ```
-   mcp__stitch__create_design_system({
+**ST-D2: Создать 3 проекта с разными промптами** — Каждый проект получает ОДИНАКОВЫЙ контент но РАЗНЫЙ промпт для стиля. Мы НЕ задаём шрифты, цвета, roundness — Stitch решает сам.
+
+Для каждого из 3 стилей:
+```
+1. mcp__stitch__create_project({ title: "slidev-style-<N>-<topic>" })
+
+2. mcp__stitch__generate_screen_from_text({
      projectId: "<id>",
-     designSystem: {
-       displayName: "Style <N>",
-       theme: {
-         colorMode: "<LIGHT or DARK>",
-         headlineFont: "<font enum>",
-         bodyFont: "<font enum>",
-         roundness: "<ROUND_FOUR | ROUND_EIGHT | ROUND_TWELVE>",
-         customColor: "<hex accent>",
-         colorVariant: "<TONAL_SPOT | VIBRANT | NEUTRAL | MONOCHROME>",
-         designMd: "Presentation slide design system for <topic>. Professional, clean, high-contrast. Optimized for 16:9 projected slides with large readable text."
-       }
-     }
+     prompt: "<полный промпт — см. ниже>",
+     deviceType: "DESKTOP",
+     modelId: "GEMINI_3_1_PRO"
    })
-   ```
 
-3. Generate a sample cover slide to see the visual style:
+3. mcp__stitch__get_screen({
+     name: "projects/<id>/screens/<screen_id>",
+     projectId: "<id>",
+     screenId: "<screen_id>"
+   })
+```
+
+**Промпты для 3 стилей** (отличаются ТОЛЬКО стилевым направлением):
+- **Style 1**: "Design a complete presentation as a single-page website. Each slide is a `<section>` tag, 16:9 aspect ratio. Topic: [topic]. [slide count] slides. Content per slide: [brief per-slide content]. **Style direction: clean, professional, trustworthy.** Choose your own color palette, fonts, and layout — make it look like a premium human-designed presentation, NOT AI-generated."
+- **Style 2**: "Design a complete presentation as a single-page website. Each slide is a `<section>` tag, 16:9 aspect ratio. Topic: [topic]. [slide count] slides. Content per slide: [brief per-slide content]. **Style direction: bold, energetic, modern.** Choose your own color palette, fonts, and layout — make it look like a premium human-designed presentation, NOT AI-generated."
+- **Style 3**: "Design a complete presentation as a single-page website. Each slide is a `<section>` tag, 16:9 aspect ratio. Topic: [topic]. [slide count] slides. Content per slide: [brief per-slide content]. **Style direction: elegant, editorial, refined.** Choose your own color palette, fonts, and layout — make it look like a premium human-designed presentation, NOT AI-generated."
+
+**ВАЖНО**: В промпте указываем ВЕСЬ контент всех слайдов (кратко). Stitch генерирует ЦЕЛЫЙ "сайт" — все слайды в одном экране. Каждый слайд в `<section>`.
+
+**ST-D3: Получить и проанализировать 3 HTML** — Для каждого стиля:
+1. `get_screen` → получить HTML
+2. Извлечь из HTML (Stitch сам выбрал — мы только читаем):
+   - Цветовая палитра (background, text, accent, surface)
+   - Шрифты (headline, body)
+   - Border-radius
+   - Декоративные паттерны (градиенты, тени, формы)
+   - Структура layout'ов
+
+**ST-D4: Агент выбирает лучший стиль** — Оценка по:
+- 50-point AI Detection Rubric (docs/research/ai-presentation-detection-guide-ru.md)
+- Контрастность и читаемость
+- Запоминаемость дизайна
+- Соответствие теме и аудитории
+Записать выбор и причины в `stitch-style-selection.md`.
+
+**ST-D5: Конвертировать в пресет** — Из победившего HTML извлечь стиль → записать `.slidev-presets/stitch-<timestamp>.preset.md`:
+- Шрифты из HTML → `fonts.sans`, `fonts.body` (**serif check**: если Stitch выбрал serif → заменить ближайшим sans-serif)
+- Цвета из HTML → `--color-accent`, `--bg-base`, `--bg-alt`, `--bg-accent` и производные
+- Roundness из HTML → `card_radius`, `icon_container`
+- Декоративные приёмы → описание в aesthetic section пресета
+
+**ST-D6: Стандартный pipeline** — PDL (3 цикла) → генерация презентации. Если `--learn=N` → learning loop.
+
+**ST-D7: Cleanup** — Удалить 3 Stitch-проекта (временные).
+
+### Stitch Mode: full
+
+Stitch генерирует всю презентацию целиком как HTML-сайт. Мы извлекаем стиль И контент, адаптируем в Slidev.
+
+**ST-F1: Parse outline** — Так же как ST-D1.
+
+**ST-F2: Создать 3 проекта, каждый = полная презентация** — Промпт содержит ВСЕ слайды с контентом:
+
+```
+mcp__stitch__generate_screen_from_text({
+  projectId: "<id>",
+  prompt: "Design a complete presentation as a single-page website where each slide
+    is a <section> tag with width:100% and aspect-ratio:16/9.
+
+    CONTENT:
+    Slide 1 (Cover): [title, subtitle]
+    Slide 2 (Problem): [heading, 3 pain points]
+    Slide 3 (Solution): [heading, key features]
+    ...
+    Slide N (CTA): [call to action, contacts]
+
+    Style direction: [clean professional / bold energetic / elegant editorial].
+    Design a COMPLETE, polished presentation. Each section should have distinct
+    layout (not all identical). Use real visual hierarchy — hero numbers large,
+    body text readable, decorative accents varied. Make it NOT look AI-generated.",
+  deviceType: "DESKTOP",
+  modelId: "GEMINI_3_1_PRO"
+})
+```
+
+**ST-F3: Получить HTML** — `get_screen` для каждого стиля.
+
+**ST-F4: Агент выбирает лучший** — Так же как ST-D4.
+
+**ST-F5: Парсинг HTML → Slidev** — Из победившего HTML:
+1. Разделить по `<section>` тегам → получить HTML каждого слайда
+2. Извлечь общий стиль → создать `styles/index.css` + пресет
+3. Для каждого слайда:
+   - Извлечь inline styles → адаптировать под CSS variables
+   - Сохранить layout-структуру (grid/flex)
+   - Адаптировать font-size под Slidev viewport (960x540)
+   - Обернуть в `layout: none` + `position:absolute;inset:0` Slidev-обёртку
+4. Собрать `slides.md` из всех слайдов
+5. Запустить QA pipeline (QA-0a/0b/0c → visual QA)
+
+**ST-F6: Cleanup**.
+
+### Stitch Mode: improve
+
+Берёт ГОТОВУЮ презентацию и для каждого слайда запрашивает у Stitch варианты. Сохраняет целостность стиля.
+
+**ST-I1: Прочитать готовую презентацию** — `<dir>/slides.md` и `styles/index.css`. Извлечь общий стиль (палитра, шрифты, формы).
+
+**ST-I2: Создать Stitch-проект с дизайн-системой презентации**:
+```
+mcp__stitch__create_project({ title: "slidev-improve-<name>" })
+
+mcp__stitch__create_design_system({
+  projectId: "<id>",
+  designSystem: {
+    displayName: "Current presentation style",
+    theme: {
+      colorMode: "<LIGHT|DARK — из styles/index.css>",
+      headlineFont: "<соответствие шрифту из презентации>",
+      bodyFont: "<соответствие>",
+      roundness: "<соответствие card_radius>",
+      customColor: "<--color-accent hex>"
+    }
+  }
+})
+```
+
+**ST-I3: Для каждого слайда** с оценкой < 7 из score-report (или для всех, если score-report нет):
+1. Сгенерировать экран в Stitch с контентом этого слайда:
    ```
    mcp__stitch__generate_screen_from_text({
      projectId: "<id>",
-     prompt: "A presentation cover slide for '<title>'. Full-bleed background, large centered title, subtitle below, decorative accent element. 16:9 aspect ratio, professional presentation design.",
+     prompt: "Presentation slide: [slide content]. Style must match the design system. 16:9.",
      deviceType: "DESKTOP",
      modelId: "GEMINI_3_1_PRO"
    })
    ```
-
-4. Get the screen HTML:
+2. Запросить 3 варианта:
    ```
-   mcp__stitch__get_screen({ name: "projects/<id>/screens/<screen_id>", projectId: "<id>", screenId: "<screen_id>" })
+   mcp__stitch__generate_variants({
+     projectId: "<id>",
+     selectedScreenIds: ["<screen_id>"],
+     prompt: "Generate alternative layouts for this presentation slide. Keep content and color scheme, vary the layout structure and visual hierarchy.",
+     variantOptions: {
+       variantCount: 3,
+       creativeRange: "EXPLORE",
+       aspects: ["LAYOUT"]
+     }
+   })
    ```
+3. Применить дизайн-систему ко всем вариантам:
+   ```
+   mcp__stitch__apply_design_system({ projectId, selectedScreenInstances, assetId })
+   ```
+4. Получить HTML всех вариантов → выбрать лучший layout
+5. Адаптировать layout-идею (grid-структуру, позиционирование) обратно в наш Slidev-слайд
 
-**The 3 styles MUST differ on:**
-- Style 1: Light theme, geometric font (e.g., SORA + DM_SANS), teal/emerald accent, TONAL_SPOT
-- Style 2: Dark theme, humanist font (e.g., MANROPE + NUNITO_SANS), amber/warm accent, VIBRANT
-- Style 3: Light theme, modern font (e.g., PLUS_JAKARTA_SANS + IBM_PLEX_SANS), rose/coral accent, NEUTRAL
+**ST-I4: Собрать улучшенный slides.md** — Заменить слабые слайды на улучшенные варианты. Запустить QA.
 
-**CRITICAL:** Always use `modelId: "GEMINI_3_1_PRO"` — the most capable Stitch model.
+**ST-I5: Cleanup**.
 
-**ST-3: Extract styles from HTML** — For each of the 3 generated screens:
-1. Read the HTML returned by `get_screen`
-2. Extract:
-   - Color palette (background, text, accent, surface colors)
-   - Font families (headline, body)
-   - Border-radius values (card roundness)
-   - Decorative patterns (gradients, shadows, borders)
-   - Layout approach (grid structure, spacing)
-3. Note the visual strengths: what makes this style distinctive?
+**Fallback для всех режимов**: Если Stitch API недоступен → fallback на стандартный pipeline (auto-preset для design, обычная генерация для full, A/B testing для improve). Log: "Stitch unavailable, using fallback."
 
-**ST-4: Agent selects the best style** — Evaluate all 3 styles against these criteria:
-- **Not AI-looking**: score against the 50-point AI detection rubric from docs/research/ai-presentation-detection-guide-ru.md
-- **Readable at distance**: contrast ratios, font sizes
-- **Distinctive**: would someone remember this style?
-- **Appropriate for topic**: matches the industry/audience
-
-Pick the winner. Log reasoning in `stitch-style-selection.md`.
-
-**ST-5: Convert to preset** — Transform the winning Stitch style into our `.preset.md` format:
-
-1. Map Stitch fonts to our font enum:
-   - Stitch `headlineFont` → preset `fonts.sans` (heading)
-   - Stitch `bodyFont` → preset `fonts.body`
-   - **Serif check**: if Stitch picked a serif font (NEWSREADER, NOTO_SERIF, EB_GARAMOND, LITERATA, SOURCE_SERIF_FOUR, DOMINE, LIBRE_CASLON_TEXT), replace with nearest sans-serif
-
-2. Map Stitch colors to our CSS variable system:
-   - Stitch primary → `--color-accent`
-   - Stitch background → `--bg-base`
-   - Derive `--bg-alt` (shift luminance -5%), `--bg-accent` (shift luminance -40% or invert)
-   - Derive `--color-accent-dim`, `--color-accent-bg`, `--color-muted`
-
-3. Map Stitch roundness to our shapes:
-   - ROUND_FOUR → `card_radius: 4px`, `icon_container: [rounded-square, ghost]`
-   - ROUND_EIGHT → `card_radius: 8px`, `icon_container: [rounded-square, circle]`
-   - ROUND_TWELVE/FULL → `card_radius: 14px`, `icon_container: [circle, ghost]`
-
-4. Write preset to `.slidev-presets/stitch-<timestamp>.preset.md`
-
-**ST-6: Standard pipeline** — From here, the standard pipeline takes over:
-- If `--stitch` alone: run PDL (3 cycles) on the Stitch-generated preset → generate presentation
-- If `--stitch --learn=N`: the Stitch preset becomes the starting point for learn cycles (PDL re-runs each cycle with improved rules)
-
-**ST-7: Cleanup** — Delete the 3 Stitch projects (they were temporary).
-
-**Fallback**: If Stitch API is unavailable (timeout, auth error), fall back to auto-preset creation (same as `--learn` without `--stitch`). Log: "Stitch unavailable, using auto-preset fallback."
-
-Stop here if only `--stitch` was specified. If combined with `--learn=N`, proceed to Learning Loop Procedure.
+Stop here after Stitch procedure completes. If combined with `--learn=N`, proceed to Learning Loop.
 
 **`--learn=N`**: Learning loop. Parse N from the argument (e.g., `--learn=5`).
 - **Without `--preset`**: Self-improving skill loop. Follow the Learning Loop Procedure (L-1 through L-5) — improves SKILL.md and design-principles.md based on visual critique.
