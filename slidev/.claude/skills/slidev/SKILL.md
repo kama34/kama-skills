@@ -288,7 +288,13 @@ mcp__stitch__create_design_system({
 
 **ST-I5: Cleanup**.
 
-**Fallback для всех режимов**: Если Stitch API недоступен → fallback на стандартный pipeline (auto-preset для design, обычная генерация для full, A/B testing для improve). Log: "Stitch unavailable, using fallback."
+**Стратегия ожидания Stitch API** — для ВСЕХ вызовов `generate_screen_from_text` и `generate_variants`:
+1. Вызвать (блокирующий, ждёт до 3 минут). **НЕ повторять** если долго — Stitch сам говорит "DO NOT RETRY".
+2. Если вернулся результат → `get_screen` для получения HTML.
+3. Если connection error → подождать 60 секунд → `list_screens` → если экран появился → `get_screen`. Если нет → подождать ещё 60 секунд → повторить. Максимум 3 попытки поллинга.
+4. Если после 3 попыток экран не появился → **ОСТАНОВИТЬ работу**. Напечатать: "Stitch API не ответил после 3 попыток. Завершаю." **НЕ переключаться на fallback** — режим --stitch ТРЕБУЕТ Stitch. Без него работа невозможна.
+
+**NO FALLBACK**: Если `--stitch` указан, генерация БЕЗ Stitch не допускается. Если Stitch недоступен — работа завершается с ошибкой.
 
 Stop here after Stitch procedure completes. If combined with `--learn=N`, proceed to Learning Loop.
 
