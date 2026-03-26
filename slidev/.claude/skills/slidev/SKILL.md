@@ -220,13 +220,24 @@ mcp__stitch__generate_screen_from_text({
 **ST-F5: Парсинг HTML → Slidev** — Из победившего HTML:
 1. Разделить по `<section>` тегам → получить HTML каждого слайда
 2. Извлечь общий стиль → создать `styles/index.css` + пресет
-3. Для каждого слайда:
+3. **FONT SIZE RECALCULATION** — Stitch генерирует для веб-viewport (~1440px), а Slidev рендерит на 960x540. Все font-size из Stitch HTML нужно пересчитать:
+   - Stitch px → Slidev rem: разделить на 16, затем проверить против FONT SIZE FLOOR
+   - **ПОСЛЕ пересчёта** — применить FONT SIZE FLOOR из Step 5:
+     - Body text: если < 1.25rem → поднять до 1.25rem
+     - Headings: если < 2.2rem → поднять до 2.2rem
+     - Labels/pills: если < 0.65rem → поднять до 0.65rem
+   - **Типичные пересчёты из Stitch:**
+     - Stitch 14px (0.875rem) body → Slidev 1.25rem (поднять)
+     - Stitch 12px (0.75rem) caption → Slidev 0.85rem (поднять, если body-текст)
+     - Stitch 24px (1.5rem) heading → Slidev 2.2rem (поднять)
+     - Stitch 48px (3rem) hero → Slidev 3rem+ (ок)
+   - **НЕ копировать font-size из Stitch напрямую** — всегда пересчитать и валидировать
+4. Для каждого слайда:
    - Извлечь inline styles → адаптировать под CSS variables
    - Сохранить layout-структуру (grid/flex)
-   - Адаптировать font-size под Slidev viewport (960x540)
    - Обернуть в `layout: none` + `position:absolute;inset:0` Slidev-обёртку
-4. Собрать `slides.md` из всех слайдов
-5. Запустить QA pipeline (QA-0a/0b/0c → visual QA)
+5. Собрать `slides.md` из всех слайдов
+6. **Запустить ПОЛНЫЙ QA pipeline включая ВСЕ BLOCKING checks** (QA-0a/0b/0c → visual QA). BLOCKING checks (font size, CSS vars, decoration visibility) ОБЯЗАНЫ остановить pipeline если нарушены — даже в --stitch=full режиме. Stitch-режим НЕ является исключением из QA.
 
 **ST-F6: Cleanup**.
 
@@ -1366,7 +1377,7 @@ A reusable subroutine for visual quality assurance. Input: `<dir>` (project dire
 - **Principle 11 (Spacing)**: Check content vertical distribution — should not be crammed to top.
 - **Principle 12 (Accent hierarchy)**: Verify accent color is used at varying intensities, not full saturation everywhere.
 - **HTML nesting depth (Rule 17)**: Scan for HTML nesting deeper than 3 levels (3+ opening `<div>` tags before content). Slidev will render these as raw HTML code. Flatten immediately.
-- **Font size minimum (Rule 20) — BLOCKING**: Check all font sizes. Body text below `1.25rem` = CRITICAL — raise to minimum. Headings below `2.2rem` = CRITICAL. Labels/eyebrows below `0.65rem` = CRITICAL. If ANY violation → STOP pipeline. Auto-fix: raise to minimum. If content overflows → shorten text first, then move to speaker notes, then split slide (per Font Size Exemption). NEVER reduce font below minimum.
+- **Font size minimum (Rule 20) — BLOCKING (applies to ALL modes including --stitch)**: Check all font sizes. Body text below `1.25rem` = CRITICAL — raise to minimum. Headings below `2.2rem` = CRITICAL. Labels/eyebrows below `0.65rem` = CRITICAL. If ANY violation → STOP pipeline. Auto-fix: raise to minimum. If content overflows → shorten text first, then move to speaker notes, then split slide (per Font Size Exemption). NEVER reduce font below minimum. **NOTE: --stitch=full generates web-viewport sizes (0.85rem body is typical) — these MUST be raised to presentation minimums during ST-F5 or caught here.**
 - **Content density (Rule 22)**: Count visual blocks per slide. If any slide has 6+ distinct elements (cards, tables, charts, lists), split or remove secondary content.
 - **Breathing slides (Visual Rhythm Override)**: Count consecutive dense `default` layout slides. If 4+ in a row, convert 1-2 to statement/fact layout.
 - **Background image overlays (Rule P-5)**: If cover/section slides have background images, verify overlay uses gradient (not uniform opacity) with minimum 0.85 in text zones.
