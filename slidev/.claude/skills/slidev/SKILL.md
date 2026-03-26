@@ -1691,7 +1691,7 @@ During Design Thinking, you MUST also decide:
 3. **Decorative motif**: What 1-2 decorative elements define this presentation's personality? (geometric circles, gradient blobs, dot grids, diagonal lines, etc.)
 4. **Accent hierarchy**: Define 3 levels of accent color (primary/secondary/ambient) as CSS variables.
 5. **Visual arc**: Which slide is the climax? How will visual intensity build toward it?
-6. **Typography scales**: Define hero (4-8em), heading (1.8-2.5em), and body (0.85-1.1em) scales.
+6. **Typography scales**: Define hero (6-12em for centered stat-hero, 4-8em for inline hero), heading (1.8-2.5em), and body (0.85-1.1em) scales. Centered breathing slides should use the maximum of the hero range.
 7. **Card styles**: Which 2-3 card variations will you use and where?
 8. **Icon approach**: outlined or filled SVG style? What stroke width?
 
@@ -1886,7 +1886,7 @@ Include:
 - Background textures/gradients
 - Font overrides if needed
 - Custom utility classes
-- **Card style variants** (Principle 5): `.card-solid`, `.card-ghost`, `.card-accent`, `.card-glass` — at least 2-3 distinct styles
+- **Card style variants** (Principle 5): `.card-solid`, `.card-ghost`, `.card-accent`, `.card-glass`, `.card-stripe` — at least 2-3 distinct styles. `.card-stripe` adds a colored top border: `border-top: 3px solid var(--color-accent); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);` — use for case studies, portfolio items, metric comparisons.
 - **Decorative motif classes** (Principle 6): CSS pseudo-element patterns for the chosen decorative motifs (geometric circles, gradient blobs, dot grids, diagonal lines, etc.)
 - **Shape vocabulary CSS** (if preset has `shapes` section): Generate CSS classes corresponding to the shape settings. For `icon_container: circle` → `.icon-container { width:56px; height:56px; border-radius:50%; background:var(--color-accent-bg); border:1.5px solid var(--color-accent-dim); display:flex; align-items:center; justify-content:center; }`. For `stat_display: typographic` → `.stat-hero { font-size:5rem; font-weight:800; color:var(--color-accent); line-height:1; }` (no card wrapper). For `label_style: pill` → `.label-pill { display:inline-flex; background:rgba(255,255,255,0.06); border:1.5px solid var(--color-accent-dim); border-radius:20px; padding:6px 18px; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--color-accent); font-weight:600; }`. For `photo_mask: circle` → `.photo-circle { border-radius:50%; overflow:hidden; }`. These classes are used by archetype HTML skeletons.
 - If preset mode with CSS block, write the preset's CSS verbatim (can extend but not contradict)
@@ -2026,7 +2026,7 @@ This plan is consumed by Step 5: for each slide, use the archetype's HTML skelet
 ### Step 5: Write slides.md
 
 **FONT SIZE FLOOR** — NEVER set any inline font-size below these minimums:
-- Hero/stat numbers: ≥4rem
+- Hero/stat numbers: ≥6rem (centered stat-hero slides: ≥8rem for maximum drama)
 - Split-layout heading cap: two-col-text and asymmetric-split archetypes — if heading exceeds 50 characters, reduce font-size to 2.0–2.1rem AND shorten text to ≤2 visual lines. Move secondary detail to card content, not heading.
 - Headings (h1, h2): ≥2.2rem
 - Body text (descriptions, paragraphs, card content): ≥1.25rem
@@ -2064,9 +2064,11 @@ OPACITY CALIBRATION:
 
 **DATA VIZ RULE** — If a slide contains 3+ numeric metrics, at least ONE must be visualized as inline SVG, not text-in-card. Proportions → donut chart (stroke-dasharray). Comparison → horizontal bar chart (rect elements). Growth → line with dots. Parts of whole → stacked bar. SVG must use var(--color-accent) for fill/stroke, max 5 data points, labels inline, viewBox-based, include <title> for accessibility.
 
+**METRIC HIERARCHY** — When a slide has 2+ numbers, they MUST differ in size using a 3-level system: Level 1 (hero): 7-10rem single primary metric, Level 2 (supporting): 3-4rem for 2-3 secondary metrics, Level 3 (context): 1.25-1.5rem body text. BANNED: all metrics at the same font-size — this creates competition for attention instead of clear hierarchy. Learned from Stitch: ratio primary:secondary:body should be approximately 7:3:1.
+
 **CARD DIVERSITY** — BANNED: 3+ cards with identical styling on one slide. When showing 3 items, MUST use one of: a) Bento grid: 1 large (grid-row:span 2 or 1.4fr) + 2 smaller, b) Mixed styles: card-solid + card-ghost + card-accent, c) Size hierarchy: first card accent-bordered + larger, rest surface, d) One card = metric hero (big number), rest = supporting text.
 
-**FOCAL POINT** — Every content slide MUST have ONE dominant element visually 2x+ larger than the next largest. Stat slides: hero number 4-8rem, supporting 1-1.5rem. Card slides: featured card 40-60% of content area. Data slides: chart is dominant, text supports. Quote slides: quote 2-3rem, attribution 0.85rem.
+**FOCAL POINT** — Every content slide MUST have ONE dominant element visually 4x+ larger than the next largest. Stat slides: hero number 6-10rem, supporting 1.5-2rem. Centered breathing slides: hero number up to 12rem. Card slides: featured card 40-60% of content area. Data slides: chart is dominant, text supports. Quote slides: quote 2-3rem, attribution 0.85rem.
 
 Structure:
 1. **Headmatter** — theme, title, fonts, colorSchema, transition, aspectRatio, etc.
