@@ -2063,6 +2063,8 @@ OPACITY CALIBRATION:
   Light bg-alt (luminance 65-75%, e.g. #E8E6DF warm beige): atmosphere 0.35-0.45 (HARD MINIMUM 0.35). bg-alt absorbs teal/cool glows more aggressively than pure cream — use 0.35+ or add a secondary warm highlight layer. Texture: 0.18-0.25.
   Dark backgrounds (luminance < 30%): atmosphere 0.08-0.15, texture 0.03-0.08
   These minimums are non-negotiable — decoration below these values is INVISIBLE in PNG export.
+  IMPORTANT: When placing decorations on bg-alt slides, EXPLICITLY set opacity to 0.35+ — decoration library defaults (0.20-0.25) pass bg-base but FAIL bg-alt. Override the library default for every bg-alt slide.
+  Card-mosaic and comparison-table archetypes: despite being card-heavy, MUST include at minimum 1 decorative element (corner circle, arc, or dot-grid) to prevent flat-document appearance.
 
 **GHOST TYPOGRAPHY** — On stat-hero and breathing slides, add a decorative ghost element: the hero number or key symbol rendered at 12-20rem, opacity 0.04-0.08, positioned absolute behind content. Example: `<div style="position:absolute;top:50%;right:5%;transform:translateY(-50%);font-family:var(--font-heading);font-size:18rem;font-weight:800;color:rgba(var(--accent-rgb),0.06);line-height:1;pointer-events:none;z-index:0;">₽</div>`. Use on 2-3 slides per deck maximum. Good candidates: currency symbols (₽, $), percentages, key metric numbers.
 
