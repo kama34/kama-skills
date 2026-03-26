@@ -300,36 +300,44 @@ mcp__stitch__create_design_system({
 
 **ST-I5: Cleanup**.
 
-**Стратегия ожидания Stitch API** — для ВСЕХ вызовов `generate_screen_from_text` и `generate_variants`:
+**Stitch MCP Proxy** — используем `@_davideast/stitch-mcp proxy`, который предоставляет как стандартные тулы Stitch, так и виртуальные:
 
-**КРИТИЧНО: НИКОГДА не вызывать параллельно.** Один вызов `generate_screen_from_text` за раз. Дождаться результата, только потом следующий.
+| Тул | Описание |
+|-----|----------|
+| `generate_screen_from_text` | Генерация экрана из промпта (стандартный) |
+| `create_project` | Создание проекта (стандартный) |
+| `get_project` | Получение деталей проекта (стандартный) |
+| `get_screen` | Получение деталей экрана (стандартный) |
+| `get_screen_code` | **Получает экран И скачивает HTML** — одним вызовом (виртуальный) |
+| `get_screen_image` | **Получает экран И скачивает скриншот как base64** (виртуальный) |
+| `build_site` | **Собирает ВСЕ экраны проекта в сайт с роутами** (виртуальный) |
+| `generate_variants` | Генерация вариантов экрана (стандартный) |
+| `create_design_system` | Создание дизайн-системы (стандартный) |
+| `apply_design_system` | Применение дизайн-системы (стандартный) |
 
-1. Вызвать `generate_screen_from_text`. Вызов вернётся СРАЗУ (не блокирует). Это нормально — генерация продолжается на сервере.
-2. Если вернулся результат с `output_components` → экран готов, перейти к шагу 5.
-3. Если вернулся пустой ответ (completed with no output) → генерация ещё идёт. **ЖДАТЬ:**
-   - Подождать **120 секунд** (2 минуты)
-   - Вызвать `get_project({ name: "projects/<projectId>" })` — **НЕ `list_screens`** (list_screens ненадёжен и часто возвращает пустой `{}` даже когда экран готов)
-   - Проверить поле `screenInstances` в ответе `get_project`:
-     - Если `screenInstances` содержит элемент с `sourceScreen` → экран готов, перейти к шагу 5
-     - Если `screenInstances` пуст или отсутствует → ждать ещё
-   - Повторить до **5 попыток** (суммарно до 10 минут ожидания)
-   - Простой промпт = ~2 минуты. Сложный промпт (полная презентация) = 3-7 минут.
-4. Если после 5 попыток `screenInstances` пуст → **ОСТАНОВИТЬ работу**. Напечатать: "Stitch API не ответил после 10 минут. Завершаю."
-5. **Получить HTML**: извлечь `sourceScreen` ID из `screenInstances[0]`, затем вызвать:
+**Стратегия получения HTML из Stitch:**
+
+**КРИТИЧНО: НИКОГДА не вызывать `generate_screen_from_text` параллельно.** Один вызов за раз.
+
+1. Вызвать `generate_screen_from_text`. Вызов может вернуться сразу (генерация асинхронная).
+2. Если вернулся результат с `output_components` → экран готов.
+3. Если пустой ответ → генерация идёт на сервере. **ЖДАТЬ:**
+   - Подождать **120 секунд**
+   - Вызвать `get_project({ name: "projects/<projectId>" })` → проверить `screenInstances`
+   - Если `screenInstances` содержит элемент → экран готов
+   - Повторить до **5 попыток** (до 10 минут)
+4. Если после 5 попыток нет → **ОСТАНОВИТЬ**. "Stitch не ответил после 10 минут."
+5. **Получить HTML** — использовать виртуальный тул `get_screen_code`:
    ```
-   get_screen({
-     name: "<sourceScreen>",     // e.g. "projects/123/screens/abc"
-     projectId: "<projectId>",
-     screenId: "<screenId>"       // e.g. "abc"
-   })
+   get_screen_code({ projectId: "<id>", screenId: "<id>" })
    ```
-   Ответ содержит `htmlCode.downloadUrl` — скачать HTML через curl/WebFetch.
+   Возвращает HTML напрямую — НЕ нужен curl/WebFetch.
+   Альтернатива: `build_site` для сборки всех экранов с роутами.
+6. **Получить скриншот** — `get_screen_image` возвращает base64.
 
-**НЕ повторять** сам вызов `generate_screen_from_text` — Stitch говорит "DO NOT RETRY". Генерация может идти на сервере даже если ответ пустой.
-
-**НЕ использовать `list_screens`** — он ненадёжен. Всегда использовать `get_project` → `screenInstances` → `get_screen`.
-
-**NO FALLBACK**: Если `--stitch` указан, генерация БЕЗ Stitch не допускается. Если Stitch недоступен — работа завершается с ошибкой.
+**НЕ повторять** `generate_screen_from_text` — "DO NOT RETRY".
+**НЕ использовать `list_screens`** — ненадёжен.
+**NO FALLBACK**: `--stitch` требует Stitch. Без него — стоп.
 
 Stop here after Stitch procedure completes. If combined with `--learn=N`, proceed to Learning Loop.
 
