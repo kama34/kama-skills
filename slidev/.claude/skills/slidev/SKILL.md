@@ -60,6 +60,7 @@ Usage:
   /slidev --stitch=full <outline>              Stitch генерирует ВСЮ презу → адаптируем в Slidev
   /slidev --stitch=improve <dir>               Stitch делает variants каждого слайда готовой презы
   /slidev --stitch=design --learn=N            Learn с Stitch-стилями
+  /slidev --stitch=learn=N              Learn from Stitch as design teacher (N cycles)
   /slidev --no-preset <outline>                Generate without auto-preset (Unique mode)
   /slidev --help                                 Show this help
 ```
@@ -297,6 +298,93 @@ mcp__stitch__create_design_system({
 **NO FALLBACK**: Если `--stitch` указан, генерация БЕЗ Stitch не допускается. Если Stitch недоступен — работа завершается с ошибкой.
 
 Stop here after Stitch procedure completes. If combined with `--learn=N`, proceed to Learning Loop.
+
+**`--stitch=learn=N`**: Learn from Stitch as external design teacher. Compares Stitch output with our output side-by-side, extracts CSS patterns.
+
+### Stitch Learn Procedure
+
+**STL-1: Generate N diverse outlines** — Same as L-2 in --learn: Russian language, varied industries/formats/sizes.
+
+**STL-2: For each cycle i = 1 to N:**
+
+**STL-2.1: Stitch generates** — Create project via `mcp__stitch__create_project`. Generate full presentation as single HTML page (all slides as `<section>` tags) via `mcp__stitch__generate_screen_from_text` with `modelId: "GEMINI_3_1_PRO"`. Prompt includes all slides content. `get_screen` to retrieve HTML. Save to `<edu_dir>/stitch_<i>/stitch-output.html`.
+
+**STL-2.2: Our generator makes the same presentation** — Standard pipeline with current skill rules, same outline. Save to `<edu_dir>/stitch_<i>/our-output/`. Export PNG.
+
+**STL-2.3: Comparative analysis** — Compare both HTML outputs across 6 dimensions, extracting concrete CSS values:
+
+```
+BACKGROUNDS:
+  Stitch: [layers count, gradient types, opacity values]
+  Ours:   [layers count, gradient types, opacity values]
+  Gap:    [what Stitch does better]
+  → RULE: [specific CSS addition to skill]
+
+LAYOUT:
+  Stitch: [grid templates, proportions, asymmetry]
+  Ours:   [grid templates]
+  → RULE: [...]
+
+TYPOGRAPHY:
+  Stitch: [size hierarchy, weight distribution]
+  Ours:   [...]
+  → RULE: [...]
+
+DECORATION:
+  Stitch: [shapes, opacity, sizes, positions]
+  Ours:   [...]
+  → New decoration-library.md components if found
+
+CARDS:
+  Stitch: [card variety, bento ratios, styles]
+  Ours:   [...]
+  → RULE: [...]
+
+HIERARCHY:
+  Stitch: [focal point ratio, dominant element size]
+  Ours:   [...]
+  → RULE: [...]
+```
+
+**STL-2.4: Extract patterns** → append to `docs/research/stitch-learned-patterns.md`:
+```markdown
+## Pattern: [name]
+- Source: Stitch cycle [i], slide [N]
+- CSS: [concrete CSS code]
+- When: [which slide types benefit]
+- Added to: [which skill file was updated]
+```
+
+If a new decoration shape/behavior is found → add to `references/decoration-library.md` as a new component with {{PLACEHOLDER}} template.
+
+**STL-2.5: Apply improvements** via Python script (same as L-3e). Update SKILL.md, design-principles.md, decoration-library.md.
+
+**STL-2.6: Промежуточный отчёт** пользователю:
+```
+━━━ Stitch Learn <i>/<N> — СРАВНЕНИЕ ━━━
+
+Оценка Stitch: X/10
+Наша оценка:   Y/10
+Разница:       [+/-Z]
+
+Что Stitch делает лучше:
+  - [аспект] — извлечено правило: "[описание]"
+  - [аспект] — новый компонент в decoration-library
+  ...
+
+Что мы делаем лучше:
+  + [аспект] (сохраняем)
+
+Применено правил: [кол-во]
+Новых компонентов в библиотеке: [кол-во]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**STL-2.7: Git commit + tag** — same as L-3f/L-3g in --learn.
+
+**STL-3: Final report** with progress.md table (same format as --learn).
+
+**Stitch API handling**: same retry strategy — blocking call → on error poll list_screens 60s x3 → STOP if missing (no fallback).
 
 **`--learn=N`**: Learning loop. Parse N from the argument (e.g., `--learn=5`).
 - **Without `--preset`**: Self-improving skill loop. Follow the Learning Loop Procedure (L-1 through L-5) — improves SKILL.md and design-principles.md based on visual critique.
@@ -1288,6 +1376,8 @@ A reusable subroutine for visual quality assurance. Input: `<dir>` (project dire
 - [ ] **bg-level distribution** (non-blocking): Count slides per bg-level. Warn if bg-base < 55%, bg-alt > 35%, or strict alternating across 4+ slides. No auto-fix — logged to QA-10 report.
 - [ ] **Action titles check** (WARNING): For each h1/h2 slide title: if 1-2 words → WARNING "topic label". If noun phrase without verb/number/comparison → WARNING "weak title". Not auto-fixable. Logged to QA-10 report. Cover and CTA slides exempt (Rule 30).
 - [ ] **Icon diversity:** Collect all icon containers across deck. If 100% identical shape → warn "All icon containers identical. Use at least 2 shapes (icon-circle, icon-rounded, icon-ghost)."
+- [ ] **Decoration visibility (BLOCKING):** Scan all decorative div elements (z-index:0, pointer-events:none). If slide has light background AND decorative opacity < 0.12 → STOP. Auto-fix: raise to 0.15. If ANY decorative element < 200px width or height → STOP. Auto-fix: raise to 250px.
+- [ ] **Focal point check (WARNING):** For each content slide, compare the largest and second-largest elements by font-size. If they differ by < 1.5x → WARNING "no clear focal point — one element should dominate at 2x+ size."
 
 Fix any issues found before proceeding to visual review.
 
@@ -1609,16 +1699,25 @@ Generate a completely unique design. Apply `/frontend-design` aesthetic principl
 - NEVER use generic fonts: Inter, Roboto, Arial, Open Sans, Space Grotesk, or system fonts
 - NEVER converge on common AI-favorite choices across generations
 - **CRITICAL: Never use a serif font.** All fonts must be sans-serif. Blacklisted serif families include (non-exhaustive): Source Serif 4, Newsreader, Merriweather, Playfair Display, DM Serif Display, Garamond, Georgia, Lora, Noto Serif, Crimson Text, EB Garamond, Libre Baskerville, Cormorant, Spectral, Bitter, Zilla Slab, Roboto Slab, Rockwell. If a preset specifies a serif font, replace it with the nearest sans-serif equivalent before generation.
+- CYRILLIC FONT RULES — For Russian-language presentations (detected by Cyrillic characters in the outline):
+
+  CYRILLIC WHITELIST (confirmed full Cyrillic coverage at all weights):
+    Heading: Manrope, Plus Jakarta Sans, Montserrat, Rubik, Noto Sans, Geist, Hanken Grotesk, IBM Plex Sans
+    Body: DM Sans, Nunito, Source Sans Pro, IBM Plex Sans, Noto Sans, Rubik, Manrope, Arimo
+
+  CYRILLIC BLACKLIST (Latin-only — NO Cyrillic glyphs):
+    Outfit, Sora, Barlow, Urbanist, Epilogue, Lexend, Spline Sans, Work Sans, Be Vietnam Pro, Public Sans
+
+  If outline contains Cyrillic and a font from the Cyrillic Blacklist is selected → replace with the nearest Cyrillic-safe alternative. Log: "Font [X] has no Cyrillic, replaced with [Y]."
 - Pair a distinctive sans-display font (geometric/condensed, for headings) with a sans-text font (humanist/rounded, for body) from Google Fonts. Contrast through character (geometric vs humanist, condensed vs proportional, angular vs rounded), not through serif/sans category split.
 - Good sans+sans pairs:
   | Heading (display) | Body (text) | Contrast type |
   |-------------------|-------------|---------------|
-  | Outfit | DM Sans | Geometric vs Humanist |
-  | Manrope | Source Sans Pro | Semi-rounded vs Neutral |
-  | Plus Jakarta Sans | Nunito | Modern geometric vs Rounded friendly |
-  | Barlow | Lato | Slightly condensed vs Classic humanist |
-  | Sora | IBM Plex Sans | Technical vs Corporate humanist |
-  | Urbanist | Noto Sans | Modern geometric vs Universal neutral |
+  | Manrope | DM Sans | Semi-rounded vs Humanist |
+  | Plus Jakarta Sans | Nunito | Geometric vs Rounded friendly |
+  | Montserrat | Source Sans Pro | Geometric bold vs Neutral clean |
+  | Rubik | IBM Plex Sans | Rounded warm vs Corporate humanist |
+  | Geist | Noto Sans | Modern tech vs Universal neutral |
 - Monospace: JetBrains Mono, Fira Code, IBM Plex Mono, Source Code Pro
 
 ### Font Number Blacklist
@@ -1767,6 +1866,13 @@ Customize shortcuts based on the design aesthetic.
 ### Step 4: Write styles/index.css
 
 Include:
+- FONT LOADING RULE — styles/index.css MUST begin with an explicit @import url() that loads ALL needed weights:
+
+  ```css
+  @import url('https://fonts.googleapis.com/css2?family=<HEADING_FONT>:wght@400;500;600;700;800&family=<BODY_FONT>:wght@400;500;600;700&display=swap');
+  ```
+
+  Do NOT rely on Slidev's automatic font loading from frontmatter — it loads only weights 400+600 by default. The @import ensures ALL weights used in inline styles are available, preventing synthetic bold rendering artifacts where Cyrillic and Latin characters render at different thicknesses.
 - CSS variable definitions (palette) — **MUST include 3-level accent hierarchy** (Principle 12): `--color-accent` (full), `--color-accent-dim` (40-60% opacity), `--color-accent-bg` (8-15% opacity). **MUST also include decomposed RGB variables** for rgba() composability: `--accent-rgb: R, G, B;` (from --color-accent), `--bg-base-rgb: R, G, B;` (from --bg-base), `--text-rgb: R, G, B;` (from --color-text). **MUST also define `--color-accent-warm`**: a warm-toned secondary accent (amber, coral, terracotta) for CTA buttons, key metrics on 1-2 slides, and temperature contrast. Example: if primary accent is teal (#0D9488), warm accent = amber (#D97706). Use sparingly (1-2 slides) but it MUST exist to break chromatic monotony
 - Background textures/gradients
 - Font overrides if needed
@@ -1928,6 +2034,31 @@ If content doesn't fit at these sizes — SHORTEN THE TEXT, never shrink the fon
 - The ONLY acceptable hardcoded values: pixel sizes, rem values, percentages.
 - Hardcoded hex in color/background/border-color/font-family = VIOLATION.
 
+**BACKGROUND LAYER SYSTEM** — Every slide MUST have minimum 2 background layers implemented as real HTML div elements (z-index:0, pointer-events:none):
+
+Layer 1 (base): solid color — var(--bg-base), var(--bg-alt), or var(--bg-accent)
+
+Layer 2 (atmosphere): ONE of these, as a positioned div inside the background:
+  - Radial glow: radial-gradient(ellipse at 80% 20%, rgba(var(--accent-rgb),OPACITY), transparent 60%)
+  - Ambient gradient: linear-gradient(135deg, rgba(var(--accent-rgb),OPACITY), transparent)
+  - Vignette: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.06) 100%)
+
+Layer 3 (texture, on 30-40% of slides): dot-grid, noise, or stripes from references/decoration-library.md
+
+CRITICAL: use real HTML <div> elements, NOT CSS pseudo-elements. ::after/::before do NOT render in Slidev headless PNG export.
+
+OPACITY CALIBRATION:
+  Light backgrounds (luminance > 70%): atmosphere 0.15-0.30, texture 0.06-0.12
+  Dark backgrounds (luminance < 30%): atmosphere 0.08-0.15, texture 0.03-0.08
+
+**GHOST TYPOGRAPHY** — On stat-hero and breathing slides, add a decorative ghost element: the hero number or key symbol rendered at 12-20rem, opacity 0.04-0.08, positioned absolute behind content. Example: `<div style="position:absolute;top:50%;right:5%;transform:translateY(-50%);font-family:var(--font-heading);font-size:18rem;font-weight:800;color:rgba(var(--accent-rgb),0.06);line-height:1;pointer-events:none;z-index:0;">₽</div>`. Use on 2-3 slides per deck maximum. Good candidates: currency symbols (₽, $), percentages, key metric numbers.
+
+**DATA VIZ RULE** — If a slide contains 3+ numeric metrics, at least ONE must be visualized as inline SVG, not text-in-card. Proportions → donut chart (stroke-dasharray). Comparison → horizontal bar chart (rect elements). Growth → line with dots. Parts of whole → stacked bar. SVG must use var(--color-accent) for fill/stroke, max 5 data points, labels inline, viewBox-based, include <title> for accessibility.
+
+**CARD DIVERSITY** — BANNED: 3+ cards with identical styling on one slide. When showing 3 items, MUST use one of: a) Bento grid: 1 large (grid-row:span 2 or 1.4fr) + 2 smaller, b) Mixed styles: card-solid + card-ghost + card-accent, c) Size hierarchy: first card accent-bordered + larger, rest surface, d) One card = metric hero (big number), rest = supporting text.
+
+**FOCAL POINT** — Every content slide MUST have ONE dominant element visually 2x+ larger than the next largest. Stat slides: hero number 4-8rem, supporting 1-1.5rem. Card slides: featured card 40-60% of content area. Data slides: chart is dominant, text supports. Quote slides: quote 2-3rem, attribution 0.85rem.
+
 Structure:
 1. **Headmatter** — theme, title, fonts, colorSchema, transition, aspectRatio, etc.
 2. **Slides** — each separated by `---`, with per-slide frontmatter
@@ -1967,6 +2098,8 @@ For each slide in the outline:
 
    **STRUCTURAL BREAK RULE**: Track the heading position pattern across consecutive content slides. After 2 content slides with "label-top-left + heading-below + grid/cards-below" structure, the 3rd MUST break the pattern using one of: (a) centered layout — heading centered at 3rem+, no label, content centered below (stat-hero, section-divider), (b) visual-dominant — a large metric or visual element occupies the left 40%, text is secondary on the right, (c) heading-only — no eyebrow label above the heading, heading speaks for itself. This rule applies regardless of archetype names — what matters is the VISUAL structure as rendered, not the archetype label. **Total frequency cap**: The label-top-left + heading + grid/cards pattern may NOT appear on more than 40% of content slides total. For a 10-slide deck (8 content), max 3 slides. For a 12-slide deck (10 content), max 4. Count and verify before finalizing slides.md.
 
+   **PATTERN BREAK total frequency**: After generating Composition Plan, count slides using "label-top + heading + grid/cards" structure. If > 40% of content slides use this pattern → MUST replace excess with: a) Full-bleed centered: stat-hero, quote-pull, b) Visual-dominant: one large element left/right, text secondary, c) Minimal: heading + single sentence, generous whitespace, d) Inverted: content top, heading bottom, e) Asymmetric split: 30/70 or 70/30.
+
 2. **Apply animations**:
    - Bullet lists → wrap in `<v-clicks>`
    - Code blocks → use step highlighting `{1|2-3|5}`
@@ -1982,7 +2115,16 @@ For each slide in the outline:
 
 7. **Apply Vertical Spacing (Principle 11)**: Content should feel vertically balanced. Use flexbox centering or generous padding. Content should not cram to the top leaving empty bottom space.
 
-8. **Apply Decorative Layer (Principle 6)**: Add the chosen decorative motifs to 30-50% of slides as REAL HTML div elements with inline styles inside the background layer div (z-index:0). **CRITICAL: CSS pseudo-elements (::after, ::before) via class names DO NOT render reliably in Slidev's headless PNG export.** Instead, create actual positioned div elements within the background div. Example dot grid: `<div style="position:absolute;top:0;right:0;width:280px;height:280px;background-image:radial-gradient(circle,rgba(var(--accent-rgb),0.18) 1.2px,transparent 1.2px);background-size:18px 18px;pointer-events:none;"></div>`. Example radial glow: `<div style="position:absolute;bottom:-60px;right:-60px;width:400px;height:400px;background:radial-gradient(circle,rgba(var(--accent-rgb),0.10),transparent 65%);pointer-events:none;"></div>`. Example arc: `<div style="position:absolute;top:-100px;left:-100px;width:300px;height:300px;border:2.5px solid rgba(var(--accent-rgb),0.18);border-radius:50%;pointer-events:none;"></div>`. Rotate motif types across slides — no two adjacent slides use the same motif. **Layout-motif compatibility**: For full-width symmetric layouts (icon-trio, two-col-text, profile-grid), prefer `slide-decor-dots` or `slide-decor-arc` — avoid `slide-decor-glow` (600px bottom-right glow bleeds into content columns on the right side of the slide). If glow is needed on a full-width layout, reduce size to 280px and position at `bottom:0;left:50%;transform:translateX(-50%)` (centered bottom) instead of bottom-right corner. **Light-theme opacity adjustment**: On light backgrounds (luminance >70%), MULTIPLY all decorative opacity values by 3x and increase element sizes. Dot grid: opacity 0.50+, dot size 2px minimum, area 400px×400px minimum. Radial glow: opacity 0.40+, size 600px+. Arc border: opacity 0.55+, width 6px minimum, size 350px+. These higher values compensate for PNG export compression which reduces perceived contrast by ~30% compared to browser rendering. After export, verify at least ONE decorative element is clearly visible on each content slide PNG — if not, double the weakest motif's opacity. **bg-alt special case**: On bg-alt slides (warm grey backgrounds), teal decorative elements blend into the warm tone. Increase opacity by additional 1.5x on bg-alt: dots 0.65+, glow 0.55+, arc 0.70+. **RULE — bg-alt arc/border color**: On bg-alt slides, arc and border stroke decorations MUST use `rgba(var(--text-rgb), 0.15)` (dark color, not teal) — dark-on-warm-gray creates stronger luminance contrast than teal-on-warm-gray. Filled radial glows (background property) remain teal. Pattern: arcs/border strokes → dark color 0.15–0.20 opacity; glows/dot fills → teal rgba(var(--accent-rgb), 0.35+). Also increase decorative element SIZE by 1.5x on light themes (280px → 420px for dot grid, 400px → 600px for glow). Light backgrounds need stronger, larger decorative marks to be visible. **Light-theme filled shape rule**: On light backgrounds, at least 50% of decorative elements MUST be area-filling (dot grid, radial glow) not just outlines (arc). Arcs and border strokes have insufficient visual mass on cream/white backgrounds. For every arc used on a light slide, pair it with a filled glow or increase arc border-width to 4px minimum.
+8. **Apply Decorative Layer (Principle 6) — DECORATION FROM LIBRARY**: When adding decorative elements:
+   1. Open references/decoration-library.md
+   2. Pick a shape (circle, arc, blob, dot-grid, ring, diamond, line-horizontal)
+   3. Pick a behavior (gradient-fill, solid-fill, glow, border-only)
+   4. Pick a position (corner-TR, corner-BL, center-behind, edge-right, etc.)
+   5. Pick a scale (subtle/medium/bold/hero) based on slide importance
+   6. Pick opacity from the preset table (light-theme-* or dark-theme-*)
+   7. Assemble HTML by substituting {{PLACEHOLDERS}}
+   8. Insert into the slide's background div
+   DIVERSITY RULES: No two adjacent slides use the same shape+position combination. Per deck: minimum 3 different shapes, minimum 2 different positions. Rotate: if slide N used corner-TR, slide N+1 uses corner-BL or edge-right. NEVER invent decoration CSS outside the library.
 
 9. **Icon Container Selection (Principle 4)**: For each slide with icons:
    a. Check the deck's icon container history so far

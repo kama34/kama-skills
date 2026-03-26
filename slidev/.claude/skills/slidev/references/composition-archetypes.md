@@ -32,6 +32,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 
 ```html
 <div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 80px;">
+  <!-- ATMOSPHERE LAYER: insert radial-gradient or texture div here (see decoration-library.md) -->
   <div style="display:inline-flex;align-items:center;justify-content:center;line-height:1;background:var(--bg-accent);border:1.5px solid rgba(var(--accent-rgb),0.55);border-radius:20px;padding:6px 18px;margin-bottom:28px;">
     <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.18em;color:var(--color-accent);font-weight:600;">{{LABEL}}</span>
   </div>
@@ -53,6 +54,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 
 ```html
 <div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 80px;">
+  <!-- ATMOSPHERE LAYER: insert radial-gradient or texture div here (see decoration-library.md) -->
   <span style="display:block;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.18em;color:var(--color-accent);font-weight:600;margin-bottom:16px;">{{LABEL}}</span>
   <h1 style="font-size:3.5rem;font-weight:800;color:var(--color-text);margin:0 0 24px;font-family:var(--font-heading);line-height:1.1;">{{HEADING}}</h1>
   <p style="font-size:1.25rem;color:var(--color-muted);max-width:700px;line-height:1.6;font-family:var(--font-body);">{{DESCRIPTION}}</p>
@@ -69,6 +71,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 
 ```html
 <div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:48px 80px;">
+  <!-- ATMOSPHERE LAYER: insert radial-gradient or texture div here (see decoration-library.md) -->
   <span style="display:block;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.18em;color:var(--color-accent);font-weight:600;margin-bottom:16px;">{{LABEL}}</span>
   <h1 style="font-size:5.5rem;font-weight:800;color:var(--color-accent);margin:0;line-height:1;font-family:var(--font-heading);">{{HERO_NUMBER}}</h1>
   <p style="font-size:1.25rem;color:var(--color-text);margin:8px 0 32px;font-family:var(--font-body);">{{SUPPORTING_CONTEXT}}</p>
@@ -88,6 +91,7 @@ Named slide composition patterns for content-aware layout selection. Each archet
 
 ```html
 <div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 100px;">
+  <!-- ATMOSPHERE LAYER: insert radial-gradient or texture div here (see decoration-library.md) -->
   <p style="font-size:2rem;font-weight:400;color:var(--color-text);line-height:1.5;font-family:var(--font-body);font-style:italic;max-width:800px;">{{QUOTE_TEXT}}</p>
   <span style="display:block;margin-top:20px;font-size:0.85rem;color:var(--color-muted);font-family:var(--font-heading);text-transform:uppercase;letter-spacing:0.1em;">{{ATTRIBUTION}}</span>
 </div>
@@ -103,7 +107,9 @@ Named slide composition patterns for content-aware layout selection. Each archet
 **Shape elements:** Numbered pills for steps, dot separators for contact.
 
 ```html
-<div style="position:absolute;inset:0;z-index:0;background:linear-gradient(145deg, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 70%, black) 100%);"></div>
+<div style="position:absolute;inset:0;z-index:0;background:linear-gradient(145deg, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 70%, black) 100%);">
+  <!-- ATMOSPHERE LAYER: insert radial-gradient or texture div here (see decoration-library.md) -->
+</div>
 <div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 80px;">
   <span style="display:block;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.18em;color:var(--color-bg);font-weight:600;margin-bottom:16px;">{{LABEL}}</span>
   <h1 style="font-size:2.8rem;font-weight:800;color:var(--color-bg);margin:0 0 28px;font-family:var(--font-heading);line-height:1.15;">{{HEADING}}</h1>

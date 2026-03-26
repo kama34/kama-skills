@@ -158,6 +158,8 @@ The body has two parts:
 
    When generating slides, archetype HTML skeletons use these shape values to render elements. Defaults when absent: `icon_container: none`, `stat_display: card-inset`, `label_style: uppercase-text`, `divider_style: horizontal`, `photo_mask: rounded-rect`.
 
+For decoration elements, the generator uses the combinatorial library in references/decoration-library.md — pre-tested CSS components assembled from shape + behavior + position + scale. The library grows via --stitch=learn.
+
 4. **CSS block** (REQUIRED fenced `css` block): Written verbatim to `styles/index.css` in the generated project. When a `shapes` block is present, the CSS block should include corresponding utility classes for the shape vocabulary. This block MUST include:
 
    **Required sections in the CSS block:**

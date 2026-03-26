@@ -453,6 +453,15 @@ PASS minimums:
 
 **Background hue proximity rule**: When the decorative element color is within 60° hue distance of the background color, apply a 1.6× opacity multiplier above the stated minimum. When within 30° (same hue family, e.g., green decorations on green background), the minimum opacity for ANY decorative element is 0.18 regardless of other calculations. Warm ecru backgrounds with similarly-warm dots require at minimum 0.28 opacity at 1.5px to register as a pattern. For corner arc/glow elements: the arc center MUST be no more than `radius * 0.5` outside the slide boundary to guarantee at least 40% visibility.
 
+**Opacity calibration by background luminance:**
+- Light backgrounds (luminance > 70%): atmosphere 0.15-0.30, texture 0.06-0.12, borders 0.15-0.25
+- Dark backgrounds (luminance < 30%): atmosphere 0.08-0.15, texture 0.03-0.08, borders 0.10-0.18
+- Minimum decorative element size: 200px on any dimension. Elements < 200px are invisible at presentation scale.
+
+See `references/decoration-library.md` for the full library of pre-tested decoration components.
+
+**BACKGROUND LAYER SYSTEM**: Every slide must have minimum 2 background layers. A single solid color is not professional-grade. Layer atmosphere gradients and texture patterns on top of the base color. See Step 5 BACKGROUND LAYER SYSTEM for implementation details.
+
 **Anti-pattern**: Every slide is just text on a flat/gradient background with zero decorative elements. Or: decorative CSS at 0.03 opacity that is technically present but invisible to the human eye.
 
 ### Pill/Badge Rendering
