@@ -1,53 +1,72 @@
 # План исправлений — Итерация 1
 
-## Проблема 1: Декоративные CSS-классы не рендерятся в экспорте
+## Проблема 1: Icon-trio не проверяет длину заголовков (CRITICAL)
 ### Корневая причина (5 Why)
-1. Декоративные элементы невидимы в экспортированных PNG
-2. Потому что CSS ::after pseudo-elements на div-элементах не срабатывают
-3. Потому что Slidev обрабатывает class= на inline HTML иначе — scoped styles и per-slide <style> не поддерживают ::after на элементах, определённых в styles/index.css через class-names в inline HTML
+1. Slide 4 renders centered titles on icon columns with >15 char titles
+2. Archetype docs mention the rule but generation step doesn't enforce it
+3. No character-count gate in the generation procedure
 
 ### Источник решения
-- PDL cycle 3 regression подтвердил: CSS-class-only подход ненадёжен
-- Решение: декоративные элементы должны быть РЕАЛЬНЫМИ HTML-элементами с inline styles, а не pseudo-elements через CSS classes
+- composition-archetypes.md — existing rule not enforced
+- Beautiful presentations guide — left-aligned text scans 2x faster than centered
 
-### Варианты
-A) Использовать реальные HTML div элементы для декора с inline styles — плюсы: 100% надёжно, видимо в экспорте; минусы: больше HTML-кода
-B) Использовать SVG data URI в background-image inline style — плюсы: компактно; минусы: менее гибко
-
-### Выбранный вариант: A — реальные HTML div-элементы с inline styles
-
+### Выбранный вариант: Add mandatory pre-render check in SKILL.md Step 5
 ### Конкретные правки
 - Файл: SKILL.md
-- Секция: "Step 5: Write slides.md" → "Apply Decorative Layer (Principle 6)"
-- Добавить: конкретный HTML-паттерн для декоративных элементов как inline div-элементы внутри background layer
+- Секция: Step 5 (Write slides.md) — icon-trio enforcement
+- Добавить правило проверки длины заголовков при использовании icon-trio
 
-## Проблема 2: Template lock — 7+ одинаковых структур подряд
-### Корневая причина (5 Why)
-1. 7 слайдов подряд имеют идентичную структуру "label → heading → grid"
-2. Потому что генератор не отслеживает реальную визуальную структуру, только название архетипа
-3. Корень: правило "каждые 2-3 слайда менять структуру" недостаточно конкретно — все архетипы выглядят одинаково, если имеют одинаковую внутреннюю компоновку
-
-### Источник решения
-- design-principles.md Principle 2: "Mandatory structural variation on every 3rd content slide"
-
-### Варианты
-A) Добавить в SKILL.md строгое правило: каждый 3-й контентный слайд ОБЯЗАН использовать centered или inverted layout — плюсы: простое правило; минусы: может быть слишком жёстким
-B) Добавить в Step 4.5 проверку визуальной структуры: если 3+ слайда подряд начинаются с "label top-left → heading → grid below", принудительно вставить centered hero layout
-
-### Выбранный вариант: A + усиление в Step 5
-
-### Конкретные правки
-- Файл: SKILL.md
-- Секция: Step 5 enforcement rules
-- Добавить: "STRUCTURAL BREAK RULE: After 2 content slides with 'label-top-left + heading + grid/cards-below' pattern, the 3rd MUST use either: (a) centered layout with hero number/statement, (b) asymmetric split with visual element dominating left side, (c) no label — heading-only entry. Track the pattern and enforce rotation."
-
-## Проблема 3: bg-alt недоиспользован
+## Проблема 2: Timeline-horizontal без визуального коннектора (MAJOR)
 ### Корневая причина
-Правило в Step 4.5 говорит "bg-alt for 15% additional slides, spaced every 5th-6th" — но это слишком размыто.
+1. Timeline renders as 3 disconnected cards
+2. No connecting line/arrow between phases
+3. Archetype skeleton doesn't include connector element
 
-### Выбранный вариант: Усилить правило
-
+### Выбранный вариант: Add connector line to timeline archetype description in SKILL.md
 ### Конкретные правки
 - Файл: SKILL.md
-- Секция: Step 4.5 background level assignment
-- Изменить: правило должно говорить "bg-alt MUST appear on at least 25% of non-cover/CTA slides"
+- Секция: Step 5 — timeline enforcement
+- Добавить обязательный коннектор
+
+## Проблема 3: Декорации невидимы на light theme (MAJOR)
+### Корневая причина
+1. Generated HTML uses opacity 0.10-0.15 (dark theme defaults)
+2. Preset says 0.25-0.35 but values aren't enforced in generation
+3. No hard minimum in SKILL.md
+
+### Выбранный вариант: Add hard opacity minimums for light themes
+### Конкретные правки
+- Файл: SKILL.md
+- Секция: BACKGROUND LAYER SYSTEM
+- Изменить OPACITY CALIBRATION
+
+## Проблема 4: Нет источников статистик (MAJOR)
+### Корневая причина
+1. No rule in SKILL.md requiring source citations
+2. Archetypes don't include source attribution element
+
+### Выбранный вариант: Add source citation rule to content checks
+### Конкретные правки
+- Файл: SKILL.md
+- Секция: Step 5 content quality checks
+- Добавить обязательную цитату источника
+
+## Проблема 5: bg-level checkerboard pattern (MAJOR)
+### Корневая причина
+1. Background assignment alternates mechanically
+2. No semantic purpose rule for bg-alt
+
+### Выбранный вариант: Add semantic guidance to bg distribution
+### Конкретные правки
+- Файл: SKILL.md
+- Секция: Step 4.5 — Assign background levels
+
+## Проблема 6: Data-spotlight 3 equal stats without hierarchy (MAJOR)
+### Корневая причина
+1. When showing 3+ metrics, no rule promotes the best one
+2. data-spotlight archetype allows flat equal treatment
+
+### Выбранный вариант: Add hero-metric promotion rule
+### Конкретные правки
+- Файл: SKILL.md
+- Секция: Step 5 — FOCAL POINT rule expansion

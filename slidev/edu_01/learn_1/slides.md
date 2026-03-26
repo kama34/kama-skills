@@ -1,416 +1,370 @@
 ---
 theme: default
-title: Цифровая трансформация ритейла
-fonts:
-  sans: Outfit
-  serif: DM Sans
-  mono: JetBrains Mono
 colorSchema: light
-transition: fade
+fonts:
+  sans: Manrope
+  body: DM Sans
+  mono: JetBrains Mono
 aspectRatio: 16/9
+transition: fade
 layout: none
 ---
 
-<!-- SLIDE 1: Cover — cover-hero archetype, bg-accent -->
-<div style="position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--bg-accent);" class="cover-variant-b"></div>
-<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;justify-content:center;">
-  <span class="label-pill" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.35);color:#fff;margin-bottom:28px;align-self:flex-start;">МАРТ 2025</span>
-  <div style="font-family:var(--font-heading);font-size:3.8rem;font-weight:800;color:#fff;line-height:1.1;max-width:700px;margin-bottom:20px;">
-    Цифровая трансформация ритейла
+<!-- SLIDE 1: cover-hero — bg-accent -->
+<div style="position:absolute;inset:0;background:var(--bg-accent);z-index:0;"></div>
+<div style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 70% at 50% 50%,rgba(255,255,255,0.18) 0%,transparent 70%);z-index:0;pointer-events:none;"></div>
+<div style="position:absolute;width:600px;height:600px;border-radius:50%;border:2px solid rgba(255,255,255,0.25);top:-100px;left:-100px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;width:360px;height:360px;border-radius:50%;border:2px solid rgba(255,255,255,0.18);top:-65px;left:-65px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;width:400px;height:400px;border-radius:50%;border:2px solid rgba(255,255,255,0.20);bottom:-80px;right:-60px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 80px;">
+  <div style="display:inline-flex;align-items:center;justify-content:center;line-height:1;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.40);border-radius:20px;padding:6px 18px;margin-bottom:28px;">
+    <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.18em;color:#ffffff;font-weight:600;font-family:var(--font-heading);">ЛогТех Консалтинг · 2025</span>
   </div>
-  <div style="font-family:var(--font-body);font-size:1.4rem;color:rgba(255,255,255,0.85);max-width:560px;line-height:1.5;">
-    Как технологии меняют покупательский опыт в 2025
-  </div>
-  <div style="margin-top:48px;display:flex;align-items:center;gap:16px;">
-    <div class="icon-container" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.35);">
-      <Icon name="rocket" :size="24" color="#fff" />
-    </div>
-    <span style="font-family:var(--font-body);font-size:1.1rem;color:rgba(255,255,255,0.75);">RetailTech · transform@retailtech.ru</span>
+  <h1 style="font-size:3.6rem;font-weight:800;color:#ffffff;margin:0 0 16px;font-family:var(--font-heading);line-height:1.08;text-align:center;">Цифровая трансформация<br>логистики</h1>
+  <p style="font-size:1.35rem;color:rgba(255,255,255,0.85);margin:0 0 32px;font-family:var(--font-body);text-align:center;max-width:680px;">Как технологии сокращают издержки на 35%<br>и ускоряют доставку</p>
+  <div style="display:flex;align-items:center;gap:20px;color:rgba(255,255,255,0.70);font-size:1rem;font-family:var(--font-body);">
+    <span>Цифровая трансформация</span>
+    <span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.50);flex-shrink:0;"></span>
+    <span>Логистика</span>
+    <span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.50);flex-shrink:0;"></span>
+    <span>2025</span>
   </div>
 </div>
 
 <style>
-.slidev-layout { padding: 0 !important; overflow: hidden; }
+.s1 .slidev-layout { padding: 0 !important; overflow: hidden; }
 </style>
 
 ---
 layout: none
 ---
 
-<!-- SLIDE 2: Bento-grid — "78% покупателей ожидают персонализацию" -->
-<div style="position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--bg-base);" class="slide-decor-dots"></div>
+<!-- SLIDE 2: bento-grid — bg-base — Pain metrics -->
+<div style="position:absolute;inset:0;background:var(--bg-base);z-index:0;"></div>
+<div style="position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(var(--accent-rgb),0.12) 0%,transparent 70%);top:-60px;right:-60px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;width:200px;height:200px;background-image:radial-gradient(circle,rgba(var(--accent-rgb),0.18) 1.2px,transparent 1.2px);background-size:20px 20px;bottom:40px;left:40px;pointer-events:none;z-index:0;"></div>
 <div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;">
-  <span class="label-pill" style="margin-bottom:16px;align-self:flex-start;">КОНТЕКСТ РЫНКА</span>
-  <div style="font-family:var(--font-heading);font-size:2.4rem;font-weight:700;color:var(--color-text);margin-bottom:28px;line-height:1.15;">
-    78% покупателей ожидают персонализацию
+  <h1 style="font-size:2.4rem;font-weight:800;color:var(--color-text);margin:0 0 18px;font-family:var(--font-heading);line-height:1.15;">Логистика теряет 2,4 трлн ₽<br>на ручных процессах ежегодно</h1>
+  <div style="flex:1;display:grid;grid-template-columns:1.2fr 1fr;grid-template-rows:1fr 1fr;gap:14px;">
+    <div style="grid-row:1/3;background:linear-gradient(135deg,rgba(var(--accent-rgb),0.12),var(--color-surface));border:1.5px solid var(--color-accent-dim);border-radius:14px;padding:28px;display:flex;flex-direction:column;justify-content:center;">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(var(--accent-rgb),0.12);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <Icon name="warehouse" :size="24" color="var(--color-accent)" />
+      </div>
+      <div style="font-size:4.2rem;font-weight:800;color:var(--color-accent);line-height:1;font-family:var(--font-heading);">67%</div>
+      <div style="font-size:1.1rem;color:var(--color-muted);font-family:var(--font-body);margin-top:8px;line-height:1.4;">складских операций<br>выполняется вручную</div>
+    </div>
+    <div style="background:var(--color-surface);border:1px solid var(--color-surface-border);border-radius:14px;padding:18px 22px;display:flex;align-items:center;gap:14px;">
+      <div style="width:44px;height:44px;border-radius:50%;background:rgba(var(--accent-rgb),0.10);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <Icon name="warning" :size="20" color="var(--color-accent)" />
+      </div>
+      <div>
+        <div style="font-size:2.4rem;font-weight:800;color:var(--color-accent);line-height:1;font-family:var(--font-heading);">3,2%</div>
+        <div style="font-size:1rem;color:var(--color-muted);font-family:var(--font-body);margin-top:2px;">средняя ошибка комплектации</div>
+      </div>
+    </div>
+    <div style="background:var(--color-surface);border:1px solid var(--color-surface-border);border-radius:14px;padding:18px 22px;display:flex;align-items:center;gap:14px;">
+      <div style="width:44px;height:44px;border-radius:50%;background:rgba(var(--accent-rgb),0.10);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <Icon name="clock" :size="20" color="var(--color-accent)" />
+      </div>
+      <div>
+        <div style="font-size:2.4rem;font-weight:800;color:var(--color-accent);line-height:1;font-family:var(--font-heading);">18%</div>
+        <div style="font-size:1rem;color:var(--color-muted);font-family:var(--font-body);margin-top:2px;">простой транспорта от цикла</div>
+      </div>
+    </div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:16px;flex:1;">
-    <div class="card-solid" style="grid-column:1;grid-row:1 2;display:flex;flex-direction:column;gap:12px;justify-content:center;">
-      <div class="icon-container">
+</div>
+
+<style>
+.s2 .slidev-layout { padding: 0 !important; overflow: hidden; }
+</style>
+
+---
+layout: none
+---
+
+<!-- SLIDE 3: stat-hero — bg-base — Cost of inaction (breathing slide) -->
+<div style="position:absolute;inset:0;background:var(--bg-base);z-index:0;"></div>
+<div style="position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(var(--accent-rgb),0.28) 0%,transparent 70%);filter:blur(30px);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(217,119,6,0.14) 0%,transparent 70%);filter:blur(24px);bottom:-80px;right:-80px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;width:400px;height:400px;border-radius:50%;border:2px solid rgba(var(--accent-rgb),0.28);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;width:260px;height:260px;border-radius:50%;border:2px solid rgba(var(--accent-rgb),0.18);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:48px 80px;">
+  <span style="display:block;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.18em;color:var(--color-accent);font-weight:600;margin-bottom:16px;font-family:var(--font-heading);">ЦЕНА ПРОМЕДЛЕНИЯ</span>
+  <h1 style="font-size:6rem;font-weight:800;color:var(--color-accent);margin:0;line-height:1;font-family:var(--font-heading);text-align:center;">12 млн ₽</h1>
+  <p style="font-size:1.35rem;color:var(--color-text);margin:12px 0 36px;font-family:var(--font-body);text-align:center;">теряет бизнес каждый месяц без автоматизации</p>
+  <div style="display:flex;gap:12px;">
+    <div style="display:inline-flex;align-items:center;justify-content:center;line-height:1;background:var(--bg-base);border:1.5px solid var(--color-accent-dim);border-radius:20px;padding:8px 18px;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-accent);font-weight:600;font-family:var(--font-heading);">ручная маршрутизация: 8 млн/мес</div>
+    <div style="display:inline-flex;align-items:center;justify-content:center;line-height:1;background:var(--bg-base);border:1.5px solid var(--color-accent-dim);border-radius:20px;padding:8px 18px;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-accent);font-weight:600;font-family:var(--font-heading);">простой флота: 4 млн/мес</div>
+  </div>
+  <p style="font-size:1rem;color:var(--color-muted);margin:20px 0 0;font-family:var(--font-body);text-align:center;">Конкуренты с WMS растут в <strong style="color:var(--color-accent);">2,8×</strong> быстрее</p>
+</div>
+
+<style>
+.s3 .slidev-layout { padding: 0 !important; overflow: hidden; }
+</style>
+
+---
+layout: none
+---
+
+<!-- SLIDE 4: icon-trio — bg-alt — Three technologies -->
+<div style="position:absolute;inset:0;background:var(--bg-alt);z-index:0;"></div>
+<div style="position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(var(--accent-rgb),0.10) 0%,transparent 70%);top:-80px;right:-80px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;width:200px;height:200px;border:2px solid rgba(var(--accent-rgb),0.25);border-radius:50%;bottom:-60px;left:-60px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;">
+  <h1 style="font-size:2.4rem;font-weight:800;color:var(--color-text);margin:0 0 20px;font-family:var(--font-heading);line-height:1.15;">Три технологии меняют<br>правила игры</h1>
+  <div style="flex:1;display:flex;justify-content:center;align-items:center;gap:48px;">
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;max-width:220px;">
+      <div style="width:76px;height:76px;border-radius:50%;background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;margin-bottom:18px;">
+        <Icon name="wms" :size="32" color="var(--color-accent)" />
+      </div>
+      <span style="font-size:1.3rem;font-weight:700;color:var(--color-text);margin-bottom:6px;font-family:var(--font-heading);text-align:center;">WMS нового поколения</span>
+      <span style="font-size:1.1rem;color:var(--color-muted);line-height:1.4;font-family:var(--font-body);text-align:center;">с ML-оптимизацией складских операций</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;max-width:220px;">
+      <div style="width:76px;height:76px;border-radius:50%;background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;margin-bottom:18px;">
+        <Icon name="iot" :size="32" color="var(--color-accent)" />
+      </div>
+      <span style="font-size:1.3rem;font-weight:700;color:var(--color-text);margin-bottom:6px;font-family:var(--font-heading);text-align:center;">IoT-датчики</span>
+      <span style="font-size:1.1rem;color:var(--color-muted);line-height:1.4;font-family:var(--font-body);text-align:center;">на каждом этапе цепочки поставок</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;max-width:220px;">
+      <div style="width:76px;height:76px;border-radius:50%;background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;margin-bottom:18px;">
+        <Icon name="analytics" :size="32" color="var(--color-accent)" />
+      </div>
+      <span style="font-size:1.3rem;font-weight:700;color:var(--color-text);margin-bottom:6px;font-family:var(--font-heading);text-align:center;">Предиктивная аналитика</span>
+      <span style="font-size:1.1rem;color:var(--color-muted);line-height:1.4;font-family:var(--font-body);text-align:center;">прогноз спроса с точностью 94%</span>
+    </div>
+  </div>
+</div>
+
+<style>
+.s4 .slidev-layout { padding: 0 !important; overflow: hidden; }
+</style>
+
+---
+layout: none
+---
+
+<!-- SLIDE 5: timeline-horizontal — bg-base — 6-month journey -->
+<div style="position:absolute;inset:0;background:var(--bg-base);z-index:0;"></div>
+<div style="position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(var(--accent-rgb),0.10) 0%,transparent 70%);bottom:-80px;right:-80px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;width:200px;height:200px;background-image:radial-gradient(circle,rgba(var(--accent-rgb),0.18) 1.2px,transparent 1.2px);background-size:20px 20px;top:40px;right:60px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;">
+  <h1 style="font-size:2.4rem;font-weight:800;color:var(--color-text);margin:0 0 18px;font-family:var(--font-heading);line-height:1.15;">От хаоса к системе за 6 месяцев</h1>
+  <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;align-items:stretch;">
+    <div style="background:var(--color-surface);border:1px solid var(--color-surface-border);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;">
+      <span style="display:block;font-size:0.65rem;color:var(--color-accent);font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;font-family:var(--font-heading);">Месяц 1–2</span>
+      <span style="font-size:1.2rem;font-weight:700;color:var(--color-text);line-height:1.35;font-family:var(--font-heading);">Аудит процессов</span>
+      <span style="font-size:1rem;color:var(--color-muted);line-height:1.4;margin-top:4px;font-family:var(--font-body);">Диагностика и интеграция WMS</span>
+    </div>
+    <div style="background:var(--color-surface);border:1px solid var(--color-surface-border);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;">
+      <span style="display:block;font-size:0.65rem;color:var(--color-accent);font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;font-family:var(--font-heading);">Месяц 3–4</span>
+      <span style="font-size:1.2rem;font-weight:700;color:var(--color-text);line-height:1.35;font-family:var(--font-heading);">IoT-инфраструктура</span>
+      <span style="font-size:1rem;color:var(--color-muted);line-height:1.4;margin-top:4px;font-family:var(--font-body);">Датчики и мониторинг в реальном времени</span>
+    </div>
+    <div style="background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;">
+      <span style="display:block;font-size:0.65rem;color:var(--color-accent);font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;font-family:var(--font-heading);">Месяц 5–6</span>
+      <span style="font-size:1.2rem;font-weight:700;color:var(--color-text);line-height:1.35;font-family:var(--font-heading);">Аналитика и обучение</span>
+      <span style="font-size:1rem;color:var(--color-muted);line-height:1.4;margin-top:4px;font-family:var(--font-body);">Предиктивные модели и команда</span>
+    </div>
+    <div style="grid-column:1/4;background:var(--color-surface);border:1px solid var(--color-surface-border);border-radius:12px;padding:14px 24px;display:flex;align-items:center;gap:32px;">
+      <span style="font-size:0.75rem;color:var(--color-accent);font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:var(--font-heading);">КЛЮЧЕВЫЕ РЕЗУЛЬТАТЫ</span>
+      <div style="display:flex;gap:32px;align-items:center;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--color-accent);"></div>
+          <span style="font-size:1rem;color:var(--color-text);font-family:var(--font-body);">WMS запущена</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--color-accent);"></div>
+          <span style="font-size:1rem;color:var(--color-text);font-family:var(--font-body);">IoT в сети</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--color-accent);"></div>
+          <span style="font-size:1rem;color:var(--color-text);font-family:var(--font-body);">ROI за год: 340%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.s5 .slidev-layout { padding: 0 !important; overflow: hidden; }
+</style>
+
+---
+layout: none
+---
+
+<!-- SLIDE 6: data-spotlight — bg-alt — Case study X5 Group -->
+<div style="position:absolute;inset:0;background:var(--bg-alt);z-index:0;"></div>
+<div style="position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(var(--accent-rgb),0.14) 0%,transparent 70%);filter:blur(20px);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;width:200px;height:200px;border:2px solid rgba(var(--accent-rgb),0.25);border-radius:50%;bottom:-40px;left:-40px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:48px 80px;">
+  <span style="display:block;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.18em;color:var(--color-accent);font-weight:600;margin-bottom:14px;font-family:var(--font-heading);">КЕЙС: X5 GROUP</span>
+  <h1 style="font-size:2.4rem;font-weight:800;color:var(--color-text);margin:0 0 28px;font-family:var(--font-heading);line-height:1.15;text-align:center;">Пилот сократил потери на 41%</h1>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;max-width:760px;width:100%;">
+    <div style="background:rgba(var(--accent-rgb),0.12);border:1.5px solid var(--color-accent-dim);border-radius:14px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:3.2rem;font-weight:800;color:var(--color-accent);line-height:1;font-family:var(--font-heading);">0,8%</div>
+      <div style="font-size:0.85rem;color:var(--color-muted);margin-top:6px;text-align:center;font-family:var(--font-body);line-height:1.4;">ошибки комплектации<br><span style="color:var(--color-accent);font-weight:600;">было 3,2%</span></div>
+    </div>
+    <div style="background:rgba(var(--accent-rgb),0.07);border:1px solid var(--color-surface-border);border-radius:14px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:3.2rem;font-weight:800;color:var(--color-accent);line-height:1;font-family:var(--font-heading);">+28%</div>
+      <div style="font-size:0.85rem;color:var(--color-muted);margin-top:6px;text-align:center;font-family:var(--font-body);line-height:1.4;">скорость доставки<br>в среднем</div>
+    </div>
+    <div style="background:rgba(var(--accent-rgb),0.07);border:1px solid var(--color-surface-border);border-radius:14px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:3.2rem;font-weight:800;color:var(--color-accent);line-height:1;font-family:var(--font-heading);">340%</div>
+      <div style="font-size:0.85rem;color:var(--color-muted);margin-top:6px;text-align:center;font-family:var(--font-body);line-height:1.4;">ROI за<br>первый год</div>
+    </div>
+  </div>
+  <p style="font-size:1.1rem;color:var(--color-accent);margin-top:22px;font-weight:600;font-family:var(--font-body);text-align:center;">Внедрение завершено за 4 месяца</p>
+</div>
+
+<style>
+.s6 .slidev-layout { padding: 0 !important; overflow: hidden; }
+</style>
+
+---
+layout: none
+---
+
+<!-- SLIDE 7: comparison-table — bg-base — Pricing -->
+<div style="position:absolute;inset:0;background:var(--bg-base);z-index:0;"></div>
+<div style="position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(var(--accent-rgb),0.10) 0%,transparent 70%);top:-60px;right:-60px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;width:200px;height:200px;background-image:radial-gradient(circle,rgba(var(--accent-rgb),0.18) 1.2px,transparent 1.2px);background-size:20px 20px;bottom:60px;left:60px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;">
+  <h1 style="font-size:2.4rem;font-weight:800;color:var(--color-text);margin:0 0 20px;font-family:var(--font-heading);line-height:1.15;">Инвестиция с окупаемостью<br>за 8 месяцев</h1>
+  <div style="flex:1;display:grid;grid-template-rows:1fr 1fr 1fr;gap:10px;align-items:stretch;">
+    <div style="display:flex;align-items:center;gap:20px;background:transparent;border:1px solid var(--color-surface-border);border-radius:12px;padding:0 24px;">
+      <div style="width:44px;height:44px;border-radius:14px;background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <Icon name="package" :size="20" color="var(--color-accent)" />
+      </div>
+      <div style="flex:1;">
+        <span style="font-size:1.2rem;font-weight:700;color:var(--color-text);font-family:var(--font-heading);">Базовый</span>
+        <span style="font-size:1rem;color:var(--color-muted);margin-left:8px;font-family:var(--font-body);">WMS + обучение</span>
+      </div>
+      <span style="font-size:1.8rem;font-weight:800;color:var(--color-accent);font-family:var(--font-heading);">4,2 млн ₽</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:20px;background:transparent;border:1px solid var(--color-surface-border);border-radius:12px;padding:0 24px;">
+      <div style="width:44px;height:44px;border-radius:14px;background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <Icon name="iot" :size="20" color="var(--color-accent)" />
+      </div>
+      <div style="flex:1;">
+        <span style="font-size:1.2rem;font-weight:700;color:var(--color-text);font-family:var(--font-heading);">Продвинутый</span>
+        <span style="font-size:1rem;color:var(--color-muted);margin-left:8px;font-family:var(--font-body);">WMS + IoT + аналитика</span>
+      </div>
+      <span style="font-size:1.8rem;font-weight:800;color:var(--color-accent);font-family:var(--font-heading);">8,7 млн ₽</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:20px;background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);border-radius:12px;padding:0 24px;">
+      <div style="width:44px;height:44px;border-radius:14px;background:rgba(var(--accent-rgb),0.20);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <Icon name="rocket" :size="20" color="var(--color-accent)" />
+      </div>
+      <div style="flex:1;">
+        <span style="font-size:1.2rem;font-weight:700;color:var(--color-text);font-family:var(--font-heading);">Enterprise</span>
+        <span style="font-size:1rem;color:var(--color-muted);margin-left:8px;font-family:var(--font-body);">полная трансформация</span>
+      </div>
+      <span style="font-size:1.8rem;font-weight:800;color:var(--color-accent);font-family:var(--font-heading);">от 15 млн ₽</span>
+    </div>
+  </div>
+</div>
+
+<style>
+.s7 .slidev-layout { padding: 0 !important; overflow: hidden; }
+</style>
+
+---
+layout: none
+---
+
+<!-- SLIDE 8: card-mosaic — bg-alt — Team -->
+<div style="position:absolute;inset:0;background:var(--bg-alt);z-index:0;"></div>
+<div style="position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(var(--accent-rgb),0.10) 0%,transparent 70%);bottom:-80px;right:-80px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;width:200px;height:200px;border:2px solid rgba(var(--accent-rgb),0.25);border-radius:50%;top:-60px;left:-60px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;">
+  <h1 style="font-size:2.4rem;font-weight:800;color:var(--color-text);margin:0 0 18px;font-family:var(--font-heading);line-height:1.15;">200+ внедрений — проверенная<br>экспертиза</h1>
+  <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px;align-items:stretch;">
+    <div style="background:var(--bg-base);border:1px solid var(--color-surface-border);border-radius:14px;padding:22px;display:flex;align-items:center;gap:16px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         <Icon name="users" :size="24" color="var(--color-accent)" />
       </div>
-      <div style="font-family:var(--font-heading);font-size:4rem;font-weight:800;color:var(--color-accent);line-height:1;">78%</div>
-      <div style="font-family:var(--font-body);font-size:1.25rem;color:var(--color-muted);line-height:1.4;">покупателей ожидают<br>персонализацию</div>
-      <div style="font-family:var(--font-body);font-size:0.9rem;color:var(--color-muted);">McKinsey, 2024</div>
+      <div>
+        <div style="font-size:2.2rem;font-weight:800;color:var(--color-accent);line-height:1;font-family:var(--font-heading);">47</div>
+        <div style="font-size:1rem;color:var(--color-muted);margin-top:2px;font-family:var(--font-body);">сертифицированных инженеров</div>
+      </div>
     </div>
-    <div class="card-ghost" style="display:flex;flex-direction:column;gap:10px;justify-content:center;">
-      <div class="icon-container">
+    <div style="background:transparent;border:1.5px solid rgba(var(--accent-rgb),0.30);border-radius:14px;padding:22px;display:flex;align-items:center;gap:16px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <Icon name="shield" :size="24" color="var(--color-accent)" />
+      </div>
+      <div>
+        <div style="font-size:1.25rem;font-weight:700;color:var(--color-text);line-height:1.3;font-family:var(--font-heading);">Партнёры</div>
+        <div style="font-size:1rem;color:var(--color-muted);margin-top:2px;font-family:var(--font-body);">SAP · Oracle · 1С</div>
+      </div>
+    </div>
+    <div style="background:transparent;border:1.5px solid rgba(var(--accent-rgb),0.30);border-radius:14px;padding:22px;display:flex;align-items:center;gap:16px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <Icon name="clock" :size="24" color="var(--color-accent)" />
+      </div>
+      <div>
+        <div style="font-size:2.2rem;font-weight:800;color:var(--color-accent);line-height:1;font-family:var(--font-heading);">4,5 мес</div>
+        <div style="font-size:1rem;color:var(--color-muted);margin-top:2px;font-family:var(--font-body);">средний срок внедрения</div>
+      </div>
+    </div>
+    <div style="background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);border-radius:14px;padding:22px;display:flex;align-items:center;gap:16px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(var(--accent-rgb),0.20);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         <Icon name="chart" :size="24" color="var(--color-accent)" />
       </div>
-      <div style="font-family:var(--font-heading);font-size:2.4rem;font-weight:800;color:var(--color-accent);line-height:1;">−3–5%</div>
-      <div style="font-family:var(--font-body);font-size:1.25rem;color:var(--color-muted);line-height:1.4;">трафика офлайн-ритейла<br>ежегодно</div>
-    </div>
-    <div class="card-accent" style="display:flex;flex-direction:column;gap:10px;justify-content:center;">
-      <div class="icon-container">
-        <Icon name="sync" :size="24" color="var(--color-accent)" />
+      <div>
+        <div style="font-size:2.2rem;font-weight:800;color:var(--color-accent);line-height:1;font-family:var(--font-heading);">200+</div>
+        <div style="font-size:1rem;color:var(--color-muted);margin-top:2px;font-family:var(--font-body);">успешных внедрений</div>
       </div>
-      <div style="font-family:var(--font-heading);font-size:1.6rem;font-weight:700;color:var(--color-text);line-height:1.2;">Omnichannel —<br>не опция</div>
-      <div style="font-family:var(--font-body);font-size:1.1rem;color:var(--color-muted);">Это необходимость</div>
     </div>
   </div>
 </div>
 
 <style>
-.slidev-layout { padding: 0 !important; overflow: hidden; }
+.s8 .slidev-layout { padding: 0 !important; overflow: hidden; }
 </style>
 
 ---
 layout: none
 ---
 
-<!-- SLIDE 3: Stat-hero — "−12% выручки каждый месяц без цифровизации" -->
-<div style="position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--bg-base);" class="slide-decor-glow"></div>
-<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;justify-content:center;">
-  <span class="label-pill" style="margin-bottom:24px;align-self:flex-start;">СТОИМОСТЬ БЕЗДЕЙСТВИЯ</span>
-  <div style="font-family:var(--font-heading);font-size:2.4rem;font-weight:700;color:var(--color-text);margin-bottom:40px;line-height:1.15;max-width:700px;">
-    −12% выручки каждый месяц без цифровизации
-  </div>
-  <div style="display:flex;gap:48px;align-items:flex-end;">
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <div class="stat-hero">−12%</div>
-      <span class="stat-caption">потенциальной выручки<br>каждый месяц</span>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:20px;flex:1;max-width:460px;">
-      <div style="display:flex;align-items:flex-start;gap:14px;" class="card-ghost">
-        <div class="icon-container" style="flex-shrink:0;">
-          <Icon name="brain" :size="22" color="var(--color-accent)" />
-        </div>
-        <div style="font-family:var(--font-body);font-size:1.25rem;color:var(--color-text);line-height:1.4;">Конкуренты уже внедряют AI-рекомендации</div>
+<!-- SLIDE 9: cta-warm — bg-accent — CTA -->
+<div style="position:absolute;inset:0;background:linear-gradient(145deg, var(--bg-accent) 0%, color-mix(in srgb, var(--bg-accent) 70%, black) 100%);z-index:0;"></div>
+<div style="position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(255,255,255,0.18) 0%,transparent 70%);filter:blur(30px);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;width:600px;height:600px;border-radius:50%;border:2px solid rgba(255,255,255,0.25);top:-100px;left:-100px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;width:360px;height:360px;border-radius:50%;border:2px solid rgba(255,255,255,0.18);top:-65px;left:-65px;pointer-events:none;z-index:0;"></div>
+<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 80px;">
+  <span style="display:block;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.18em;color:rgba(255,255,255,0.80);font-weight:600;margin-bottom:16px;font-family:var(--font-heading);">СЛЕДУЮЩИЙ ШАГ</span>
+  <h1 style="font-size:3rem;font-weight:800;color:#ffffff;margin:0 0 28px;font-family:var(--font-heading);line-height:1.15;text-align:center;">Запустите пилот за 2 недели —<br>бесплатно</h1>
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:580px;width:100%;margin-bottom:32px;">
+    <div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:12px;padding:12px 20px;">
+      <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.20);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span style="font-size:0.85rem;font-weight:800;color:#ffffff;font-family:var(--font-heading);">1</span>
       </div>
-      <div style="display:flex;align-items:flex-start;gap:14px;" class="card-solid">
-        <div class="icon-container" style="flex-shrink:0;">
-          <Icon name="chart" :size="22" color="var(--color-accent)" />
-        </div>
-        <div style="font-family:var(--font-body);font-size:1.25rem;color:var(--color-text);line-height:1.4;">Разрыв увеличивается экспоненциально</div>
+      <span style="font-size:1.15rem;color:#ffffff;font-family:var(--font-body);text-align:left;">Бесплатный аудит текущих процессов</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:12px;padding:12px 20px;">
+      <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.20);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span style="font-size:0.85rem;font-weight:800;color:#ffffff;font-family:var(--font-heading);">2</span>
       </div>
+      <span style="font-size:1.15rem;color:#ffffff;font-family:var(--font-body);text-align:left;">Демо WMS на ваших реальных данных</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:12px;padding:12px 20px;">
+      <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.20);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span style="font-size:0.85rem;font-weight:800;color:#ffffff;font-family:var(--font-heading);">3</span>
+      </div>
+      <span style="font-size:1.15rem;color:#ffffff;font-family:var(--font-body);text-align:left;">Детальный план ROI для вашего бизнеса</span>
     </div>
   </div>
-</div>
-
-<style>
-.slidev-layout { padding: 0 !important; overflow: hidden; }
-</style>
-
----
-layout: none
----
-
-<!-- SLIDE 4: Section-divider — bg-alt -->
-<div style="position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--bg-alt);" class="section-glow"></div>
-<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;justify-content:center;align-items:center;text-align:center;">
-  <span class="label-pill" style="margin-bottom:28px;">РАЗДЕЛ</span>
-  <div style="font-family:var(--font-heading);font-size:3.2rem;font-weight:800;color:var(--color-text);line-height:1.15;max-width:680px;">
-    Наш подход к трансформации
-  </div>
-  <div style="margin-top:32px;display:flex;gap:16px;">
-    <div class="icon-container">
-      <Icon name="target" :size="24" color="var(--color-accent)" />
-    </div>
-    <div class="icon-container">
-      <Icon name="rocket" :size="24" color="var(--color-accent)" />
-    </div>
-    <div class="icon-container">
-      <Icon name="globe" :size="24" color="var(--color-accent)" />
-    </div>
+  <div style="display:flex;align-items:center;gap:24px;color:rgba(255,255,255,0.85);font-size:1.1rem;font-family:var(--font-body);">
+    <span>Telegram: @logtech_pilot</span>
+    <span style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.50);flex-shrink:0;"></span>
+    <span>logtech.ru/demo</span>
   </div>
 </div>
 
 <style>
-.slidev-layout { padding: 0 !important; overflow: hidden; }
-</style>
-
----
-layout: none
----
-
-<!-- SLIDE 5: Icon-trio — "AI + Omnichannel + Аналитика = рост" -->
-<div style="position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--bg-base);" class="slide-decor-arc"></div>
-<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;">
-  <span class="label-pill" style="margin-bottom:16px;align-self:flex-start;">ТРИ СТОЛПА</span>
-  <div style="font-family:var(--font-heading);font-size:2.4rem;font-weight:700;color:var(--color-text);margin-bottom:36px;line-height:1.15;">
-    AI + Omnichannel + Аналитика = рост
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;flex:1;">
-    <div class="card-solid" style="display:flex;flex-direction:column;gap:16px;padding:28px 24px;">
-      <div class="icon-container">
-        <Icon name="brain" :size="26" color="var(--color-accent)" />
-      </div>
-      <div style="font-family:var(--font-heading);font-size:1.5rem;font-weight:700;color:var(--color-text);">Персонализация через AI</div>
-      <div style="font-family:var(--font-body);font-size:1.15rem;color:var(--color-muted);line-height:1.5;">Индивидуальные рекомендации для каждого покупателя в реальном времени</div>
-    </div>
-    <div class="card-ghost" style="display:flex;flex-direction:column;gap:16px;padding:28px 24px;">
-      <div class="icon-container">
-        <Icon name="sync" :size="26" color="var(--color-accent)" />
-      </div>
-      <div style="font-family:var(--font-heading);font-size:1.5rem;font-weight:700;color:var(--color-text);">Бесшовный Omnichannel</div>
-      <div style="font-family:var(--font-body);font-size:1.15rem;color:var(--color-muted);line-height:1.5;">Единый опыт онлайн и офлайн без разрывов в пути покупателя</div>
-    </div>
-    <div class="card-accent" style="display:flex;flex-direction:column;gap:16px;padding:28px 24px;">
-      <div class="icon-container">
-        <Icon name="database" :size="26" color="var(--color-accent)" />
-      </div>
-      <div style="font-family:var(--font-heading);font-size:1.5rem;font-weight:700;color:var(--color-text);">Аналитика реального времени</div>
-      <div style="font-family:var(--font-body);font-size:1.15rem;color:var(--color-muted);line-height:1.5;">Решения на основе данных, а не интуиции</div>
-    </div>
-  </div>
-</div>
-
-<style>
-.slidev-layout { padding: 0 !important; overflow: hidden; }
-</style>
-
----
-layout: none
----
-
-<!-- SLIDE 6: Timeline-horizontal — "Дорожная карта внедрения" -->
-<div style="position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--bg-base);" class="slide-decor-dots"></div>
-<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;">
-  <span class="label-pill" style="margin-bottom:16px;align-self:flex-start;">ДОРОЖНАЯ КАРТА</span>
-  <div style="font-family:var(--font-heading);font-size:2.4rem;font-weight:700;color:var(--color-text);margin-bottom:40px;line-height:1.15;">
-    4 квартала к полной трансформации
-  </div>
-  <div style="display:flex;flex-direction:column;gap:0;flex:1;justify-content:center;">
-    <!-- Timeline line -->
-    <div style="display:flex;align-items:stretch;gap:0;">
-      <!-- Q1 -->
-      <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
-        <div style="width:44px;height:44px;border-radius:50%;background:var(--color-accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <span style="font-family:var(--font-heading);font-size:0.85rem;font-weight:800;color:#fff;">Q1</span>
-        </div>
-        <div style="width:2px;flex:1;background:var(--color-accent-dim);margin:8px 0;min-height:8px;"></div>
-      </div>
-      <div style="flex:4;padding:0 0 24px 20px;">
-        <div class="card-solid" style="height:100%;">
-          <div style="font-family:var(--font-heading);font-size:1.2rem;font-weight:700;color:var(--color-accent);margin-bottom:6px;">Аудит</div>
-          <div style="font-family:var(--font-body);font-size:1.15rem;color:var(--color-text);">Аудит текущей инфраструктуры и данных</div>
-        </div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:stretch;gap:0;">
-      <!-- Q2 -->
-      <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
-        <div style="width:44px;height:44px;border-radius:50%;background:var(--color-accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <span style="font-family:var(--font-heading);font-size:0.85rem;font-weight:800;color:#fff;">Q2</span>
-        </div>
-        <div style="width:2px;flex:1;background:var(--color-accent-dim);margin:8px 0;min-height:8px;"></div>
-      </div>
-      <div style="flex:4;padding:0 0 24px 20px;">
-        <div class="card-ghost" style="height:100%;">
-          <div style="font-family:var(--font-heading);font-size:1.2rem;font-weight:700;color:var(--color-accent);margin-bottom:6px;">Интеграция</div>
-          <div style="font-family:var(--font-body);font-size:1.15rem;color:var(--color-text);">Интеграция CRM и аналитической платформы</div>
-        </div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:stretch;gap:0;">
-      <!-- Q3 -->
-      <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
-        <div style="width:44px;height:44px;border-radius:50%;background:var(--color-accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <span style="font-family:var(--font-heading);font-size:0.85rem;font-weight:800;color:#fff;">Q3</span>
-        </div>
-        <div style="width:2px;flex:1;background:var(--color-accent-dim);margin:8px 0;min-height:8px;"></div>
-      </div>
-      <div style="flex:4;padding:0 0 24px 20px;">
-        <div class="card-solid" style="height:100%;">
-          <div style="font-family:var(--font-heading);font-size:1.2rem;font-weight:700;color:var(--color-accent);margin-bottom:6px;">AI-запуск</div>
-          <div style="font-family:var(--font-body);font-size:1.15rem;color:var(--color-text);">Запуск AI-рекомендаций и персонализации</div>
-        </div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:stretch;gap:0;">
-      <!-- Q4 -->
-      <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
-        <div style="width:44px;height:44px;border-radius:50%;background:var(--color-accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <span style="font-family:var(--font-heading);font-size:0.85rem;font-weight:800;color:#fff;">Q4</span>
-        </div>
-      </div>
-      <div style="flex:4;padding:0 0 0 20px;">
-        <div class="card-accent" style="height:100%;">
-          <div style="font-family:var(--font-heading);font-size:1.2rem;font-weight:700;color:var(--color-accent);margin-bottom:6px;">Масштаб</div>
-          <div style="font-family:var(--font-body);font-size:1.15rem;color:var(--color-text);">Omnichannel-интеграция и масштабирование</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<style>
-.slidev-layout { padding: 0 !important; overflow: hidden; }
-</style>
-
----
-layout: none
----
-
-<!-- SLIDE 7: Stat-hero — "+34% конверсия за 6 месяцев пилота" — bg-alt -->
-<div style="position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--bg-alt);" class="slide-decor-glow"></div>
-<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;justify-content:center;">
-  <span class="label-pill" style="margin-bottom:24px;align-self:flex-start;">РЕЗУЛЬТАТЫ ПИЛОТА</span>
-  <div style="font-family:var(--font-heading);font-size:2.4rem;font-weight:700;color:var(--color-text);margin-bottom:36px;line-height:1.15;">
-    +34% конверсия за 6 месяцев пилота
-  </div>
-  <div style="display:flex;gap:40px;align-items:flex-start;">
-    <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
-      <div class="stat-hero">+34%</div>
-      <span class="stat-caption">конверсия<br>в онлайн-канале</span>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
-      <div class="stat-hero" style="font-size:4rem;">+18%</div>
-      <span class="stat-caption">рост<br>среднего чека</span>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
-      <div style="display:flex;align-items:baseline;gap:8px;">
-        <div class="stat-hero" style="font-size:4rem;">42</div>
-        <div style="font-family:var(--font-heading);font-size:2rem;font-weight:800;color:var(--color-accent);">→ 67</div>
-      </div>
-      <span class="stat-caption">NPS за<br>6 месяцев</span>
-    </div>
-  </div>
-</div>
-
-<style>
-.slidev-layout { padding: 0 !important; overflow: hidden; }
-</style>
-
----
-layout: none
----
-
-<!-- SLIDE 8: Card-mosaic — "15+ лет опыта в каждой роли" -->
-<div style="position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--bg-base);" class="slide-decor-arc"></div>
-<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;">
-  <span class="label-pill" style="margin-bottom:16px;align-self:flex-start;">КОМАНДА</span>
-  <div style="font-family:var(--font-heading);font-size:2.4rem;font-weight:700;color:var(--color-text);margin-bottom:32px;line-height:1.15;">
-    15+ лет опыта в каждой роли
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;flex:1;">
-    <div class="card-solid" style="display:flex;flex-direction:column;gap:14px;padding:28px 24px;">
-      <div style="width:56px;height:56px;border-radius:50%;background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;">
-        <span style="font-family:var(--font-heading);font-size:1.4rem;font-weight:800;color:var(--color-accent);">АИ</span>
-      </div>
-      <div style="font-family:var(--font-heading);font-size:1.3rem;font-weight:700;color:var(--color-text);">Алексей Иванов</div>
-      <span class="label-pill" style="align-self:flex-start;font-size:0.65rem;">Руководитель проекта</span>
-      <div style="font-family:var(--font-body);font-size:1.15rem;color:var(--color-muted);line-height:1.4;">15 лет в ритейл-технологиях</div>
-    </div>
-    <div class="card-ghost" style="display:flex;flex-direction:column;gap:14px;padding:28px 24px;">
-      <div style="width:56px;height:56px;border-radius:50%;background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;">
-        <span style="font-family:var(--font-heading);font-size:1.4rem;font-weight:800;color:var(--color-accent);">МП</span>
-      </div>
-      <div style="font-family:var(--font-heading);font-size:1.3rem;font-weight:700;color:var(--color-text);">Мария Петрова</div>
-      <span class="label-pill" style="align-self:flex-start;font-size:0.65rem;">Архитектор данных</span>
-      <div style="font-family:var(--font-body);font-size:1.15rem;color:var(--color-muted);line-height:1.4;">ex-Яндекс, эксперт в ML-платформах</div>
-    </div>
-    <div class="card-accent" style="display:flex;flex-direction:column;gap:14px;padding:28px 24px;">
-      <div style="width:56px;height:56px;border-radius:50%;background:var(--color-accent-bg);border:1.5px solid var(--color-accent-dim);display:flex;align-items:center;justify-content:center;">
-        <span style="font-family:var(--font-heading);font-size:1.4rem;font-weight:800;color:var(--color-accent);">ДК</span>
-      </div>
-      <div style="font-family:var(--font-heading);font-size:1.3rem;font-weight:700;color:var(--color-text);">Дмитрий Козлов</div>
-      <span class="label-pill" style="align-self:flex-start;font-size:0.65rem;">UX-лидер</span>
-      <div style="font-family:var(--font-body);font-size:1.15rem;color:var(--color-muted);line-height:1.4;">200+ спроектированных интерфейсов</div>
-    </div>
-  </div>
-</div>
-
-<style>
-.slidev-layout { padding: 0 !important; overflow: hidden; }
-</style>
-
----
-layout: none
----
-
-<!-- SLIDE 9: Asymmetric-split — "28 млн ₽ с возвратом 340% за 2 года" -->
-<div style="position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--bg-base);" class="slide-decor-dots"></div>
-<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;">
-  <span class="label-pill" style="margin-bottom:16px;align-self:flex-start;">ИНВЕСТИЦИИ И ROI</span>
-  <div style="font-family:var(--font-heading);font-size:2.4rem;font-weight:700;color:var(--color-text);margin-bottom:32px;line-height:1.15;">
-    28 млн ₽ с возвратом 340% за 2 года
-  </div>
-  <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:24px;flex:1;">
-    <div style="display:flex;flex-direction:column;gap:16px;">
-      <div class="card-solid" style="display:flex;align-items:center;gap:20px;padding:22px 24px;">
-        <div class="icon-container">
-          <Icon name="target" :size="22" color="var(--color-accent)" />
-        </div>
-        <div>
-          <div style="font-family:var(--font-heading);font-size:2rem;font-weight:800;color:var(--color-accent);">28 млн ₽</div>
-          <div style="font-family:var(--font-body);font-size:1.15rem;color:var(--color-muted);">Бюджет проекта</div>
-        </div>
-      </div>
-      <div class="card-ghost" style="display:flex;align-items:center;gap:20px;padding:22px 24px;">
-        <div class="icon-container">
-          <Icon name="chart" :size="22" color="var(--color-accent)" />
-        </div>
-        <div>
-          <div style="font-family:var(--font-heading);font-size:2rem;font-weight:800;color:var(--color-accent);">14 месяцев</div>
-          <div style="font-family:var(--font-body);font-size:1.15rem;color:var(--color-muted);">Окупаемость</div>
-        </div>
-      </div>
-    </div>
-    <div class="card-accent" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:32px 24px;">
-      <div class="icon-container">
-        <Icon name="rocket" :size="26" color="var(--color-accent)" />
-      </div>
-      <div style="font-family:var(--font-heading);font-size:4.5rem;font-weight:800;color:var(--color-accent);line-height:1;">340%</div>
-      <div style="font-family:var(--font-body);font-size:1.2rem;color:var(--color-muted);text-align:center;line-height:1.4;">ROI к концу<br>2-го года</div>
-    </div>
-  </div>
-</div>
-
-<style>
-.slidev-layout { padding: 0 !important; overflow: hidden; }
-</style>
-
----
-layout: none
----
-
-<!-- SLIDE 10: CTA-warm — bg-accent, all text white -->
-<div style="position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--bg-accent);" class="cover-variant-c"></div>
-<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:44px 64px;justify-content:center;">
-  <span class="label-pill" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.35);color:#fff;margin-bottom:24px;align-self:flex-start;">СЛЕДУЮЩИЙ ШАГ</span>
-  <div style="font-family:var(--font-heading);font-size:3.2rem;font-weight:800;color:#fff;line-height:1.15;max-width:680px;margin-bottom:20px;">
-    Запланируем стратегическую сессию вместе
-  </div>
-  <div style="font-family:var(--font-body);font-size:1.35rem;color:rgba(255,255,255,0.85);max-width:500px;line-height:1.5;margin-bottom:40px;">
-    Покажем, как трансформация работает для вашего бизнеса — без воды, с конкретными цифрами
-  </div>
-  <div style="display:flex;flex-direction:column;gap:14px;">
-    <div style="display:flex;align-items:center;gap:16px;">
-      <div class="icon-container" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.35);flex-shrink:0;">
-        <Icon name="phone" :size="22" color="#fff" />
-      </div>
-      <span style="font-family:var(--font-body);font-size:1.3rem;color:#fff;">+7 (495) 123-45-67</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <div class="icon-container" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.35);flex-shrink:0;">
-        <Icon name="globe" :size="22" color="#fff" />
-      </div>
-      <span style="font-family:var(--font-body);font-size:1.3rem;color:#fff;">transform@retailtech.ru</span>
-    </div>
-  </div>
-</div>
-
-<style>
-.slidev-layout { padding: 0 !important; overflow: hidden; }
+.s9 .slidev-layout { padding: 0 !important; overflow: hidden; }
 </style>

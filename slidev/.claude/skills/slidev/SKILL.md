@@ -2008,6 +2008,8 @@ Before writing slides, create a Composition Plan that maps each outline slide to
    7. All remaining slides → bg-base
 
    Validation: bg-base must be ≥55% of total. If not, convert bg-alt to bg-base starting from the last assigned bg-alt slide.
+
+   Anti-checkerboard validation: After assignment, check for strict alternating patterns (bg-base, bg-alt, bg-base, bg-alt...). bg-alt MUST serve a semantic purpose: (A) section entry/divider, (B) breathing slide on a different topic, or (C) pre-CTA bridge. If the assignment produces an alternating checkerboard, override by keeping bg-base for 2-3 consecutive content slides and only switching to bg-alt for genuine structural transitions. Good pattern: base, base, alt (section break), base, base, base, alt (pre-CTA). Bad pattern: base, alt, base, alt, base, alt.
    ```
 
    No inline background colors — only `var(--bg-*)` tokens.
@@ -2057,7 +2059,7 @@ Layer 3 (texture, on 30-40% of slides): dot-grid, noise, or stripes from referen
 CRITICAL: use real HTML <div> elements, NOT CSS pseudo-elements. ::after/::before do NOT render in Slidev headless PNG export.
 
 OPACITY CALIBRATION:
-  Light backgrounds (luminance > 70%): atmosphere 0.15-0.30, texture 0.06-0.12
+  Light backgrounds (luminance > 70%): atmosphere 0.25-0.35 (HARD MINIMUM 0.25), texture 0.15-0.22 (HARD MINIMUM 0.15). These minimums are non-negotiable — decoration below these values is INVISIBLE in PNG export on cream/white backgrounds. Dot-grid dots: opacity 0.22 minimum. Arc/ring borders: 2px width and opacity 0.30 minimum.
   Dark backgrounds (luminance < 30%): atmosphere 0.08-0.15, texture 0.03-0.08
 
 **GHOST TYPOGRAPHY** — On stat-hero and breathing slides, add a decorative ghost element: the hero number or key symbol rendered at 12-20rem, opacity 0.04-0.08, positioned absolute behind content. Example: `<div style="position:absolute;top:50%;right:5%;transform:translateY(-50%);font-family:var(--font-heading);font-size:18rem;font-weight:800;color:rgba(var(--accent-rgb),0.06);line-height:1;pointer-events:none;z-index:0;">₽</div>`. Use on 2-3 slides per deck maximum. Good candidates: currency symbols (₽, $), percentages, key metric numbers.
@@ -2068,7 +2070,7 @@ OPACITY CALIBRATION:
 
 **CARD DIVERSITY** — BANNED: 3+ cards with identical styling on one slide. When showing 3 items, MUST use one of: a) Bento grid: 1 large (grid-row:span 2 or 1.4fr) + 2 smaller, b) Mixed styles: card-solid + card-ghost + card-accent, c) Size hierarchy: first card accent-bordered + larger, rest surface, d) One card = metric hero (big number), rest = supporting text.
 
-**FOCAL POINT** — Every content slide MUST have ONE dominant element visually 4x+ larger than the next largest. Stat slides: hero number 6-10rem, supporting 1.5-2rem. Centered breathing slides: hero number up to 12rem. Card slides: featured card 40-60% of content area. Data slides: chart is dominant, text supports. Quote slides: quote 2-3rem, attribution 0.85rem.
+**FOCAL POINT** — Every content slide MUST have ONE dominant element visually 4x+ larger than the next largest. Stat slides: hero number 6-10rem, supporting 1.5-2rem. Centered breathing slides: hero number up to 12rem. Card slides: featured card 40-60% of content area. Data slides: chart is dominant, text supports. Quote slides: quote 2-3rem, attribution 0.85rem. **Data-spotlight with 3+ metrics**: NEVER show all metrics at equal size — pick the MOST impactful number (highest ROI, biggest delta, most surprising stat) and render it as hero (4-6rem), with the remaining metrics as supporting pills or small cards (1.5-2rem) below. Equal-sized metric cards are a strong AI-tell and violate Principle 3.
 
 Structure:
 1. **Headmatter** — theme, title, fonts, colorSchema, transition, aspectRatio, etc.
@@ -2089,6 +2091,14 @@ For each slide in the outline:
    - Closing → `end`
 
    **Content quality checks during writing**: For each slide, verify: (a) word count ≤40 (≤60 for tables), (b) title is an action title (statement, not label), (c) body text uses `font-size ≥1.25rem`, (d) no more than 4 bullets with ≤12 words each, (e) multi-line body text is left-aligned even on centered layouts, (f) line-height 1.3-1.45 for body, (g) if slide contains a chart, apply chart-specific rules from Rule 41 — bar chart Y-axis starts at zero, chart title = insight, ≤5-6 series.
+
+   **Icon-trio title length gate**: Before generating an icon-trio slide, count characters in each ITEM_TITLE. If ANY title exceeds 15 characters, generate the entire icon-trio with `align-items:flex-start;text-align:left` on ALL columns (not just the long one). Long centered titles create the "hourglass" anti-pattern where text wraps unevenly under centered icons. Russian titles frequently exceed 15 chars — always check.
+
+   **Icon-trio density gate**: If each icon-trio item has fewer than 10 words of description, either: (a) expand descriptions to include a supporting stat or outcome (e.g., "94% forecast accuracy"), OR (b) switch to bento-grid archetype which creates more visual weight through an asymmetric featured card. Icon-trio with 5-word descriptions creates 75%+ empty space — structural emptiness, not whitespace.
+
+   **Timeline-horizontal connector requirement**: Every timeline-horizontal slide MUST include a visual connector between phase cards — a horizontal line, numbered dots connected by a line, or SVG arrows. Without a connector, a timeline renders as a disconnected card grid (indistinguishable from icon-trio). Minimum implementation: a 2px accent-colored line running behind/through the cards at their vertical center, with numbered circle markers at each phase.
+
+   **Statistics source citation**: Any specific statistic (percentage, currency amount, count, ratio) MUST include a source attribution. Format: small text below the stat in `font-size:0.7rem; color:var(--color-muted)` — either "(Источник: McKinsey, 2024)" inline or as a footnote. Internal case study data uses "(Внутренние данные)". AI-generated placeholder statistics must be labeled as estimates. Unsourced specific numbers destroy pitch deck credibility.
 
    **Enforcement rules during writing**:
    - **Gradient type**: Use ONLY the decorative gradient type chosen in Step 4. If "radial-gradient" was chosen: decorative blobs use radial-gradient, card backgrounds use solid colors (no linear-gradient decoration). If "linear-gradient" was chosen: decorative overlays use linear-gradient, no radial-gradient blobs. bg-accent slide may use linear-gradient regardless (structural, exempt).
