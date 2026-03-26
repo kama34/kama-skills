@@ -1,166 +1,122 @@
-# Critique: Нейросети в медицине (Learn Iteration 2)
-
-## Overall Score: 6.4/10
-
----
-
-## Iteration 1 Fix Status
-
-- **Decorative elements**: PARTIALLY FIXED
-- **Structural break rule**: PARTIALLY FIXED
-- **bg-alt usage**: FIXED
+# Critique — edu_01/learn_2
+**Topic:** Осознанное питание: научный подход к здоровью через еду
+**Iteration:** Learn 2 of 3
+**Overall Score: 6.0 / 10**
 
 ---
 
-## Iteration 1 Fix Analysis
+## Per-Slide Score Table
 
-### Decorative elements — PARTIALLY FIXED
-The code now includes inline decorative divs on every slide: dot grids (slides 2, 5, 8, 11), radial glows (slides 3, 6, 9), and arc circles (slides 4, 7, 10). This is genuine progress over Iteration 1. However, the visual impact in exported PNGs is disappointingly weak. On slide 2 (92% stat hero), the dot grid is visible but extremely low-contrast against the cream `#FAF9F6` background — it reads as almost imperceptible texture noise. On slide 4 (section divider), the arc circles are clipped at corner edges and barely register at the thumbnail scale. The decorative elements exist structurally but fail their core purpose: to create visual interest and depth that a viewer notices. They are at or below the "PASS minimum" opacity described in design-principles.md.
+| # | Archetype | Bg | Visual Clarity | Typography | Hierarchy | Decoration | Content Density | Color Use | Insight Title | Citation | Score |
+|---|-----------|-----|---------------|------------|-----------|------------|-----------------|-----------|---------------|----------|-------|
+| 1 | cover-hero | bg-accent | 7 | 8 | 7 | 6 | 8 | 8 | — | — | **7.0** |
+| 2 | stat-hero | bg-base | 8 | 8 | 8 | 7 | 7 | 8 | ✓ | ✓ | **7.5** |
+| 3 | asymmetric-split | bg-base | 7 | 7 | 7 | 7 | 6 | 7 | ✓ | ✓ | **6.5** |
+| 4 | bento-grid | bg-base | 7 | 7 | 7 | 6 | 7 | 7 | ✓ | — | **6.5** |
+| 5 | two-col-text | bg-alt | 6 | 7 | 6 | 5 | 7 | 6 | ✓ | ✓ | **6.0** |
+| 6 | section-divider | bg-accent | 8 | 8 | 8 | 7 | 9 | 8 | ✓ | — | **8.0** |
+| 7 | card-mosaic | bg-base | 7 | 7 | 7 | 5 | 7 | 7 | ✓ | — | **6.5** |
+| 8 | data-spotlight | bg-base | 8 | 8 | 8 | 7 | 7 | 8 | ✓ | ✓ | **7.5** |
+| 9 | bento-grid | bg-alt | 7 | 7 | 7 | 6 | 6 | 7 | ✓ | — | **6.5** |
+| 10 | stat-hero | bg-base | 8 | 8 | 7 | 7 | 6 | 7 | ✓ | ✓ | **7.0** |
+| 11 | two-col-text | bg-base | 6 | 7 | 6 | 6 | 7 | 6 | ✓ | — | **6.0** |
+| 12 | cta-warm | bg-accent | 7 | 8 | 7 | 6 | 8 | 8 | ✓ | — | **7.5** |
 
-### Structural break rule — PARTIALLY FIXED
-Iteration 1 had 7 identical label+heading+grid structures. Iteration 2 shows genuine differentiation: slide 2 is a centered stat hero, slide 4 is a centered section divider, slide 6 uses an asymmetric split with a visual-dominant left column, slide 8 is a centered section divider, slide 9 uses a horizontal timeline. These are real structural breaks. However, slides 3, 5, 7, 11 all share the identical label-pill → heading → grid pattern (varying only the grid type), and slides 9 and 10 both use centered layouts back-to-back with near-identical backgrounds. The rule is partially enforced but not consistently tracked.
-
-### bg-alt usage — FIXED
-`--bg-alt: #E8E6DF` appears on slides 4, 6, 8, 11 — correctly assigned to section dividers and alternating content slides. The bg-alt is visually distinguishable from `--bg-base: #FAF9F6` (luminance delta is adequate). This is a genuine, complete fix.
-
----
-
-## Slide-by-Slide Axis Scores
-
-| Slide | Comp | Shape | Font | Impact | Layout | Typo | Color | Clarity | Decor | Avg |
-|-------|------|-------|------|--------|--------|------|-------|---------|-------|-----|
-| 1 Cover | 7 | 6 | 8 | 8 | 7 | 8 | 9 | 9 | 5 | 7.4 |
-| 2 Stat 92% | 7 | 4 | 8 | 8 | 7 | 9 | 8 | 9 | 3 | 7.0 |
-| 3 Problem | 6 | 6 | 7 | 6 | 6 | 7 | 7 | 8 | 5 | 6.4 |
-| 4 Section I | 6 | 5 | 7 | 5 | 7 | 7 | 6 | 8 | 4 | 6.1 |
-| 5 Applications | 6 | 6 | 7 | 6 | 6 | 7 | 7 | 7 | 5 | 6.3 |
-| 6 Case | 8 | 7 | 8 | 8 | 9 | 8 | 8 | 9 | 6 | 7.9 |
-| 7 Ethics | 6 | 7 | 7 | 6 | 6 | 7 | 7 | 8 | 5 | 6.6 |
-| 8 Section II | 6 | 5 | 8 | 6 | 7 | 8 | 6 | 8 | 5 | 6.6 |
-| 9 Timeline | 7 | 6 | 7 | 7 | 8 | 7 | 7 | 8 | 5 | 6.9 |
-| 10 Economics | 6 | 4 | 7 | 6 | 6 | 7 | 7 | 8 | 4 | 6.1 |
-| 11 Players | 7 | 7 | 7 | 7 | 8 | 7 | 7 | 8 | 5 | 7.0 |
-| 12 CTA | 7 | 6 | 8 | 7 | 7 | 8 | 9 | 9 | 6 | 7.4 |
+**Average: 6.5 / 10** (weighted overall with systemic penalty → 6.0)
 
 ---
 
-## Systemic Issues (affect the skill itself)
+## Cycle 1 Fix Effectiveness Check
 
-### Issue 1: Decorative elements are coded but visually inert
-- **Severity**: major
-- **Category**: Decorative quality / Visual depth
-- **Frequency**: 10 of 12 slides affected
-- **Description**: All decorative elements use opacity values that fall at or below the perceptual threshold in a light theme. The dot grid at `rgba(accent, 0.18)` against `#FAF9F6` produces near-invisible specks. The radial glow at `rgba(accent, 0.10)` in the corner produces no perceptible atmospheric effect. Arc circles at `rgba(accent, 0.18)` are geometrically correct but too thin and too low-contrast to be "seen." A viewer looking at slides 2, 3, 5, or 10 would not describe them as having decorative elements — they would describe them as plain white/cream slides.
-- **Evidence**: PNG 2 (dot grid invisible against cream), PNG 3 (glow corner undetectable), PNG 4 (arc barely perceptible), PNG 10 (arc visible due to bg-alt contrast, but thin).
-- **Root cause**: The skill prescribes decorative element opacity values designed for dark themes (where white at 12-18% opacity reads clearly). On a light cream palette these same percentage values produce near-zero visual difference. The skill does not distinguish between dark-theme and light-theme opacity calibration.
-- **Proposed skill fix**: Add a light-theme decorative opacity table: dot grid at `rgba(accent, 0.35)` minimum; radial glow at `rgba(accent, 0.18)` with larger radius (600px not 400px); arc circles at `rgba(accent, 0.28)` with 3px stroke. Alternatively, mandate that on light themes, decorative elements use a darker tint of the accent color at higher opacity rather than the accent color at low opacity.
-
-### Issue 2: Section dividers fail the luminance differentiation standard
-- **Severity**: major
-- **Category**: Visual rhythm / bg-level system
-- **Frequency**: 2 section slides (4 and 8)
-- **Description**: Slides 4 and 8 use `--bg-alt: #E8E6DF` which is approximately 10 luminance points lighter than `--bg-base: #FAF9F6`. This is within the acceptable range per design-principles.md but in the rendered PNGs, the section slides (4, 8) look extremely similar to the adjacent content slides (3, 5, 7, 9) because the luminance shift is near the minimum threshold. The section slides feel like dimmed content slides, not structural signposts. Critically, both section slides use the same `--bg-alt` color — violating the "multiple section slides MUST use different color temperatures" rule. Section 4 and Section 8 are visually identical in structure, color, and decorative treatment (only the dot grid vs. arcs differ).
-- **Evidence**: PNGs 4 and 8 look nearly interchangeable in composition, and PNG 4 could be confused with PNG 3 at thumbnail scale.
-- **Root cause**: The skill mandates `--bg-alt` for section dividers but does not enforce the multiple-section-slides color temperature differentiation rule at generation time. The background level system collapses into one undifferentiated "not bg-base" value.
-- **Proposed skill fix**: Enforce that when 2+ section slides exist, the second section slide must use a visually distinct treatment: either a centered radial glow that changes the effective background hue, a slightly darker bg variant, or an accent overlay at 5-8% opacity. Document this as a CRITICAL rule with a concrete example.
-
-### Issue 3: Label-pill → heading → grid remains the dominant pattern
-- **Severity**: major
-- **Category**: Layout diversity / Structural break enforcement
-- **Frequency**: 4 of 8 content slides (3, 5, 7, 11)
-- **Description**: Slides 3, 5, 7, and 11 all begin with the same three-layer structure: label pill top-left → h2 heading → card/grid content below. The card types vary (3-col bento, 4-col icon grid, 2×2 grid, bento mosaic) but the structural skeleton is identical. Per design-principles.md, this pattern "may appear on at most 3 consecutive content slides before forcing a structural break." Slides 3 and 5 are separated by a section divider (slide 4), and slides 7 and 11 are separated by multiple slides, so technically no three consecutive instances occur — but four out of eight content slides sharing this skeleton still produces a monotonous visual rhythm.
-- **Evidence**: PNGs 3, 5, 7, 11 have identical heading position (top-left), identical label pill, identical content-below-heading relationship.
-- **Root cause**: The skill's structural break rule only counts consecutive instances, not total frequency. This allows the label+heading+grid skeleton to dominate 50% of content slides without triggering enforcement.
-- **Proposed skill fix**: Add a total-frequency cap: "The label+heading+grid skeleton may appear on at most 50% of content slides, regardless of consecutive count. If total instances exceed this, force one content slide to use a heading-below or heading-right layout, or a full-bleed hero."
-
-### Issue 4: Stat hero slides share the same centered layout — no variety
-- **Severity**: minor
-- **Category**: Composition variety / Layout uniqueness
-- **Frequency**: 2 slides (2 and 10)
-- **Description**: Slide 2 (92% stat) and slide 10 (−35% stat) both use the same centered-column layout with a large number at center-top, caption below, optional secondary stats below that. They appear on bg-base with the same decorative approach. The structural similarity is compounded by their placement: both are in "statement" positions within the narrative rhythm, making the deck feel like it recycles its own high-impact moments.
-- **Evidence**: PNGs 2 and 10 share composition, font hierarchy, and color treatment. The only meaningful difference is size of the secondary stat row.
-- **Root cause**: The skill provides one stat-hero archetype. Two stat hero slides with identical structure is not prohibited.
-- **Proposed skill fix**: When generating 2+ stat-hero slides, force structural differentiation: one uses centered layout (current), the other uses the left-dominant / hero-left pattern (large number left 40%, context text right 60%).
-
-### Issue 5: Cover background is teal but visually sparse
-- **Severity**: minor
-- **Category**: Cover / Visual impact
-- **Frequency**: 1 slide (slide 1)
-- **Description**: Slide 1 correctly uses `--bg-accent: #0D9488` (teal) — this is a genuine Iteration 1 fix. The CTA (slide 12) also correctly uses teal. However, the cover slide reads as somewhat flat: the radial glow in the bottom-right and the dot grid in the top-right are both too subtle (the glow at 13% white on teal is barely visible; the dot grid at 12% white is similarly faint). The heading is strong at 3.6rem but the subtitle at 1.4rem reads small relative to the cover's visual real estate. The bottom two-thirds of the cover slide below the heading+subtitle is essentially empty.
-- **Evidence**: PNG 1 shows large empty teal space below the subtitle text.
-- **Root cause**: Cover slide uses left-aligned content that terminates about 40% down the slide, leaving the lower half unused.
-- **Proposed skill fix**: Cover slides should either use a centered full-bleed layout (vertically centered content) or include a secondary element (a featured stat, a decorative divider, or a horizontal list of key topics) to fill the lower area.
-
-### Issue 6: Icon containers render icons as broken/placeholder symbols
-- **Severity**: major
-- **Category**: Visual quality / Content clarity
-- **Frequency**: 5 slides using Icon components (5, 6, 7, 9, 11)
-- **Description**: The presentation uses `<Icon name="brain" />`, `<Icon name="chart" />`, `<Icon name="target" />`, `<Icon name="dna" />`, etc. In the exported PNGs, these icons render as small undefined-looking symbols or broken placeholder characters — not as recognizable brain, DNA, or clock icons. The icon-container circles with teal borders are visible and correctly styled, but the icons inside them are either misidentified Iconify names or unavailable in the default Slidev icon set. This significantly undermines the icon-trio and 2×2 card slides.
-- **Evidence**: PNGs 5, 7, 11 — icon containers show minimal or unclear symbols. PNG 6 — the clock and chart icons in the case study list appear similarly undefined.
-- **Root cause**: The skill does not validate icon names against the available Iconify icon set before generating. Generic names like "brain," "dna," "target," "microscope" may not resolve in Slidev's default configuration.
-- **Proposed skill fix**: Maintain a validated icon name allowlist from `mdi` or `carbon` icon sets (which are bundled with Slidev). Replace anatomy-themed names: use `mdi:brain` → `mdi:head-cog`, `mdi:dna` → `mdi:molecule`, `mdi:microscope` → `mdi:flask`. Or switch to text-based icon substitutes (emoji, Unicode characters in styled spans) which render reliably without icon library dependencies.
+| Cycle 1 Rule | Status | Evidence |
+|---|---|---|
+| Opacity (atmosphere 0.25–0.35) | **PARTIAL** | Glows visible on bg-base slides (s2, s8, s10) but on bg-alt (s5, s9) the teal glow barely registers against the beige background |
+| Source citations on all statistics | **IMPROVED** | s2, s3, s5, s8, s10 all have citations. s4, s7, s9, s11 lack citations for stated numbers |
+| Anti-checkerboard (bg-alt only for semantic transitions) | **IMPROVED** | bg-alt used only for s5 (microbiome section) and s9 (myths) — both are semantic shifts |
+| Focal point discipline | **PARTIAL** | Hero slides (s2, s8, s10) have strong focal points. Grid slides (s4, s7, s9) have diffuse focal points with no dominant entry |
 
 ---
 
-## Slide-Specific Issues
+## Systemic Issues
 
-### Slide 2 — Dot grid invisible on cream background
-The decorative dot grid in the top-right corner is virtually undetectable against `#FAF9F6`. The slide reads as a blank cream surface with a large number. While the stat hero layout is correct, the visual environment is too sterile.
+### CRITICAL
 
-### Slide 4 — Section divider lacks atmospheric weight
-The two arc circles (one top-left, one bottom-right) are partially clipped by the slide boundaries and too thin to read at export resolution. The section slide looks almost identical to a content slide at thumbnail scale. The heading at 3rem is correct (above the 3.5rem minimum… actually just below it — design-principles.md mandates 3.5rem minimum for breathing slides).
+**1. Slide 1 — Subtitle duplicated**
+- Severity: HIGH
+- Root cause: The subtitle "Научный подход к здоровью через еду" appears in `<p>` at 1.5rem AND immediately repeated at 1.15rem below it ("к здоровью через еду"). This is a copy-paste error from splitting the long subtitle. Looks unprofessional.
+- Proposed fix: Remove the second `<p>` containing "к здоровью через еду" — it's a leftover fragment.
 
-### Slide 5 — Icon rendering breaks card identity
-The 4-column icon-trio card grid is well-structured but the icons render as unclear symbols. A viewer would not know whether the cards represent brain activity, charting, a target, or DNA from the icon alone. The card text compensates but the icon circle becomes a decorative container rather than an informative element.
+**2. Slides 5 and 9 — bg-alt decoration invisible**
+- Severity: HIGH
+- Root cause: On bg-alt (#E8E6DF warm beige), the teal glow decorations at opacity 0.25–0.28 produce almost no contrast. The beige surface absorbs teal completely. Slide 5 has almost no visible background layer — it looks like a blank beige page.
+- Proposed fix: On bg-alt slides, switch atmosphere glow to a larger blob with opacity 0.32–0.38, OR add a second off-white highlight layer at 0.15 to create depth even without the teal reading.
 
-### Slide 8 — Section II visually identical to Section I (slide 4)
-Both section slides share bg-alt, centered layout, label pill, and heading. The only differences are: slide 4 uses arc circles, slide 8 uses a dot grid. At a glance the two section slides are nearly interchangeable. This violates the multiple-section-slides color temperature differentiation rule.
+**3. Slide 5 — Bottom callout box looks out of place**
+- Severity: MEDIUM
+- Root cause: The emoji 💡 in the comparison box is inconsistent with the icon-only visual system used everywhere else. The box also breaks grid alignment — it spans grid-column:1/3 but the two content columns above use different text weights, making the span look like an afterthought.
+- Proposed fix: Replace emoji with `<Icon>` component, or drop the callout box and put the distinction inline as a styled contrast row.
 
-### Slide 9 — Timeline connecting line does not render
-The timeline slide includes `position:absolute` line using `background:linear-gradient(to right, var(--color-accent), var(--color-accent-dim))`. In the PNG, this line appears very faint or absent — the four numbered circles appear disconnected. The timeline's structural logic is broken visually, making "From data to scale in 15 months" harder to read as a sequential flow.
+**4. Slides 4 and 9 — Bento featured cell metric too small**
+- Severity: MEDIUM
+- Root cause: On s4, the featured cell shows "Вода · Сон" at 2.6rem — this is text, not a number, so the metric hierarchy rule applies differently. However the featured cell has no numerical anchor (≥3.5rem number) as the rule requires. On s9 ("Жир — враг"), the featured myth title is 1.8rem — barely differentiated from the side cards' 1.2rem.
+- Proposed fix: Bento featured cell should always have a size-dominant element (≥3.5rem number or ≥2.8rem heading) that instantly reads as "featured" at a glance.
 
-### Slide 10 — Stat hero too close to slide 9 in layout
-Slide 10 uses the same centered stat-hero layout as slide 2. The placement immediately after the timeline (slide 9) with the same bg-base color makes the transition feel like a regression in layout ambition rather than a structural moment.
+**5. Slides 7 and 11 — Decoration density too low**
+- Severity: MEDIUM
+- Root cause: Both slides show essentially no visible background decoration. s7's two ambient glows are too small and too close to corners — they don't create atmospheric depth. s11 has one faint ring and a tiny glow — invisible in export.
+- Proposed fix: Add a center-behind blob glow (medium, 0.30 opacity) on bg-base slides that currently lack any center depth.
 
-### Slide 11 — Bento mosaic is the deck's strongest content layout
-The 1 large + 3 small bento grid on bg-alt is well-executed. The large Google DeepMind card with market size stat ($45 млрд) creates genuine hierarchy. This is the strongest content slide in the deck.
+### MODERATE
+
+**6. Slide 1 — CTA pill background invisible**
+- Severity: MEDIUM
+- Root cause: The eyebrow pill uses rgba(255,255,255,0.15) fill — on the teal background this is nearly invisible as a pill shape. The label text is readable but the pill form is lost.
+- Proposed fix: Increase pill fill to rgba(255,255,255,0.22) and border to rgba(255,255,255,0.55). See preset note: "CTA double rings: outer top:-100px/left:-100px, inner top:-65px/left:-65px" — applied correctly on s1 and s12 ✓
+
+**7. Slide 10 — Second supporting card ("Каждый неприменённый протокол") is visually weak**
+- Severity: MEDIUM
+- Root cause: The warm-amber bordered card contains only a 1.4rem text block — no icon, no number, no visual hook. Next to "+35%" it reads as filler rather than a peer metric.
+- Proposed fix: Convert this to a warning pill row or integrate it as subtext under the 92% hero. Don't give it card treatment if it has no metric weight.
+
+**8. Slide 3 — Citation uses muted amber dot instead of teal**
+- Severity: LOW
+- Root cause: The third bullet uses `--color-accent-warm` dot. This creates a color inconsistency — teal for key points, amber for citation. Amber connotes warning/caution, not neutral attribution.
+- Proposed fix: Citations should use teal muted style (color-muted text, no dot) or a plain teal hairline separator row, not a colored bullet.
+
+**9. Slides 4, 7, 9 — No source citations for statistics mentioned in content**
+- Severity: MEDIUM
+- Root cause: s4 claims "дефицит сна → рост аппетита на 24%" with no source. s7 has protocol names with no citation. s9 states calorie equivalences with no source.
+- Proposed fix: Add inline micro-citations "(Источник: X)" at 0.78rem below each statistic-bearing bullet.
 
 ---
 
 ## What Worked Well
 
-1. **Teal cover and CTA** — slides 1 and 12 use `--bg-accent: #0D9488` correctly. The CTA slide is the most polished in the deck: centered layout, dot grid overlay, arc circles, step chain (Аудит → Разметка → Модель → Внедрение), email contact. The full-bleed teal with white text reads as a credible conference-grade closing.
+1. **Stat-hero slides (s2, s8, s10) are the strongest in the deck** — the hero number hierarchy is clean (6rem hero → 2.6rem supporting → 0.9rem label), citations are present, and the dual glow atmosphere creates real depth on bg-base.
 
-2. **Slide 6 (asymmetric split)** — the 46/54 visual-dominant layout with a 96.3% number dominating the left panel is exactly the kind of structural break the rules call for. The vertical divider line, the comparison "vs 87.1%", and the right-side icon list with 2.4 sec timing stat is the highest-quality content slide in the deck. Score: 7.9.
+2. **Section divider s6 is excellent** — concentric rings visible, centered typography punchy, white dot-grid bottom-right adds subtle texture. This is the most professional slide in the deck.
 
-3. **Slide 11 (bento mosaic)** — the asymmetric bento grid creates genuine visual hierarchy and the bg-alt background correctly differentiates this slide from its neighbors.
+3. **CTA slide s12** — numbered step pills work well against the teal gradient. The stepped opacity (0.14 → 0.10 → 0.08) creates a nice hierarchy within the steps themselves.
 
-4. **bg-alt system is correctly implemented** — `#E8E6DF` appears on 4 slides (4, 6, 8, 11) creating a discernible alternating rhythm. This is a complete fix from Iteration 1.
+4. **Asymmetric split s3** — the circular metric container with −2,4 is a strong visual anchor. The pill badge "Мета-анализ 2024" is a good contextual element. Left/right split reads clearly.
 
-5. **Font size compliance** — body text at 1.05–1.25rem and headings at 2.0–3.6rem are within spec. No text falls below minimum size rules.
+5. **Source citations significantly better than cycle 1** — present on all hero/stat slides. This was a key cycle 1 fix and it worked.
 
-6. **Action titles are specific** — "Усталость снижает точность на 30% к концу смены" (slide 3), "AI опережает среднего радиолога на 9.2 процентных пункта" (slide 6), "От DeepMind до Botkin.AI: кто ведёт" (slide 11) — these are factual, insight-bearing headings, not generic labels.
+6. **Anti-checkerboard rule followed** — bg-alt used only at genuine section boundaries (microbiome = conceptual shift, myths = rebuttal mode). No arbitrary alternation.
 
-7. **Card diversity exists** — card-solid, card-ghost, and card-accent variants are used across slides, creating enough visual variation within the grid pattern.
+7. **Card mosaic s7** — the accent card (Дневник реакций, teal) is the strongest card in the grid and correctly placed bottom-right as the featured action item.
 
 ---
 
 ## Design Summary
 
-- **Palette type/mood**: Light professional, teal-accented (cream/off-white with teal `#0D9488`). Warm-neutral temperature. Well-suited for medical conference — trustworthy, clean, credible.
-- **Font character**: Outfit (headings) + DM Sans (body) — contemporary humanist sans-serif pairing. Executes well at all tested sizes. No font discipline issues.
-- **Decoration style**: Minimal geometric (dot grids, radial glows, arcs) — structurally present but visually undertoned. The decorative vocabulary is correct in concept but calibrated for dark themes, not light.
-- **Strongest axis**: Color conviction (the teal accent is used consistently and boldly in large numerals and cover/CTA) and Content clarity (information is well-organized throughout).
-- **Weakest axis**: Decorative quality (elements exist in code but are perceptually absent in PNGs) and Shape diversity (icon containers fail to render their icons, reducing shape vocabulary to rectangles and circles only).
-- **Conference fitness**: Acceptable but not distinguished. A medical audience would find the slides readable and professional. A design-literate audience would note the visual flatness, the weak decorative layer, and the icon failures. Score of 6.4/10 reflects genuine improvement over Iteration 1 (5.0) but significant remaining work before this reaches conference-grade 7.5+.
+Cycle 2 produces a notably more credible deck than cycle 1. The stat-hero pattern is now well-executed, citations are present where they matter most, and the section structure is coherent. The main remaining failures are:
 
----
+- **A copy-paste error on slide 1** (subtitle repeated) that would immediately undermine trust with a live audience
+- **bg-alt atmospheric depth** remains the weakest area — slides 5 and 9 look flat despite having decoration code that simply doesn't render visibly on warm beige
+- **Bento featured cell** does not consistently honor the ≥3.5rem dominant element rule
+- **Missing citations on content slides** (4, 7, 9) where statistics appear inline
 
-## Priority Fixes for Iteration 3
+The visual language (teal+cream, Manrope headings, circle icon containers) is coherent and professional. The main gap is execution consistency — 4 slides are genuinely strong, 5 are acceptable, and 3 have visible problems.
 
-1. **Fix icon names** — Switch to validated `mdi:` prefixed names or use emoji/Unicode fallbacks. This alone would raise slides 5, 6, 7, 11 by ~0.5 points each.
-2. **Increase decorative opacity** — On light themes, raise dot grid to `rgba(accent, 0.35)`, glows to 600px at 0.18, arcs to 3px stroke at 0.28. Make decoration visible.
-3. **Differentiate the two section slides** — Section II (slide 8) needs a different background treatment: consider a centered radial glow overlay that shifts the perceived hue, or a slightly darker shade. Explicitly change the decorative motif and add a subtitle line.
-4. **Give the cover vertical balance** — Either center the cover content vertically, or add a bottom-of-slide element (stat preview, topic list, or decorative bar).
-5. **Differentiate stat-hero slide 10** — Use a left-dominant layout for the economics slide instead of the same centered format as slide 2.
-6. **Fix timeline connecting line** — Verify the absolute-positioned horizontal line renders in the export. Consider using `border-top` on a flex container instead of `background:linear-gradient` on an absolute div.
+**Target for cycle 3:** Fix the slide 1 duplicate, strengthen bg-alt atmosphere, add missing citations to s4/s7/s9, and ensure every bento featured cell has a ≥3.5rem dominant element. Doing those 4 things would push the overall score from 6.0 to ~7.2.

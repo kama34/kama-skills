@@ -2059,8 +2059,10 @@ Layer 3 (texture, on 30-40% of slides): dot-grid, noise, or stripes from referen
 CRITICAL: use real HTML <div> elements, NOT CSS pseudo-elements. ::after/::before do NOT render in Slidev headless PNG export.
 
 OPACITY CALIBRATION:
-  Light backgrounds (luminance > 70%): atmosphere 0.25-0.35 (HARD MINIMUM 0.25), texture 0.15-0.22 (HARD MINIMUM 0.15). These minimums are non-negotiable — decoration below these values is INVISIBLE in PNG export on cream/white backgrounds. Dot-grid dots: opacity 0.22 minimum. Arc/ring borders: 2px width and opacity 0.30 minimum.
+  Light bg-base (luminance > 75%, e.g. #FAF9F6 cream): atmosphere 0.25-0.35 (HARD MINIMUM 0.25), texture 0.15-0.22 (HARD MINIMUM 0.15). Dot-grid dots: 0.22 minimum. Arc/ring borders: 2px width and 0.30 minimum.
+  Light bg-alt (luminance 65-75%, e.g. #E8E6DF warm beige): atmosphere 0.35-0.45 (HARD MINIMUM 0.35). bg-alt absorbs teal/cool glows more aggressively than pure cream — use 0.35+ or add a secondary warm highlight layer. Texture: 0.18-0.25.
   Dark backgrounds (luminance < 30%): atmosphere 0.08-0.15, texture 0.03-0.08
+  These minimums are non-negotiable — decoration below these values is INVISIBLE in PNG export.
 
 **GHOST TYPOGRAPHY** — On stat-hero and breathing slides, add a decorative ghost element: the hero number or key symbol rendered at 12-20rem, opacity 0.04-0.08, positioned absolute behind content. Example: `<div style="position:absolute;top:50%;right:5%;transform:translateY(-50%);font-family:var(--font-heading);font-size:18rem;font-weight:800;color:rgba(var(--accent-rgb),0.06);line-height:1;pointer-events:none;z-index:0;">₽</div>`. Use on 2-3 slides per deck maximum. Good candidates: currency symbols (₽, $), percentages, key metric numbers.
 
@@ -2070,7 +2072,7 @@ OPACITY CALIBRATION:
 
 **CARD DIVERSITY** — BANNED: 3+ cards with identical styling on one slide. When showing 3 items, MUST use one of: a) Bento grid: 1 large (grid-row:span 2 or 1.4fr) + 2 smaller, b) Mixed styles: card-solid + card-ghost + card-accent, c) Size hierarchy: first card accent-bordered + larger, rest surface, d) One card = metric hero (big number), rest = supporting text.
 
-**FOCAL POINT** — Every content slide MUST have ONE dominant element visually 4x+ larger than the next largest. Stat slides: hero number 6-10rem, supporting 1.5-2rem. Centered breathing slides: hero number up to 12rem. Card slides: featured card 40-60% of content area. Data slides: chart is dominant, text supports. Quote slides: quote 2-3rem, attribution 0.85rem. **Data-spotlight with 3+ metrics**: NEVER show all metrics at equal size — pick the MOST impactful number (highest ROI, biggest delta, most surprising stat) and render it as hero (4-6rem), with the remaining metrics as supporting pills or small cards (1.5-2rem) below. Equal-sized metric cards are a strong AI-tell and violate Principle 3.
+**FOCAL POINT** — Every content slide MUST have ONE dominant element visually 4x+ larger than the next largest. Stat slides: hero number 6-10rem, supporting 1.5-2rem. Centered breathing slides: hero number up to 12rem. Card slides: featured card 40-60% of content area. Data slides: chart is dominant, text supports. Quote slides: quote 2-3rem, attribution 0.85rem. **Data-spotlight with 3+ metrics**: NEVER show all metrics at equal size — pick the MOST impactful number (highest ROI, biggest delta, most surprising stat) and render it as hero (4-6rem), with the remaining metrics as supporting pills or small cards (1.5-2rem) below. Equal-sized metric cards are a strong AI-tell and violate Principle 3. **Bento-grid featured cell**: The featured (larger) cell heading MUST use font-size ≥3.5rem to establish clear visual dominance over side cards. Side card headings at 2.2-2.4rem. If the featured cell heading is below 3.5rem, the bento asymmetry is wasted — it looks like a regular equal grid.
 
 Structure:
 1. **Headmatter** — theme, title, fonts, colorSchema, transition, aspectRatio, etc.
