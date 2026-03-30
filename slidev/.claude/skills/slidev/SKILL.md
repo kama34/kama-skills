@@ -2416,6 +2416,33 @@ This is a behavioral constraint — enforce during Step 5 when writing slides. D
 
 After defining `--color-muted`, verify its contrast ratio against ALL bg-levels and `--color-accent-bg`. The **lowest ratio** must be ≥ 4.5:1. If not, darken `--color-muted` until it passes. Document ratios in a CSS comment.
 
+**Figma Archetype Priority** — When using a Figma-sourced preset (detected by `figma:` section in preset frontmatter):
+1. For each slide, determine content type from outline (as usual)
+2. Look for a Figma archetype with matching `contentType` in `figma.archetypes[]`
+3. If found → use that Figma archetype. Load its HTML skeleton from `figma-<name>-figma/slide-<N>/archetype.html`.
+4. If no matching `contentType` → fallback to standard archetype from `references/composition-archetypes.md`
+5. If outline has more slides than Figma archetypes of that type → reuse the same Figma archetype for multiple slides (different content, same layout)
+
+**Slot Filling with Flexibility Rules** — When filling `{{SLOT}}` markers in a Figma archetype:
+1. Read `flexibility.yaml` from the archetype's figma-ref directory
+2. For **repeating elements** (cards, list items):
+   - Content count < `slots.<name>.min` → merge slots or add subtle placeholder
+   - Content count within `min..max` → apply `scaling` strategy:
+     - `grid-auto`: adjust `grid-template-columns` (e.g., `repeat(3,1fr)` → `repeat(4,1fr)`)
+     - `wrap`: keep grid definition, elements flow naturally with `flex-wrap:wrap`
+     - `stack`: switch from horizontal to vertical layout
+   - Content count > `slots.<name>.max` → truncate, move overflow to speaker notes
+3. For **text slots**:
+   - Text length > `slots.<name>.max_length` → apply `overflow` strategy:
+     - `shrink-font`: reduce font-size by 0.1rem steps (but never below Font Size Floor)
+     - `truncate`: cut text with ellipsis
+     - `wrap`: allow text wrapping (may increase element height)
+4. **Preserved properties** (from `layout.preserve`) are NEVER changed:
+   - `spacing-ratio`: gap proportions between elements stay as extracted from Figma
+   - `font-size-hierarchy`: ratio of heading-to-body font sizes stays fixed
+   - `color-usage`: accent/muted/text color assignment per element stays fixed
+   - `border-radius`: corner radius values stay as extracted
+
 ### Step 4.5: Composition Planning
 
 Before writing slides, create a Composition Plan that maps each outline slide to a named archetype from `references/composition-archetypes.md`. This replaces ad-hoc layout selection with structured, content-aware composition.
