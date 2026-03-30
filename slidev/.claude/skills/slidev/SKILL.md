@@ -446,6 +446,115 @@ Follow the Preset Deep Learning Procedure (PDL-1 through PDL-7). Stop here — d
 
 ### Figma Extraction Procedure
 
+**FIG-1: File Structure Reconnaissance** — Use `mcp__figma__use_figma` (Plugin API) to run JavaScript that traverses the node tree on the target page:
+
+```javascript
+// Pseudocode for the JS to run via use_figma:
+// 1. Get the target page (by nodeId or first page)
+// 2. Iterate page.children — find all FRAME nodes
+// 3. Filter: abs(width/height - 16/9) < 0.05*16/9 (aspect ratio ~16:9 ±5%)
+// 4. Sort by y position (top to bottom) then x (left to right)
+// 5. Return: [{id, name, width, height, index}]
+```
+
+Result: ordered list of slide frames. If 0 frames found → error: `No slides found (frames with ~16:9 aspect ratio). Check file structure.` If > 20 frames → take first 20, warn: `Found <N> slides, using first 20 (maximum for extraction).`
+
+**FIG-2: Global Style Extraction** — For ALL slide frames, collect design statistics via `mcp__figma__use_figma` (Plugin API). Run a single JS call that traverses all children recursively and collects:
+
+**Colors** — group all `fills` by frequency:
+- Frame background fills (direct children fills with full area) → most frequent = `--bg-base`, second = `--bg-alt`
+- Small bright-colored elements (used in <20% of nodes) → `--color-accent`
+- Text node colors by frequency → most frequent = `--color-text`, second = `--color-muted`
+- Derive `--color-accent-rgb` (R,G,B triple), `--bg-accent` (accent at 12% opacity over bg-base)
+- **AI Color Blacklist check**: if accent hue 240-290 at saturation >50% → shift to nearest safe hue (teal #0D9488, amber #D97706, emerald #059669, rose #E11D48). Log replacement.
+
+**Fonts** — collect all `fontFamily`, `fontSize`, `fontWeight` from text nodes:
+- Heading font: most frequent fontFamily in nodes with fontSize ≥ 24px → `fonts.sans`
+- Body font: most frequent fontFamily in nodes with fontSize < 24px → `fonts.body`
+- **Serif check**: if either font is serif → find nearest sans-serif (per skill rule: serif banned). Log: `Font "<name>" (serif) → "<replacement>" (sans-serif)`
+
+**Spacing** — collect from auto-layout frames:
+- Median `itemSpacing` across all auto-layout frames → standard gap
+- Median `paddingLeft`/`paddingTop` → base padding
+
+**Shapes** — collect `cornerRadius`:
+- Median cornerRadius of frames with width 100-400px (card-sized) → `card_radius`
+- Nodes with cornerRadius ≥ 50% of min(width,height) → `icon_container: circle`
+- Nodes with cornerRadius 8-16px → `icon_container: rounded-square`
+
+**Effects** — collect `effects` array:
+- Drop shadows → extract offset, blur, color for aesthetic description
+- Background blurs → note in aesthetic section
+
+Convert all collected data into `.preset.md` format per `references/preset-format.md` (YAML frontmatter + aesthetic description + CSS block with `:root` variables).
+
+**FIG-3: Per-Slide Extraction** — For each slide frame from FIG-1, extract four levels of data:
+
+**Level 1 — Screenshot (visual reference):**
+- Call `mcp__figma__get_design_context(nodeId, fileKey)` → returns screenshot inline + React+Tailwind code
+- The screenshot is the visual reference for this slide
+- Save React+Tailwind code as code hint for layout understanding
+
+**Level 2 — Structure (positions and sizes):**
+- Call `mcp__figma__get_metadata(nodeId, fileKey)` → XML with node IDs, layer types, names, positions, sizes
+- Parse the XML into a structured list: `[{name, type, x, y, width, height, children: [...]}]`
+
+**Level 3 — Detailed properties (exact CSS values):**
+- Call `mcp__figma__use_figma` with JS that for each child element (recursive, max depth 3) extracts:
+  - `fills` (array of paint objects), `strokes`, `effects` (shadow, blur)
+  - `fontSize`, `fontFamily`, `fontWeight`, `lineHeight`, `letterSpacing`
+  - `layoutMode` (HORIZONTAL/VERTICAL/NONE), `itemSpacing`, `paddingLeft/Right/Top/Bottom`
+  - `constraints`, `layoutAlign`, `layoutGrow`, `layoutSizingHorizontal/Vertical`
+  - `cornerRadius`, `opacity`
+  - `characters` (text content — for determining which elements become slots)
+  - `type` (TEXT, FRAME, RECTANGLE, ELLIPSE, etc.)
+- Save as `blueprint.json` in the figma-ref directory:
+
+```json
+{
+  "slideIndex": 1,
+  "slideName": "Cover",
+  "frameWidth": 1440,
+  "frameHeight": 810,
+  "elements": [
+    {
+      "name": "Title",
+      "type": "TEXT",
+      "x": 120, "y": 280, "width": 1200, "height": 80,
+      "fontSize": 48, "fontFamily": "Inter", "fontWeight": 700,
+      "lineHeight": 1.1, "letterSpacing": -0.02,
+      "fills": [{"type": "SOLID", "color": "#1A1A2E"}],
+      "characters": "Presentation Title Here",
+      "slot": "TITLE"
+    },
+    {
+      "name": "Card Container",
+      "type": "FRAME",
+      "x": 120, "y": 400, "width": 1200, "height": 300,
+      "layoutMode": "HORIZONTAL", "itemSpacing": 24,
+      "paddingLeft": 0, "paddingTop": 0,
+      "cornerRadius": 0,
+      "children": [
+        {
+          "name": "Card 1",
+          "type": "FRAME",
+          "x": 0, "y": 0, "width": 384, "height": 300,
+          "cornerRadius": 12,
+          "fills": [{"type": "SOLID", "color": "#F5F5F0"}],
+          "layoutMode": "VERTICAL", "itemSpacing": 12,
+          "paddingLeft": 24, "paddingTop": 24,
+          "children": ["..."]
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Level 4 — Code hint:**
+- Already obtained in Level 1 via `get_design_context` — the React+Tailwind code
+- Used as supplementary hint for understanding grid structure (flex vs grid, column ratios)
+
 **`--polish=N [dir]`**: Iterative design improvement cycle. Runs N rounds (default 3, max 5) of score → redesign weak slides → re-score. Includes A/B testing for weak slides and content review. Follow the Polish Procedure in `references/polish-procedure.md`. Stop here — do not proceed to generation.
 
 **`--compare <dir1> <dir2>`**: Compare two presentations side-by-side with scoring. Follow the Compare Procedure in `references/compare-procedure.md`. Stop here — do not proceed to generation.
