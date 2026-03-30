@@ -822,6 +822,89 @@ Log all changes to `<edu_dir>/learn_<i>/changes-applied.md`:
 1. [archetype: figma-cards] shadow blur: 8px → 6px — severity: minor, reason: multi-property shadow change
 ```
 
+**FDL-3f: Intermediate report** — Print to user:
+```
+━━━ Figma Learning: Итерация <i>/<N> ━━━
+
+Figma Fidelity: X/10
+  Визуальное совпадение:   X/10
+  Структурное совпадение:  X/10
+  Стилевое совпадение:     X/10
+
+Правки: <X> applied (critical: <C>, major: <M>), <Y> skipped (minor)
+Идеальные слайды: <count>/<total>
+Проблемные: <slide names with scores below 7>
+```
+
+**FDL-3g: Git commit** — Stage and commit all artifacts for this iteration:
+```bash
+git add <edu_dir>/learn_<i>/
+git add .slidev-presets/figma-<name>.preset.md
+git add .slidev-presets/figma-<name>-figma/
+git commit -m "learn(slidev-figma): iteration <i>/<N> — fidelity <score>/10"
+git tag figma-learn-<edu_dir>-iter-<i>
+```
+
+**FDL-4: Convergence detection** — After each cycle's report, check:
+- If Fidelity Score ≥ 9/10 for **two consecutive cycles** → stop early:
+  ```
+  Раннее завершение: fidelity стабилизировался на <score>/10 в циклах <c-1> и <c>.
+  ```
+  Skip remaining cycles, proceed to FDL-5.
+- If score decreased vs previous cycle (regression) → warn but do NOT stop. Next cycle will attempt to fix it.
+
+**FDL-5: Final report** — Write to `<edu_dir>/figma-learning-report.md` and print:
+```markdown
+# Figma Learning Report
+
+## Source: <Figma URL>
+## Cycles: <actual> / <N planned>
+## Early stop: yes/no (reason)
+## Final Fidelity: X/10
+
+## Fidelity Progression
+Cycle 1: ██████░░░░ 6.2
+Cycle 2: ████████░░ 7.8
+Cycle 3: █████████░ 9.1
+
+## Archetype Changes Summary
+- figma-<cover>: <N> fixes (<list>)
+- figma-<cards>: <N> fixes (<list>)
+...
+
+## Flexibility Rules Updated
+- figma-<cards>: max changed 5 → 6, scaling changed grid-auto → wrap
+...
+
+## Final Preset State
+- Path: .slidev-presets/figma-<name>.preset.md
+- Archetypes: <N>
+- Theme: .slidev-presets/figma-<name>-theme/
+```
+
+Stop here — do not proceed to generation.
+
+### Figma Procedure: Edge Cases
+
+| Situation | Behavior |
+|-----------|----------|
+| URL is not `figma.com/design/...` | Error: `--figma only supports Figma Design files (figma.com/design/...)` Stop. |
+| No access to Figma file (API error) | Error: `No access to Figma file. Ensure the file is shared or you are authorized.` Stop. |
+| No 16:9 frames found on the page | Error: `No slides found (frames with ~16:9 aspect ratio). Check file structure.` Stop. |
+| Frame nesting > 3 levels | Flatten to 3 levels during archetype creation. Log warning. |
+| Figma API unavailable during FDL learning cycle | Retry 2× with 10s pause. If still unavailable → use cached blueprint.json and last-known screenshots from `figma-ref/` directory. Log: `⚠ Figma API unavailable, using cached reference for slide <N>` |
+| Slide frame contains only image fill (no child elements) | Skip archetype creation for this slide. Log: `Slide <N> "<name>": image-only, no archetype created` |
+| Serif font detected in Figma | Replace with nearest sans-serif. Log replacement. |
+| Accent color in AI blacklist (hue 240-290, sat >50%) | Shift hue to nearest safe color. Log replacement. |
+| > 20 slide frames in file | Take first 20. Warn: `Found <N> slides, using first 20 (maximum for extraction).` |
+
+### Figma Procedure: Limitations (v1)
+
+- **Images not extracted** — background photos, illustrations become placeholders in archetypes. Use `--picture` separately after generation.
+- **Figma components not resolved** — we see expanded instances, not component masters.
+- **Animations not extracted** — Figma does not store slide transitions. Defaults from preset are used.
+- **One file = one preset** — cannot merge slides from multiple Figma files into one preset.
+
 **`--polish=N [dir]`**: Iterative design improvement cycle. Runs N rounds (default 3, max 5) of score → redesign weak slides → re-score. Includes A/B testing for weak slides and content review. Follow the Polish Procedure in `references/polish-procedure.md`. Stop here — do not proceed to generation.
 
 **`--compare <dir1> <dir2>`**: Compare two presentations side-by-side with scoring. Follow the Compare Procedure in `references/compare-procedure.md`. Stop here — do not proceed to generation.
