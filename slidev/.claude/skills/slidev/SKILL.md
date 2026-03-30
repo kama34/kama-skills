@@ -1,7 +1,7 @@
 ---
 name: slidev
-description: Use when generating a Slidev presentation from a slide outline. Supports preset styles, unique designs, custom style descriptions, and image placement. Scaffolds a complete Slidev project. Also handles --help, --dev, --export, --edit, --picture, --create-preset, and --learn subcommands.
-argument-hint: "[--help | --dev [dir] | --export <format> [dir] | --edit [dir] <comment> | --picture [auto|paths...] [dir] | --create-preset <name> | --learn=N | --deep_learn=N | --no-preset | --preset <name> | style: <desc>] <outline or file path>"
+description: Use when generating a Slidev presentation from a slide outline. Supports preset styles, unique designs, custom style descriptions, and image placement. Scaffolds a complete Slidev project. Also handles --help, --dev, --export, --edit, --picture, --create-preset, --learn, and --figma subcommands.
+argument-hint: "[--help | --dev [dir] | --export <format> [dir] | --edit [dir] <comment> | --picture [auto|paths...] [dir] | --create-preset <name> | --learn=N | --deep_learn=N | --figma=<URL> | --no-preset | --preset <name> | style: <desc>] <outline or file path>"
 ---
 
 # Slidev Presentation Generator
@@ -61,6 +61,10 @@ Usage:
   /slidev --stitch=improve <dir>               Stitch делает variants каждого слайда готовой презы
   /slidev --stitch=design --learn=N            Learn с Stitch-стилями
   /slidev --stitch=learn=N              Learn from Stitch as design teacher (N cycles)
+  /slidev --figma=<URL>                         Create preset from Figma template
+  /slidev --figma=<URL> --learn=N               Figma learning (create preset + refine with Figma reference)
+  /slidev --figma=<URL> --deep_learn=N           Same as --figma --learn (both trigger FDL)
+  /slidev --figma=<URL> <outline>               Create preset from Figma + generate presentation
   /slidev --no-preset <outline>                Generate without auto-preset (Unique mode)
   /slidev --help                                 Show this help
 ```
