@@ -16,6 +16,7 @@ Before generating, read the relevant reference for the current mode:
 - `references/qa-cycle.md` — **QA**: Iterative Figma comparison until 9/10 fidelity
 - `references/figma-extraction.md` — **Extraction mode**: FIG-1 through FIG-5 (Figma → preset)
 - `references/figma-learning.md` — **Learn mode**: FDL iterative archetype improvement
+- `references/design-rules.md` — **Universal design rules** (readability, spacing, hierarchy, contrast — applied always)
 
 ## Input Parsing
 
