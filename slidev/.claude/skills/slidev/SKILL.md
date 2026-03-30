@@ -2075,7 +2075,7 @@ Skipping either of these gates produces untested output. If you skip them, the p
 
 **`--no-preset` flag**: If present, skip Step 0 entirely and proceed directly to mode selection below.
 
-#### Step 0: Auto-Preset (runs before mode selection if no `--preset`, no `--no-preset`, and no `style:` prefix)
+#### Step 0: Auto-Preset (runs before mode selection if no `--preset`, no `--no-preset`, no `--figma`, and no `style:` prefix)
 
 When the user calls `/slidev <topic>` without explicit style flags:
 
@@ -2110,8 +2110,9 @@ If no presets found anywhere, skip to Step 0.4 (create new).
 #### Mode Selection
 
 1. **Preset mode**: Input contains `--preset <name|path>` (or auto-preset matched/created one) → extract preset identifier, remainder is outline
-2. **Custom style mode**: Input starts with `style:` → extract style description, remainder is outline
-3. **Unique mode**: `--no-preset` flag present → generate a completely unique design (current default behavior, no preset involvement)
+2. **Figma preset mode**: `--figma` flag present → preset already created by FIG-Extract, use it directly. Enter Preset mode with the Figma preset loaded. See "Figma Archetype Priority" section for archetype selection and slot filling.
+3. **Custom style mode**: Input starts with `style:` → extract style description, remainder is outline
+4. **Unique mode**: `--no-preset` flag present → generate a completely unique design (current default behavior, no preset involvement)
 
 ### Outline Source
 
