@@ -2,6 +2,8 @@
 
 Generate a Slidev presentation from an outline using a Figma preset. Executes Steps 1–5 in order without stopping for confirmation. All files are namespaced as `figmadeck-<name>-*`.
 
+Read `references/design-rules.md` for universal spacing, density, and hierarchy rules that apply during generation.
+
 ---
 
 ## Step 1: Parse Outline
@@ -95,16 +97,30 @@ For each slide, find a matching archetype **within the current preset only** —
 
 After initial matching: if 4+ consecutive slides use dense archetypes (`context`, `scope`, `credentials`, `team`) → replace one with `figma-section` archetype (if present). Pick the slide with the single most impactful number, quote, or insight. This changes the archetype used for an existing slide — never adds slides.
 
+### Variant Selection
+
+When the preset has multiple archetypes for the same `contentType` (e.g., 4 section-dividers with different gradient backgrounds), select by context:
+
+1. **Analyze content**: What is this slide's topic? What is its emotional valence? (positive/neutral/negative)
+2. **Analyze variants**: What color temperature does each variant's background have?
+3. **Match by mood**:
+   - Warm colors (gold, amber, magenta, rose) → positive outcomes, achievements, CTA, celebration
+   - Cool colors (teal, blue, green, cyan) → analysis, data, process, sustainability, technology
+   - Neutral/dark → transitions, pauses, serious topics, challenges
+4. **If no clear mood match** → distribute evenly across the presentation (no two adjacent slides use the same variant)
+5. **Cover slide** → always use the FIRST variant by Figma order (matches the template's opening)
+6. **CTA/closing slide** → always use the LAST variant by Figma order (matches the template's ending)
+
 ### Composition Table Output
 
 Print before Step 5:
 
 ```
-Slide | Content Type | Archetype ID                    | Figma Node ID
-------|--------------|---------------------------------|---------------
-1     | intro        | figmadeck-<name>-cover          | 12:345
-2     | context      | figmadeck-<name>-context        | 12:346
-3     | metric       | figmadeck-<name>-metric         | 12:348
+Slide | Content Type | Archetype ID                    | Variant | Figma Node ID
+------|--------------|---------------------------------|---------|---------------
+1     | intro        | figmadeck-<name>-cover          | —       | 12:345
+3     | vision       | figmadeck-<name>-section        | teal    | 12:348
+7     | vision       | figmadeck-<name>-section        | magenta | 12:360
 ```
 
 ---
@@ -179,6 +195,58 @@ These are **critical errors** — violating any one invalidates the slide:
 5. **No CSS value changes** — never modify font-size, padding, gap, flex ratios, colors, or any CSS property value from the archetype
 6. **No bg-alt substitution** — never swap `bg-base` for `bg-alt` or vice versa; this breaks visual hierarchy
 7. **No out-of-template visuals** — never add icons, decorative shapes, dividers, gradients, or any visual element absent from the preset's Figma archetypes
+
+---
+
+## Step 5b: Adaptive Layout
+
+After filling `{{SLOT}}` markers (Step 5) and before QA cycle, verify that content fits the archetype's layout. Content in Russian and other languages is often 20-40% longer than the English placeholder text in Figma templates.
+
+**These adaptations are the ONLY permitted deviations from the verbatim copy rule.** They preserve visual identity while preventing layout breakage.
+
+### Footer Adaptation
+
+If the archetype has a footer with multiple text spans and the generated text is longer than placeholders:
+
+1. Replace any fixed positioning (`position: absolute; left: Xpx`, fixed `margin-left`) with flex layout:
+   ```css
+   display: flex; gap: 24px; align-items: center;
+   ```
+2. Add overflow protection on each span:
+   ```css
+   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+   ```
+3. Last element (page number): `margin-left: auto` to push right
+4. If total footer text still overflows after flex: shorten labels (e.g., "Стратегическое ревью — Q2 2026" → "Q2 2026")
+
+### Two-Column Text Adaptation
+
+If heading (left column) or description (right column) is longer than Figma placeholder:
+
+1. Estimate text height: (character count / chars-per-line) × line-height × font-size
+2. Available height = slide height (540px) − top padding − footer zone (56px)
+3. If text height > available height:
+   - First: shorten/rephrase content (preserve core meaning)
+   - Then: reduce column gap (minimum 24px / 1.5rem)
+   - Last resort: move overflow to speaker notes
+4. **NEVER** let text overlap with footer or adjacent column
+
+### Card/Grid Element Adaptation
+
+If card text is longer than placeholder:
+
+1. Verify text doesn't overflow card boundary (card height × line count)
+2. If overflows: shorten text to fit within card
+3. Maintain minimum 8px (0.5rem) padding inside all cards
+4. If card content cannot be shortened further: move detail to speaker notes, keep title + key metric only
+
+### General Spacing Rules
+
+- **Min gap**: 8px (0.5rem) between ANY two adjacent elements — no exceptions
+- **Container bounds**: no element may extend beyond its parent container boundaries
+- **Footer zone**: bottom 44-56px of the slide is RESERVED — no content element may enter this zone
+- **Absolute-to-flex**: if the archetype uses `position: absolute` on content elements (not decorative), convert to flex layout where possible to allow natural content flow
+- **Overflow cascade**: if one element's overflow pushes adjacent elements → redistribute ALL spacing on the slide, not just the overflowing element
 
 ---
 
