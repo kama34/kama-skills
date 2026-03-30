@@ -13,7 +13,17 @@ Triggered by `/figmadeck <URL> --learn=N`. Uses the same QA cycle as regular gen
 
 ## FDL-1: Initialization
 
-Preset already created by FIG-Extract (see `figma-extraction.md`). Create next sequential `edu_XX/` directory under the working area. Store `fileKey` and `nodeId` list from `source.json` for screenshot comparison in each QA cycle.
+Preset already created by FIG-Extract (see `figma-extraction.md`).
+
+**Create education directory**: Scan for existing `edu_*` directories in the working directory. Create the next sequential one:
+```bash
+# Example: if edu_01/ and edu_02/ exist → create edu_03/
+ls -d edu_* 2>/dev/null   # check what exists
+mkdir -p edu_03/           # create next sequential
+```
+If no `edu_*` directories exist, start with `edu_01/`.
+
+Store `fileKey` and `nodeId` list from `source.json` for screenshot comparison in each QA cycle.
 
 ## FDL-2: Generate N Diverse Outlines
 
