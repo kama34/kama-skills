@@ -163,8 +163,23 @@ Before converting, group slides by layout similarity. Two slides are **duplicate
 3. Same grid structure (column/row count, same fr ratios ±5%)
 4. Same element type sequence (TEXT, FRAME, FRAME, TEXT vs TEXT, FRAME, TEXT, FRAME = different)
 5. Same nesting depth
+6. **Same background treatment** — compare the root frame's fills:
+   - Both solid color: same color (deltaE < 10 using CIEDE2000) → same
+   - Both gradient: same gradient type (linear/radial/angular) AND similar color stops (deltaE < 15 for each stop) → same
+   - One solid + one gradient → **DIFFERENT** (always separate archetypes)
+   - Dark background (luminance < 30%) vs light background (luminance > 70%) → **ALWAYS DIFFERENT** (they require different text colors, contrast treatment, and overlay behavior)
 
-If ANY detail differs — different spacing, different element sizes, different decorative elements, different number of sub-elements inside cards, different background treatment — they are **separate archetypes**. Err on the side of keeping more archetypes. Name duplicates: first occurrence becomes the archetype, others reference it via `duplicateOf` in `source.json`.
+If ANY criterion differs — structure, layout, element sequence, nesting, OR background — they are **separate archetypes**. Err on the side of keeping more archetypes.
+
+**Naming convention for background variants**: When slides share structure but differ only in background, append a color descriptor to the archetype name:
+- `figmadeck-section-teal-gold` (dark gradient with teal + gold stops)
+- `figmadeck-section-blue-purple` (dark gradient with blue + purple stops)
+- `figmadeck-two-col-light` (light bg-base background)
+- `figmadeck-two-col-dark` (dark bg-accent background)
+
+The color descriptor comes from the dominant gradient stop colors or the background luminance category.
+
+Name duplicates: first occurrence becomes the archetype, others reference it via `duplicateOf` in `source.json`.
 
 **Image-only and decoration-only slides** (no text children, only images/shapes/fills): these are NOT skipped. Create archetypes with `{{IMAGE}}` or `{{BACKGROUND}}` slots. Content type: `visual-break`. Slots: `{{IMAGE_URL}}` for the primary image area, optionally `{{CAPTION}}` if small text is present.
 
