@@ -125,6 +125,12 @@ Describe the mood, visual metaphors, textures, and overall feel.
 | `iconStyle` | No | Icon rendering style: `outlined` (default), `filled`, `duotone` |
 | `densityProfile` | No | Archetype density preference: `minimal`, `balanced` (default), `dense` |
 | `maxFonts` | No | Max visual font identities. Default: `2` |
+| `figma` | No | Object. Present only for Figma-sourced presets. Contains `fileKey`, `sourceUrl`, `extractedAt`, `slideCount`, `archetypes[]` |
+| `figma.fileKey` | — | Figma file key for live API queries during learning |
+| `figma.sourceUrl` | — | Full Figma URL for reference |
+| `figma.extractedAt` | — | ISO 8601 timestamp of extraction |
+| `figma.slideCount` | — | Number of slides extracted |
+| `figma.archetypes` | — | Array of `{id, nodeId, contentType}` — one per extracted slide |
 
 ## Body
 
@@ -215,3 +221,43 @@ The theme encapsulates:
 - Shape vocabulary CSS classes
 
 The CSS block in the preset body remains the source of truth. The theme directory is generated from it and should not be hand-edited — regenerate the theme directory if changes are needed.
+
+## Figma Reference Directory
+
+Figma-sourced presets include a `<preset-name>-figma/` directory alongside the `.preset.md` file. This directory stores per-slide reference data used during generation and learning.
+
+Structure:
+```
+<preset-name>-figma/
+  source.json                           # Extraction metadata: fileKey, URL, timestamp, slide list
+  slide-<N>-<kebab-name>/
+    blueprint.json                      # Exact element properties from Figma Plugin API
+    archetype.html                      # HTML skeleton with {{SLOT}} markers
+    flexibility.yaml                    # Slot scaling rules (min/max, overflow strategy)
+```
+
+**blueprint.json** — Contains the element tree with exact CSS-equivalent values: fills, fonts, spacing, effects, positions, sizes. Used by the Figma Learning Loop (FDL) for style comparison.
+
+**archetype.html** — HTML skeleton using `{{SLOT}}` markers for dynamic content. Built from Figma layout data (auto-layout → flex, nested frames → nested divs). Modified by FDL when fixes are applied.
+
+**flexibility.yaml** — Defines how archetypes adapt to different content:
+- `slots.<name>.count_in_figma`: original element count in Figma
+- `slots.<name>.min / max`: allowed range
+- `slots.<name>.scaling`: adaptation strategy (grid-auto, wrap, stack)
+- `slots.<name>.max_length`: max text characters before overflow
+- `layout.preserve`: immutable properties (spacing-ratio, font-size-hierarchy, color-usage, border-radius)
+- `layout.flexible`: adaptable properties (column-count, card-count, text-length)
+
+**source.json** — Metadata for live Figma API queries:
+```json
+{
+  "fileKey": "<key>",
+  "sourceUrl": "<URL>",
+  "extractedAt": "<ISO 8601>",
+  "figmaFrameWidth": 1440,
+  "figmaFrameHeight": 810,
+  "slideNodes": [
+    {"index": 1, "nodeId": "1:2", "name": "Cover", "contentType": "intro"}
+  ]
+}
+```
