@@ -19,20 +19,23 @@ A dedicated, lightweight skill (`/figmadeck`) for generating Slidev presentation
 ## File Structure
 
 ```
-figmadeck/
-  .claude/skills/figmadeck/
-    SKILL.md                          # Entry point (~300 lines)
-                                      # Flags, dispatch, high-level rules
+figmadeck/                                # Top-level: skill source + test playground
+  .claude/skills/figmadeck/               # Actual skill (tracked by git)
+    SKILL.md                              # Entry point (~300 lines)
+                                          # Flags, dispatch, high-level rules
     references/
-      figma-extraction.md             # FIG-1 — FIG-5: extract from Figma
-      generation-pipeline.md          # Steps 1-5: outline to slides.md
-      qa-cycle.md                     # Iterative QA with Figma comparison
-      figma-learning.md               # FDL: learn mode (--learn=N)
-      slidev-syntax.md                # Slidev markdown syntax reference
+      figma-extraction.md                 # FIG-1 — FIG-5: extract from Figma
+      generation-pipeline.md              # Steps 1-5: outline to slides.md
+      qa-cycle.md                         # Iterative QA with Figma comparison
+      figma-learning.md                   # FDL: learn mode (--learn=N)
+      slidev-syntax.md                    # Slidev markdown syntax reference (copy from slidev skill)
     assets/
-      demo-outline.md                 # Demo outline for testing
-  .gitignore                          # Allowlist pattern
+      demo-outline.md                     # Demo outline for testing
+  .gitignore                              # Allowlist: *, !.gitignore, !.claude/, !.claude/**, !README.md, !.slidev-presets/, !.slidev-presets/**
+  README.md                               # Skill docs
 ```
+
+**Follows the repo convention** from CLAUDE.md: each skill = top-level directory with `.claude/skills/<name>/` inside. The `.gitignore` uses the allowlist pattern (ignore all `*`, then `!` keep `.claude/`, README, presets). Everything else in `figmadeck/` is test playground (gitignored).
 
 **SKILL.md** (~300 lines): flag parsing, dispatch logic, Hard Constraint, Font Size Exemption, Visual Rhythm Override. Delegates to references for procedures.
 
