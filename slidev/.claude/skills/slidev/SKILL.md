@@ -707,6 +707,121 @@ Fonts: <heading> + <body>
 Palette: <bg-base> / <accent> / <text>
 ```
 
+### Figma Learning Loop (FDL)
+
+Triggered when `--figma=<URL>` is combined with `--learn=N` or `--deep_learn=N`. Both flags trigger the same FDL loop (since fixes are always scoped to the preset, not SKILL.md).
+
+**Maximum N**: 10. If N > 10, cap at 10 and notify.
+
+**FDL-1: Initialization** — Preset is already created by FIG-Extract. Create the next sequential `edu_XX/` directory (same as standard `--learn` L-1). Store `fileKey` and the slide `nodeId` list from `source.json` for live queries during comparison.
+
+**FDL-2: Generate N diverse outlines** — Same as L-2: create all outlines upfront. Save each as `<edu_dir>/learn_<i>/outline.md`. **All outlines MUST be in Russian.** Vary across industries, formats, sizes, tone (same diversity rules as standard --learn).
+
+**FDL-3: Learning cycle** — For i = 1 to N:
+
+**FDL-3a: Generate presentation** — Launch a subagent (Agent tool) to run the full `/slidev` pipeline:
+- Uses the Figma preset from FIG-5 (re-reads `.preset.md` from disk — it may have been modified by prior cycle's fixes)
+- Uses the outline from `<edu_dir>/learn_<i>/outline.md`
+- Outputs to `<edu_dir>/learn_<i>/`
+- During Composition Planning: match content types to Figma archetypes (see "Figma Archetype Priority" section below)
+- During slot filling: apply `flexibility.yaml` rules
+
+**FDL-3b: Export** — After creation:
+```bash
+cd <edu_dir>/learn_<i> && npm install && npx playwright install chromium
+npx slidev export --format png --output slides
+```
+If export fails, log error in critique.md and skip to FDL-3g. Do NOT abort the entire learning loop.
+
+**FDL-3c: Figma Live Comparison** — For each generated slide that used a Figma archetype, run three comparison levels. Read the archetype's `nodeId` from `source.json`.
+
+**Level 1 — Visual comparison (screenshot vs screenshot):**
+- Get fresh Figma screenshot: `mcp__figma__get_screenshot(nodeId, fileKey)` → returns image
+- Critic agent sees BOTH: our exported PNG from `slides/<N>.png` + Figma screenshot
+- Evaluates: overall visual impression, color correspondence, typography proportions, layout balance
+
+**Level 2 — Structural comparison (positions and sizes):**
+- Get fresh metadata: `mcp__figma__get_metadata(nodeId, fileKey)` → XML with positions/sizes
+- Parse our `slides.md` — extract CSS values (position, width, height, grid-template, gap, padding)
+- Compare with tolerances:
+  - Element positions (heading, cards, icons): ±5% of viewport
+  - Element proportions (width/height ratio): ±10%
+  - Nesting hierarchy (level count, element order): exact match
+
+**Level 3 — Style comparison (exact CSS values):**
+- Get fresh properties: `mcp__figma__use_figma` with JS → extract fonts, colors, spacing, radius, effects for the slide's elements
+- Compare against our CSS values:
+
+| Property | Figma Source | Our CSS | Tolerance |
+|----------|-------------|---------|-----------|
+| font-size | `fontSize` (px → rem) | `font-size` | ±0.15rem |
+| font-weight | `fontWeight` | `font-weight` | exact |
+| color | `fills[0].color` (hex) | `color` / `var(--*)` | ΔE < 5 (CIEDE2000) |
+| spacing (gap) | `itemSpacing` (px → rem) | `gap` | ±0.25rem |
+| padding | `padding*` (px → rem) | `padding` | ±0.5rem |
+| border-radius | `cornerRadius` (px) | `border-radius` | ±2px |
+| position | `x, y` (normalized %) | position/margin/grid | ±5% viewport |
+
+**FDL-3d: Critic Report** — Launch a subagent (Agent tool) as a Figma fidelity critic. Provide all three comparison levels. The critic writes to `<edu_dir>/learn_<i>/critique.md`:
+
+```markdown
+# Figma Fidelity Report: Iteration <i>
+
+## Overall Fidelity Score: X/10
+
+## Per-Slide Comparison
+
+### Slide N: <name> (archetype: figma-<name>, nodeId: <id>)
+- **Visual fidelity**: X/10 — <brief note>
+- **Structural fidelity**: X/10 — <brief note>
+- **Style fidelity**: X/10 — <brief note>
+
+Issues:
+1. [CRITICAL|MAJOR|MINOR] <description> — Figma: <value>, Ours: <value>, tolerance: <threshold>
+   → Fix: <target file> — <exact change description>
+
+## Adaptation Quality
+- Slides where flexibility rules worked well: [list]
+- Slides where flexibility rules failed: [list + reason]
+  → Fix: update flexibility.yaml — <specific change>
+
+## What Matched Well
+- [list of archetype parts that matched — do NOT modify these]
+```
+
+Critic scoring guide:
+- **Visual fidelity**: Does our slide LOOK like the Figma original? Color mood, typography weight, whitespace distribution.
+- **Structural fidelity**: Are elements in the right positions? Grid structure, hierarchy depth, element ordering.
+- **Style fidelity**: Do exact CSS values match within tolerance? Font sizes, colors, spacing, border-radius.
+
+Overall score = weighted average: Visual 40% + Structural 30% + Style 30%.
+
+**FDL-3e: Apply fixes** — Automatic (same policy as PDL-2.4):
+- `critical` severity: always apply
+- `major` severity: always apply
+- `minor` severity: auto-apply only if fix touches a single CSS property; otherwise defer
+
+Fixes go to:
+- **Archetype HTML** (`figma-<name>-figma/slide-<N>/archetype.html`) — layout, positioning, grid structure
+- **Preset CSS** (`.preset.md` CSS block) — colors, fonts, spacing variables
+- **Flexibility rules** (`figma-<name>-figma/slide-<N>/flexibility.yaml`) — if content adaptation failed
+
+**NEVER** modify SKILL.md, design-principles.md, or any other skill file.
+
+After applying changes to the preset CSS, regenerate the `<name>-theme/` directory from the updated CSS block (same as PDL-2.4).
+
+Log all changes to `<edu_dir>/learn_<i>/changes-applied.md`:
+```
+# Figma Learning Cycle <i> Changes
+
+## Applied
+1. [archetype: figma-cover] gap: 2rem → 1.5rem — severity: major
+   Figma value: 24px (1.5rem), was: 2rem
+
+## Skipped
+1. [archetype: figma-cards] shadow blur: 8px → 6px — severity: minor, reason: multi-property shadow change
+```
+
 **`--polish=N [dir]`**: Iterative design improvement cycle. Runs N rounds (default 3, max 5) of score → redesign weak slides → re-score. Includes A/B testing for weak slides and content review. Follow the Polish Procedure in `references/polish-procedure.md`. Stop here — do not proceed to generation.
 
 **`--compare <dir1> <dir2>`**: Compare two presentations side-by-side with scoring. Follow the Compare Procedure in `references/compare-procedure.md`. Stop here — do not proceed to generation.
