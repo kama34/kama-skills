@@ -36,6 +36,27 @@ Launch subagent to run `generation-pipeline.md`. Re-read `.preset.md` from disk 
 
 Run `qa-cycle.md` until Fidelity >= 9/10. This is the same iterative Figma comparison loop as regular generation — screenshot each slide, compare against source node, identify deltas, apply fixes.
 
+### FDL-3b2: Export PDF
+
+After QA cycle completes, export the presentation to PDF for review:
+
+```bash
+cd <edu_dir>/learn_<i>
+npx slidev export --format png --output slides-tmp
+python -c "
+from PIL import Image
+import glob, os
+pngs = sorted(glob.glob('slides-tmp/*.png'), key=lambda f: int(os.path.basename(f).split('.')[0]))
+if pngs:
+    imgs = [Image.open(p).convert('RGB') for p in pngs]
+    imgs[0].save('slides.pdf', save_all=True, append_images=imgs[1:])
+    print(f'PDF created: {len(imgs)} slides')
+"
+rm -rf slides-tmp
+```
+
+The PDF is saved as `<edu_dir>/learn_<i>/slides.pdf` — can be opened immediately to review the iteration result.
+
 ### FDL-3c: Extract Systemic Fixes
 
 **KEY STEP.** Analyze which fixes from the QA cycle were systemic vs. content-specific.
