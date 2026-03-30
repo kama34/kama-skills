@@ -1,0 +1,10 @@
+# Ignore all experiment files in this skill's test directory
+*
+
+# But keep these
+!.gitignore
+!.claude/
+!.claude/**
+!README.md
+!.slidev-presets/
+!.slidev-presets/**
