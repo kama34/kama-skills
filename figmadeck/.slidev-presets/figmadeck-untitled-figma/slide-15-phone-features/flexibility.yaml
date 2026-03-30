@@ -1,0 +1,26 @@
+archetype: figmadeck-untitled-phone-features
+content_type: process
+figma_source:
+  nodeId: "1:262"
+  name: "PhoneFeatures"
+
+slots:
+  title:
+    max_length: 30
+    overflow: shrink-font
+  features:
+    count_in_figma: 3
+    min: 2
+    max: 4
+    scaling: stack
+
+layout:
+  grid_columns: fixed
+  preserve:
+    - spacing-ratio
+    - font-size-hierarchy
+    - color-usage
+    - border-radius
+  flexible:
+    - card-count
+    - text-length

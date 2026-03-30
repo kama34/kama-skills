@@ -1,0 +1,15 @@
+archetype: figmadeck-untitled-fullimg
+content_type: visual-break
+figma_source:
+  nodeId: "1:304"
+  name: "FullImg"
+
+slots: {}
+
+layout:
+  grid_columns: fixed
+  preserve:
+    - spacing-ratio
+    - color-usage
+    - border-radius
+  flexible: []

@@ -1,0 +1,29 @@
+{
+  "fileKey": "wCyEkoqYCW1n8AqwECY5hn",
+  "sourceUrl": "https://www.figma.com/design/wCyEkoqYCW1n8AqwECY5hn/Untitled?node-id=0-1",
+  "extractedAt": "2026-03-30T12:00:00Z",
+  "figmaFrameWidth": 1920,
+  "figmaFrameHeight": 1080,
+  "slideNodes": [
+    {"index": 1, "nodeId": "1:40", "name": "Cover", "contentType": "intro"},
+    {"index": 2, "nodeId": "1:49", "name": "Agenda", "contentType": "context"},
+    {"index": 3, "nodeId": "1:96", "name": "Section", "contentType": "section", "archetypeId": "figmadeck-untitled-section"},
+    {"index": 4, "nodeId": "1:107", "name": "Vision", "contentType": "vision", "archetypeId": "figmadeck-untitled-vision"},
+    {"index": 5, "nodeId": "1:116", "name": "Cards3", "contentType": "scope"},
+    {"index": 6, "nodeId": "1:135", "name": "Section", "contentType": "section", "duplicateOf": "figmadeck-untitled-section"},
+    {"index": 7, "nodeId": "1:146", "name": "Vision", "contentType": "vision", "duplicateOf": "figmadeck-untitled-vision"},
+    {"index": 8, "nodeId": "1:157", "name": "ImgText", "contentType": "context"},
+    {"index": 9, "nodeId": "1:168", "name": "Vision", "contentType": "vision", "duplicateOf": "figmadeck-untitled-vision"},
+    {"index": 10, "nodeId": "1:177", "name": "TextImgs", "contentType": "context"},
+    {"index": 11, "nodeId": "1:190", "name": "Section", "contentType": "section", "duplicateOf": "figmadeck-untitled-section"},
+    {"index": 12, "nodeId": "1:200", "name": "PhoneGrid", "contentType": "visual-break"},
+    {"index": 13, "nodeId": "1:240", "name": "Vision", "contentType": "vision", "duplicateOf": "figmadeck-untitled-vision"},
+    {"index": 14, "nodeId": "1:249", "name": "TitleImgs3", "contentType": "scope"},
+    {"index": 15, "nodeId": "1:262", "name": "PhoneFeatures", "contentType": "process"},
+    {"index": 16, "nodeId": "1:284", "name": "Vision", "contentType": "vision", "duplicateOf": "figmadeck-untitled-vision"},
+    {"index": 17, "nodeId": "1:293", "name": "TextImg", "contentType": "context"},
+    {"index": 18, "nodeId": "1:304", "name": "FullImg", "contentType": "visual-break"},
+    {"index": 19, "nodeId": "1:312", "name": "Bento", "contentType": "context"},
+    {"index": 20, "nodeId": "1:333", "name": "QA", "contentType": "cta", "duplicateOf": "figmadeck-untitled-section"}
+  ]
+}

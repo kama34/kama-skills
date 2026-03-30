@@ -1,0 +1,15 @@
+archetype: figmadeck-untitled-phonegrid
+content_type: visual-break
+figma_source:
+  nodeId: "1:200"
+  name: "PhoneGrid"
+
+slots: {}
+
+layout:
+  grid_columns: fixed
+  preserve:
+    - spacing-ratio
+    - color-usage
+    - border-radius
+  flexible: []

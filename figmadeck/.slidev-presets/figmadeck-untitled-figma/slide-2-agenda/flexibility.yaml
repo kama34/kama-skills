@@ -1,0 +1,26 @@
+archetype: figmadeck-untitled-agenda
+content_type: context
+figma_source:
+  nodeId: "1:49"
+  name: "Agenda"
+
+slots:
+  title:
+    max_length: 20
+    overflow: shrink-font
+  sections:
+    count_in_figma: 3
+    min: 2
+    max: 5
+    scaling: stack
+
+layout:
+  grid_columns: fixed
+  preserve:
+    - spacing-ratio
+    - font-size-hierarchy
+    - color-usage
+    - border-radius
+  flexible:
+    - card-count
+    - text-length

@@ -1,0 +1,20 @@
+archetype: figmadeck-untitled-cover
+content_type: intro
+figma_source:
+  nodeId: "1:40"
+  name: "Cover"
+
+slots:
+  title:
+    max_length: 40
+    overflow: shrink-font
+
+layout:
+  grid_columns: fixed
+  preserve:
+    - spacing-ratio
+    - font-size-hierarchy
+    - color-usage
+    - border-radius
+  flexible:
+    - text-length
