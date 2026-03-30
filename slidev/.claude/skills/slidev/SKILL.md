@@ -555,6 +555,158 @@ Convert all collected data into `.preset.md` format per `references/preset-forma
 - Already obtained in Level 1 via `get_design_context` — the React+Tailwind code
 - Used as supplementary hint for understanding grid structure (flex vs grid, column ratios)
 
+**FIG-4: Archetype Conversion** — From FIG-3 data, for each slide, build a composition archetype:
+
+**Step 4a: Determine content type** — Analyze elements in the blueprint:
+- First slide with one large heading (fontSize ≥ 36px) + subtitle + minimal other content → `intro` (cover)
+- Last slide with button-like element or CTA text → `cta`
+- Slide with 1-2 very large numbers (fontSize ≥ 48px) + small label → `metric`
+- Slide with 3+ similarly-sized child frames in a row/grid → `credentials` or `scope` (cards/grid)
+- Slide with circular image containers + text blocks → `team`
+- Slide with ordered steps or numbered items → `process`
+- Slide with one large heading + one paragraph, minimal decoration → `vision` (section divider)
+- Default for unrecognized patterns → `context` (two-col-text)
+
+**Step 4b: Build HTML skeleton** — Convert Figma layout to HTML with `{{SLOT}}` markers:
+
+- **Auto-layout HORIZONTAL** → `display:flex; flex-direction:row; gap:<itemSpacing>px`
+- **Auto-layout VERTICAL** → `display:flex; flex-direction:column; gap:<itemSpacing>px`
+- **No auto-layout (absolute positioning)** → `position:relative` container with `position:absolute` children
+- **Nested frames** → nested `<div>` elements. **Max 3 levels** — if deeper, flatten (merge intermediate frames' styles into parent or child). Log: `Slide <N>: nesting flattened from <X> to 3 levels`
+- **Text elements** → `{{SLOT_NAME}}` markers. Naming convention:
+  - Single heading → `{{TITLE}}`
+  - Single subtitle/paragraph → `{{SUBTITLE}}` or `{{DESCRIPTION}}`
+  - Items in repeated grid → `{{CARD_1_TITLE}}`, `{{CARD_1_DESC}}`, `{{CARD_2_TITLE}}`, etc.
+  - Large number → `{{METRIC_VALUE}}`
+  - Small label above metric → `{{METRIC_LABEL}}`
+- **Viewport conversion** — Figma uses arbitrary coords (e.g., 1440x810), Slidev renders at 960x540:
+  - Position: `figma_x / figma_frame_width * 100` → percentage
+  - Font size: `figma_fontSize / 16` → rem, then apply Font Size Floor: body ≥ 1.25rem, heading ≥ 2.2rem, label ≥ 0.65rem
+  - Spacing (gap, padding): `figma_px / 16` → rem
+  - Proportions (width ratios between siblings) → preserved as fr units or percentages
+
+Wrap entire skeleton in:
+```html
+<div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;...padding:...">
+  <!-- archetype content here -->
+</div>
+```
+
+All slides use `layout: none` + `.slidev-layout { padding: 0 !important; overflow: hidden; }` (per Rule 25).
+
+**Step 4c: Create flexibility rules** — For each archetype, generate a flexibility rules file (`flexibility.yaml`) stored alongside the archetype:
+
+```yaml
+archetype: figma-<name>
+content_type: <detected type from step 4a>
+figma_source:
+  nodeId: "<nodeId>"
+  name: "<frame name from Figma>"
+
+slots:
+  title:
+    max_length: <estimated from text box width: width_px / avg_char_width>
+    overflow: shrink-font     # shrink-font | truncate | wrap
+  cards:                       # only if repeated elements detected
+    count_in_figma: <N>
+    min: <max(2, N-1)>
+    max: <N+2>
+    scaling: grid-auto         # grid-auto (change columns) | wrap (overflow row) | stack (vertical)
+
+layout:
+  grid_columns: flexible       # flexible (can change col count) | fixed (exact match required)
+  preserve:                    # IMMUTABLE — these must match Figma
+    - spacing-ratio
+    - font-size-hierarchy
+    - color-usage
+    - border-radius
+  flexible:                    # ADAPTABLE — can change to fit content
+    - column-count
+    - card-count
+    - text-length
+```
+
+**FIG-5: Preset Assembly** — Assemble all outputs into a complete preset:
+
+**Directory structure:**
+```
+.slidev-presets/
+  figma-<name>.preset.md               # global style + CSS (from FIG-2)
+  figma-<name>-theme/                   # Slidev theme directory (generated from CSS block)
+    package.json
+    styles/index.css
+    layouts/none.vue, default.vue
+    layouts/cover.vue, section.vue, end.vue
+  figma-<name>-figma/                   # Figma reference data
+    source.json                         # {fileKey, sourceUrl, nodeIds, extractedAt}
+    slide-1-<name>/
+      blueprint.json                    # element properties (from FIG-3 Level 3)
+      archetype.html                    # HTML skeleton with {{SLOT}} (from FIG-4b)
+      flexibility.yaml                  # scaling rules (from FIG-4c)
+    slide-2-<name>/
+      ...
+```
+
+**Preset frontmatter** — add `figma` section to the standard preset YAML:
+```yaml
+---
+name: figma-<name>
+figma:
+  fileKey: "<fileKey>"
+  sourceUrl: "<full Figma URL>"
+  extractedAt: "<ISO 8601 timestamp>"
+  slideCount: <N>
+  archetypes:
+    - id: figma-<slide-1-name>
+      nodeId: "<nodeId>"
+      contentType: <detected type>
+    - id: figma-<slide-2-name>
+      nodeId: "<nodeId>"
+      contentType: <detected type>
+# ... rest of standard preset fields (fonts, theme, colorSchema, accentColor, etc.)
+---
+```
+
+**Archetypes block:**
+```archetypes
+preferred: [figma-<slide-1-name>, figma-<slide-2-name>, ...]
+avoid: []
+cta_style: figma-<cta-slide-name>
+cover_style: figma-<cover-slide-name>
+```
+
+**Theme directory** — generate from the CSS block (same as `--create-preset` step 4b): `package.json`, `styles/index.css`, layout Vue files.
+
+**source.json:**
+```json
+{
+  "fileKey": "<key>",
+  "sourceUrl": "<URL>",
+  "extractedAt": "<ISO 8601>",
+  "figmaFrameWidth": 1440,
+  "figmaFrameHeight": 810,
+  "slideNodes": [
+    {"index": 1, "nodeId": "1:2", "name": "Cover", "contentType": "intro"}
+  ]
+}
+```
+
+Print extraction summary:
+```
+━━━ Figma Extraction Complete ━━━
+Source: <URL>
+Slides extracted: <N>
+Preset: .slidev-presets/figma-<name>.preset.md
+
+Archetypes:
+  1. figma-<name> (intro) — 3 slots, flexible grid
+  2. figma-<name> (scope) — 5 slots, 3-col grid
+  ...
+
+Fonts: <heading> + <body>
+Palette: <bg-base> / <accent> / <text>
+```
+
 **`--polish=N [dir]`**: Iterative design improvement cycle. Runs N rounds (default 3, max 5) of score → redesign weak slides → re-score. Includes A/B testing for weak slides and content review. Follow the Polish Procedure in `references/polish-procedure.md`. Stop here — do not proceed to generation.
 
 **`--compare <dir1> <dir2>`**: Compare two presentations side-by-side with scoring. Follow the Compare Procedure in `references/compare-procedure.md`. Stop here — do not proceed to generation.
