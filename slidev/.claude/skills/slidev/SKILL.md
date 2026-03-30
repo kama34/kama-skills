@@ -555,7 +555,18 @@ Convert all collected data into `.preset.md` format per `references/preset-forma
 - Already obtained in Level 1 via `get_design_context` — the React+Tailwind code
 - Used as supplementary hint for understanding grid structure (flex vs grid, column ratios)
 
-**FIG-4: Archetype Conversion** — From FIG-3 data, for each slide, build a composition archetype:
+**FIG-4: Archetype Conversion** — From FIG-3 data, for each slide, build a composition archetype.
+
+**Step 4-pre: Deduplication** — Before converting, group slides by layout similarity. Two slides are **duplicates** (merged into one archetype) ONLY if ALL of the following match exactly:
+- Same number of direct children at the top level
+- Same `layoutMode` (HORIZONTAL/VERTICAL/NONE) on the root frame
+- Same grid structure (column/row count, same fr ratios ±5%)
+- Same element type sequence (TEXT, FRAME, FRAME, TEXT vs TEXT, FRAME, TEXT, FRAME = different)
+- Same nesting depth
+
+If ANY detail differs — different spacing, different element sizes, different decorative elements, different number of sub-elements inside cards, different background treatment — they are **separate archetypes**. Err on the side of keeping more archetypes. Name duplicates: first occurrence becomes the archetype, others reference it via `duplicateOf` in source.json.
+
+**Image-only and decoration-only slides** (no text children, only images/shapes/fills): these are **NOT skipped**. Create archetypes with `{{IMAGE}}` or `{{BACKGROUND}}` slots. These are valuable as gallery, showcase, full-bleed, and visual break archetypes. Content type: `visual-break`. Slot: `{{IMAGE_URL}}` for the primary image area, optionally `{{CAPTION}}` if there's any small text.
 
 **Step 4a: Determine content type** — Analyze elements in the blueprint:
 - First slide with one large heading (fontSize ≥ 36px) + subtitle + minimal other content → `intro` (cover)
@@ -565,6 +576,7 @@ Convert all collected data into `.preset.md` format per `references/preset-forma
 - Slide with circular image containers + text blocks → `team`
 - Slide with ordered steps or numbered items → `process`
 - Slide with one large heading + one paragraph, minimal decoration → `vision` (section divider)
+- Slide with no text, only images/shapes/fills → `visual-break` (gallery, full-bleed, mosaic)
 - Default for unrecognized patterns → `context` (two-col-text)
 
 **Step 4b: Build HTML skeleton** — Convert Figma layout to HTML with `{{SLOT}}` markers:
@@ -893,7 +905,7 @@ Stop here — do not proceed to generation.
 | No 16:9 frames found on the page | Error: `No slides found (frames with ~16:9 aspect ratio). Check file structure.` Stop. |
 | Frame nesting > 3 levels | Flatten to 3 levels during archetype creation. Log warning. |
 | Figma API unavailable during FDL learning cycle | Retry 2× with 10s pause. If still unavailable → use cached `blueprint.json` and saved `reference.png` from `figma-<name>-figma/slide-<N>-<name>/` directory (saved during FIG-3). Visual comparison uses cached PNG; structural/style comparison uses cached blueprint. Log: `⚠ Figma API unavailable, using cached reference for slide <N>` |
-| Slide frame contains only image fill (no child elements) | Skip archetype creation for this slide. Log: `Slide <N> "<name>": image-only, no archetype created` |
+| Slide frame contains only image fill (no child elements) | Create archetype with `{{IMAGE}}` / `{{BACKGROUND}}` slots, content type `visual-break`. Useful for gallery, showcase, full-bleed slides. Log: `Slide <N> "<name>": image-only, created as visual-break archetype` |
 | Serif font detected in Figma | Replace with nearest sans-serif. Log replacement. |
 | Accent color in AI blacklist (hue 240-290, sat >50%) | Shift hue to nearest safe color. Log replacement. |
 | > 20 slide frames in file | Take first 20. Warn: `Found <N> slides, using first 20 (maximum for extraction).` |
