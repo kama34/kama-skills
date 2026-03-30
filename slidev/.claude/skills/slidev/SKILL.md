@@ -492,7 +492,7 @@ Convert all collected data into `.preset.md` format per `references/preset-forma
 
 **Level 1 — Screenshot (visual reference):**
 - Call `mcp__figma__get_design_context(nodeId, fileKey)` → returns screenshot inline + React+Tailwind code
-- The screenshot is the visual reference for this slide
+- Call `mcp__figma__get_screenshot(nodeId, fileKey)` → returns screenshot URL. Download via WebFetch and save to `figma-<name>-figma/slide-<N>-<name>/reference.png` — this is the persistent visual reference used as fallback when Figma API is unavailable during FDL.
 - Save React+Tailwind code as code hint for layout understanding
 
 **Level 2 — Structure (positions and sizes):**
@@ -508,7 +508,7 @@ Convert all collected data into `.preset.md` format per `references/preset-forma
   - `cornerRadius`, `opacity`
   - `characters` (text content — for determining which elements become slots)
   - `type` (TEXT, FRAME, RECTANGLE, ELLIPSE, etc.)
-- Save as `blueprint.json` in the figma-ref directory:
+- Save as `blueprint.json` in the archetype's directory (`figma-<name>-figma/slide-<N>-<name>/blueprint.json`):
 
 ```json
 {
@@ -892,7 +892,7 @@ Stop here — do not proceed to generation.
 | No access to Figma file (API error) | Error: `No access to Figma file. Ensure the file is shared or you are authorized.` Stop. |
 | No 16:9 frames found on the page | Error: `No slides found (frames with ~16:9 aspect ratio). Check file structure.` Stop. |
 | Frame nesting > 3 levels | Flatten to 3 levels during archetype creation. Log warning. |
-| Figma API unavailable during FDL learning cycle | Retry 2× with 10s pause. If still unavailable → use cached blueprint.json and last-known screenshots from `figma-ref/` directory. Log: `⚠ Figma API unavailable, using cached reference for slide <N>` |
+| Figma API unavailable during FDL learning cycle | Retry 2× with 10s pause. If still unavailable → use cached `blueprint.json` and saved `reference.png` from `figma-<name>-figma/slide-<N>-<name>/` directory (saved during FIG-3). Visual comparison uses cached PNG; structural/style comparison uses cached blueprint. Log: `⚠ Figma API unavailable, using cached reference for slide <N>` |
 | Slide frame contains only image fill (no child elements) | Skip archetype creation for this slide. Log: `Slide <N> "<name>": image-only, no archetype created` |
 | Serif font detected in Figma | Replace with nearest sans-serif. Log replacement. |
 | Accent color in AI blacklist (hue 240-290, sat >50%) | Shift hue to nearest safe color. Log replacement. |
@@ -2416,7 +2416,9 @@ This is a behavioral constraint — enforce during Step 5 when writing slides. D
 
 After defining `--color-muted`, verify its contrast ratio against ALL bg-levels and `--color-accent-bg`. The **lowest ratio** must be ≥ 4.5:1. If not, darken `--color-muted` until it passes. Document ratios in a CSS comment.
 
-**Figma Archetype Priority** — When using a Figma-sourced preset (detected by `figma:` section in preset frontmatter):
+### Figma Archetype Priority
+
+When using a Figma-sourced preset (detected by `figma:` section in preset frontmatter):
 1. For each slide, determine content type from outline (as usual)
 2. Look for a Figma archetype with matching `contentType` in `figma.archetypes[]`
 3. If found → use that Figma archetype. Load its HTML skeleton from `figma-<name>-figma/slide-<N>/archetype.html`.
@@ -2424,7 +2426,7 @@ After defining `--color-muted`, verify its contrast ratio against ALL bg-levels 
 5. If outline has more slides than Figma archetypes of that type → reuse the same Figma archetype for multiple slides (different content, same layout)
 
 **Slot Filling with Flexibility Rules** — When filling `{{SLOT}}` markers in a Figma archetype:
-1. Read `flexibility.yaml` from the archetype's figma-ref directory
+1. Read `flexibility.yaml` from the archetype's directory (`figma-<name>-figma/slide-<N>-<name>/flexibility.yaml`)
 2. For **repeating elements** (cards, list items):
    - Content count < `slots.<name>.min` → merge slots or add subtle placeholder
    - Content count within `min..max` → apply `scaling` strategy:
