@@ -426,6 +426,26 @@ Stop here — do not proceed to generation.
 
 Follow the Preset Deep Learning Procedure (PDL-1 through PDL-7). Stop here — do not proceed to generation.
 
+**`--figma=<URL>`**: Create a preset from a Figma presentation template. Optionally run a learning loop with live Figma comparison.
+
+**URL Parsing**: Extract `fileKey` and optional `nodeId` from the Figma URL:
+- `https://figma.com/design/:fileKey/:fileName?node-id=:nodeId` → convert `-` to `:` in nodeId
+- `https://figma.com/design/:fileKey/branch/:branchKey/:fileName` → use branchKey as fileKey
+- If no `node-id` in URL → use `0:1` (first page)
+- If URL is not `figma.com/design/...` → error: `--figma only supports Figma Design files (figma.com/design/...)`
+
+**Compatibility checks**:
+- `--figma` is **incompatible** with `--stitch`, `--preset`, `--no-preset`, `style:`. If any present → error: `--figma cannot be combined with --stitch/--preset/--no-preset/style:. It creates its own preset.`
+- `--figma` is **compatible** with `--learn=N`, `--deep_learn=N`, `<outline>`.
+
+**Dispatch logic**:
+1. Always run the **Figma Extraction Procedure (FIG-1 through FIG-5)** first → creates preset + archetypes + reference data.
+2. If `--learn=N` or `--deep_learn=N` present → run **Figma Learning Loop (FDL-1 through FDL-5)**. Both flags trigger the same FDL procedure (since fixes never go to SKILL.md, the distinction is irrelevant). Maximum N: 10. Stop after FDL.
+3. If `<outline>` present (no --learn) → generate presentation using the created Figma preset. Continue to Generation Modes with the Figma preset loaded.
+4. If neither `--learn` nor `<outline>` → generate demo presentation using `assets/demo-outline.md` with the Figma preset, run Visual QA, print summary. Stop.
+
+### Figma Extraction Procedure
+
 **`--polish=N [dir]`**: Iterative design improvement cycle. Runs N rounds (default 3, max 5) of score → redesign weak slides → re-score. Includes A/B testing for weak slides and content review. Follow the Polish Procedure in `references/polish-procedure.md`. Stop here — do not proceed to generation.
 
 **`--compare <dir1> <dir2>`**: Compare two presentations side-by-side with scoring. Follow the Compare Procedure in `references/compare-procedure.md`. Stop here — do not proceed to generation.
