@@ -2434,9 +2434,30 @@ This is a behavioral constraint — enforce during Step 5 when writing slides. D
 
 After defining `--color-muted`, verify its contrast ratio against ALL bg-levels and `--color-accent-bg`. The **lowest ratio** must be ≥ 4.5:1. If not, darken `--color-muted` until it passes. Document ratios in a CSS comment.
 
+### Figma Preset: Design Language Override
+
+**CRITICAL:** When using a Figma-sourced preset (detected by `figma:` section in preset frontmatter), the **Figma template's visual language overrides standard design-principles.md rules** wherever they conflict. The Figma template was created by a human designer — their design choices take priority over generic skill rules.
+
+**Concrete overrides:**
+- **Icons**: If the Figma template does not use icons → do NOT add `<Icon>` components. Skip design-principles Principle 4 entirely. The template chose pure typography — respect that.
+- **Backgrounds**: If the Figma template uses only `--bg-base` (white) for content slides → do NOT use `--bg-alt` on any content slide. Only use bg-alt/bg-accent where the Figma template itself uses them (section dividers, cover, CTA).
+- **Decorative elements**: If the Figma template does not use decorative blobs/gradients on content slides → do NOT add them. Only use decorations where the template uses them.
+- **Card structure**: If the Figma template shows text ABOVE gray cards (cards as image placeholders) → do NOT put text INSIDE cards.
+- **Shape vocabulary**: If the Figma template does not use circular icon containers, pill badges, or other shapes → do NOT add them.
+- **Typography scale**: Use the exact font sizes from the Figma template's archetypes, not the generic skill minimums (the Figma values already satisfy minimums because FIG-4 applied Font Size Floor during extraction).
+
+**How to determine what the Figma template does:** Read the archetype.html files and the preset's aesthetic description. If an element type (icons, decorations, shapes) is absent from ALL archetypes → the template deliberately excludes it.
+
+**What standard rules STILL apply with Figma presets:**
+- Font Size Floor (body ≥ 1.25rem, heading ≥ 2.2rem) — safety net
+- Content density limits (≤40 words per slide)
+- Hard Constraint (exact slide count and order from outline)
+- Visual QA pipeline (QA-0a/0b/0c)
+- Footer structure (from the archetype templates)
+
 ### Figma Archetype Priority
 
-**CRITICAL — VERBATIM COPY RULE:** When using a Figma-sourced preset (detected by `figma:` section in preset frontmatter), Figma archetypes are used as **literal HTML templates**, NOT as "inspiration" or "reference". You MUST copy the archetype.html file verbatim and ONLY replace `{{SLOT}}` markers with content.
+**CRITICAL — VERBATIM COPY RULE:** When using a Figma-sourced preset, Figma archetypes are used as **literal HTML templates**, NOT as "inspiration" or "reference". You MUST copy the archetype.html file verbatim and ONLY replace `{{SLOT}}` markers with content.
 
 **What you MUST NOT do with Figma archetypes:**
 - Do NOT rewrite the HTML structure
