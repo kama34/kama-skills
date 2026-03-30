@@ -35,6 +35,37 @@ Run these on every slide before calling Figma APIs:
 
 Fix any violations directly in slides.md before proceeding to Figma structural comparison.
 
+### Design Rules Checks
+
+Read `references/design-rules.md` before running these checks. Apply AFTER basic checks and BEFORE Figma comparison — fix foundational problems first.
+
+**Text density (per slide):**
+- Count words (excluding HTML tags and CSS). If > 75 → **FAIL**. Auto-fix: shorten text, move secondary details to speaker notes. Keep core message.
+- Count bullet items (`<li>` or `-` items). If > 6 → **FAIL**. Auto-fix: merge related bullets or move least critical to speaker notes.
+- Check bullet nesting depth. If > 2 levels → **FAIL**. Auto-fix: flatten to 2 levels max.
+
+**Typography:**
+- Scan for multi-line body text (`<p>`, `<li>` with > 60 chars) with `text-align: center` → **FAIL**. Auto-fix: set `text-align: left; max-width: 65ch; margin: 0 auto`.
+- Estimate bold percentage: count characters inside `<strong>`, `<b>`, `font-weight: 700/800/900` vs total text. If > 20% → **WARNING**. Log: "Overemphasis — bold exceeds 20% on slide N".
+- Count distinct `font-size` values in one slide's `<style>` + inline styles. If > 3 → **WARNING**. Log: "Too many font sizes on slide N".
+
+**Spacing & overlap:**
+- For each slide, check whether any content element's bottom edge + its margin enters the footer zone (bottom 44-56px of slide). If yes → **CRITICAL**. Auto-fix: shorten text or reduce top padding to push content up.
+- For footer specifically: if footer uses fixed positioning (`position: absolute; left: Xpx`) or fixed `margin-left` values, and total text width of all footer spans > 900px (slide width minus margins) → **FAIL**. Auto-fix: convert footer to `display: flex; gap: 24px; align-items: center` with `white-space: nowrap; overflow: hidden; text-overflow: ellipsis` on each span.
+- Check margins: if any content element is < 5% from any slide edge (48px on 960px width) → **WARNING**. Log: "Content too close to edge on slide N".
+
+**Hierarchy:**
+- Calculate heading-to-body font size ratio on each slide. If < 2:1 → **WARNING**. Log: "Weak hierarchy — heading/body ratio X:1 on slide N".
+- Compare largest and second-largest elements by font-size. If ratio < 1.5:1 → **WARNING**. Log: "No clear focal point on slide N".
+
+**Contrast:**
+- For each text-on-background pair, calculate contrast ratio. Body text (< 24px) with ratio < 4.5:1 → **FAIL**. Large text (≥ 24px) with ratio < 3:1 → **FAIL**. Auto-fix: adjust text color to meet minimum. Log computed ratios.
+
+**Severity handling:**
+- **CRITICAL** (overlap into footer zone): auto-fix immediately, re-check after fix
+- **FAIL** (density, alignment, contrast, footer overflow): auto-fix immediately, re-check after fix
+- **WARNING** (hierarchy, bold, font-size count, edge proximity): log to iteration report only, do not block
+
 ### Figma Structural Comparison
 
 For each slide, call using its archetype's `nodeId`:
