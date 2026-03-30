@@ -745,12 +745,17 @@ npx slidev export --format png --output slides
 ```
 If export fails, log error in critique.md and skip to FDL-3g. Do NOT abort the entire learning loop.
 
-**FDL-3c: Figma Live Comparison** — For each generated slide that used a Figma archetype, run three comparison levels. Read the archetype's `nodeId` from `source.json`.
+**FDL-3c: Figma Live Comparison** — For **EVERY** generated slide (not just those with Figma archetypes), run three comparison levels. For each slide:
+- If the slide used a Figma archetype → compare against that archetype's Figma `nodeId`
+- If the slide used a standard fallback archetype → compare against the **closest matching** Figma slide by content type. This ensures that even fallback archetypes maintain visual consistency with the Figma template's design language.
+
+Read the `nodeId` from `source.json`.
 
 **Level 1 — Visual comparison (screenshot vs screenshot):**
 - Get fresh Figma screenshot: `mcp__figma__get_screenshot(nodeId, fileKey)` → returns image
 - Critic agent sees BOTH: our exported PNG from `slides/<N>.png` + Figma screenshot
 - Evaluates: overall visual impression, color correspondence, typography proportions, layout balance
+- For fallback archetype slides: evaluate whether the slide **looks like it belongs** in the same presentation as the Figma slides. Same color palette? Same font treatment? Same whitespace density? Same footer style?
 
 **Level 2 — Structural comparison (positions and sizes):**
 - Get fresh metadata: `mcp__figma__get_metadata(nodeId, fileKey)` → XML with positions/sizes
@@ -2431,12 +2436,23 @@ After defining `--color-muted`, verify its contrast ratio against ALL bg-levels 
 
 ### Figma Archetype Priority
 
-When using a Figma-sourced preset (detected by `figma:` section in preset frontmatter):
+**CRITICAL — VERBATIM COPY RULE:** When using a Figma-sourced preset (detected by `figma:` section in preset frontmatter), Figma archetypes are used as **literal HTML templates**, NOT as "inspiration" or "reference". You MUST copy the archetype.html file verbatim and ONLY replace `{{SLOT}}` markers with content.
+
+**What you MUST NOT do with Figma archetypes:**
+- Do NOT rewrite the HTML structure
+- Do NOT replace inline `style=""` attributes with CSS classes
+- Do NOT add HTML elements that don't have corresponding `{{SLOT}}` markers
+- Do NOT remove HTML elements from the archetype
+- Do NOT change CSS values (font-size, padding, gap, colors, flex ratios)
+- Do NOT substitute `var(--color-*)` variables with other variables or hardcoded values
+
+**Archetype selection:**
 1. For each slide, determine content type from outline (as usual)
 2. Look for a Figma archetype with matching `contentType` in `figma.archetypes[]`
-3. If found → use that Figma archetype. Load its HTML skeleton from `figma-<name>-figma/slide-<N>/archetype.html`.
-4. If no matching `contentType` → fallback to standard archetype from `references/composition-archetypes.md`
-5. If outline has more slides than Figma archetypes of that type → reuse the same Figma archetype for multiple slides (different content, same layout)
+3. If found → **copy** its HTML skeleton from `figma-<name>-figma/slide-<N>-<name>/archetype.html` verbatim. Replace ONLY `{{SLOT}}` markers.
+4. If no matching `contentType` → find the **closest** Figma archetype by visual structure (e.g., a slide with 4 items → use figma-three-cards with flexibility rules). **Prefer adapting a Figma archetype over falling back to standard archetypes** — this preserves visual consistency with the Figma template.
+5. Only if NO Figma archetype can reasonably fit → fallback to standard archetype from `references/composition-archetypes.md`. But even then, the standard archetype MUST use the same CSS values from the Figma preset (same fonts, colors, spacing, border-radius, background). Match the Figma template's visual language — not the standard archetype's defaults.
+6. If outline has more slides than Figma archetypes of that type → reuse the same Figma archetype for multiple slides (different content, same layout)
 
 **Slot Filling with Flexibility Rules** — When filling `{{SLOT}}` markers in a Figma archetype:
 1. Read `flexibility.yaml` from the archetype's directory (`figma-<name>-figma/slide-<N>-<name>/flexibility.yaml`)
