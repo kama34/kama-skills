@@ -19,20 +19,24 @@ slots:
     overflow: truncate
   ITEM_1:
     description: First list item (large body text, row 1)
-    max_length: 80
+    max_length: 65
     overflow: wrap
+    note: "Row height 15.65% of 1080px = 169px. At 2.03rem/1.262 line-height (~41px/line), 2-line max = ~82px safe. Keep under 65 Cyr chars to stay at 2 lines."
   ITEM_2:
     description: Second list item (large body text, row 2)
-    max_length: 80
+    max_length: 65
     overflow: wrap
+    note: "Same row height as ITEM_1. Max 65 Cyr chars for 2-line wrap."
   ITEM_3:
     description: Third list item (large body text, row 3)
-    max_length: 80
+    max_length: 65
     overflow: wrap
+    note: "Same row height as ITEM_1. Max 65 Cyr chars for 2-line wrap."
   ITEM_4:
-    description: Fourth list item (large body text, row 4)
+    description: Fourth list item (large body text, last row — bottom separator only)
     max_length: 80
     overflow: wrap
+    note: "Last row — 3-line wrap acceptable as no item below. Still prefer ≤65 chars."
 
 layout:
   grid_columns: fixed
