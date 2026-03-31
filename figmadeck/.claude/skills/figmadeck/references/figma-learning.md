@@ -15,13 +15,15 @@ Triggered by `/figmadeck <URL> --learn=N`. Uses the same QA cycle as regular gen
 
 Preset already created by FIG-Extract (see `figma-extraction.md`).
 
-**Create education directory**: Scan for existing `edu_*` directories in the working directory. Create the next sequential one:
+**Create education directory — MANDATORY SCAN BEFORE CREATING**:
+
+You **MUST** run this scan before creating any directory:
 ```bash
-# Example: if edu_01/ and edu_02/ exist → create edu_03/
-ls -d edu_* 2>/dev/null   # check what exists
-mkdir -p edu_03/           # create next sequential
+ls -d edu_* 2>/dev/null
 ```
-If no `edu_*` directories exist, start with `edu_01/`.
+Look at the output. If `edu_01/` and `edu_02/` exist → create `edu_03/`. If `edu_01/` exists → create `edu_02/`. If nothing exists → create `edu_01/`.
+
+**Never overwrite or reuse an existing `edu_*` directory.** Each learning run gets its own fresh directory. Skipping this scan and blindly creating `edu_01/` is a **critical error** — it destroys previous learning results.
 
 Store `fileKey` and `nodeId` list from `source.json` for screenshot comparison in each QA cycle.
 
