@@ -10,3 +10,14 @@
 !.slidev-presets/**
 !edu_*/
 !edu_*/**
+edu_*/*/node_modules/
+edu_*/*/node_modules/**
+edu_*/*/.slidev/
+edu_*/*/.slidev/**
+edu_*/*/dist/
+edu_*/*/dist/**
+edu_*/*/slides-qa/
+edu_*/*/slides-qa/**
+edu_*/*/slides-tmp/
+edu_*/*/slides-tmp/**
+edu_*/*/package-lock.json

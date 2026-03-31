@@ -19,32 +19,46 @@ slots:
     overflow: truncate
   LOGO_1:
     description: Row 1, card 1 — client name or placeholder text (orange card)
-    max_length: 10
+    max_length: 6
+    max_length_cyrillic: 4
     overflow: truncate
+    note: "At 1.3125rem + 0.3125rem letter-spacing, badge w=9.95%. Cyrillic max 4 chars (avoid: М,Ш,Щ,Ж,Ц,Ю,Ф). For longer names use abbreviation."
   LOGO_2:
     description: Row 1, card 2 — client name or placeholder text (teal card)
-    max_length: 10
+    max_length: 6
+    max_length_cyrillic: 4
     overflow: truncate
+    note: "Same badge constraints as LOGO_1."
   LOGO_3:
     description: Row 1, card 3 — client name or placeholder text (pink card)
-    max_length: 10
+    max_length: 6
+    max_length_cyrillic: 4
     overflow: truncate
+    note: "Same badge constraints as LOGO_1."
   LOGO_4:
     description: Row 1, card 4 — client name or placeholder text (blue card)
-    max_length: 10
+    max_length: 6
+    max_length_cyrillic: 4
     overflow: truncate
+    note: "Same badge constraints as LOGO_1."
   LOGO_5:
     description: Row 2, card 1 — client name or placeholder text (blue card)
-    max_length: 10
+    max_length: 6
+    max_length_cyrillic: 4
     overflow: truncate
+    note: "Same badge constraints as LOGO_1."
   LOGO_6:
     description: Row 2, card 2 — client name or placeholder text (orange card)
-    max_length: 10
+    max_length: 6
+    max_length_cyrillic: 4
     overflow: truncate
+    note: "Same badge constraints as LOGO_1."
   LOGO_7:
     description: Row 2, card 3 — client name or placeholder text (teal card)
-    max_length: 10
+    max_length: 6
+    max_length_cyrillic: 4
     overflow: truncate
+    note: "Same badge constraints as LOGO_1."
 
 layout:
   grid_columns: flexible

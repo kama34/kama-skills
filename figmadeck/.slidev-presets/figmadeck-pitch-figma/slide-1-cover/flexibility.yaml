@@ -6,13 +6,17 @@ figma_source:
 
 slots:
   WORD_1:
-    description: First large hero word (top of notebook card)
-    max_length: 12
+    description: First large hero word (top of notebook card). At 15.16rem Staatliches condensed.
+    max_length: 5
+    max_length_cyrillic: 4
     overflow: shrink-font
+    note: "Cyrillic chars ~44% wider than Latin in Staatliches. Latin max 5, Cyrillic max 4 narrow chars (avoid: М,Ш,Щ,Ж,Ц,Ю,Ф)"
   WORD_2:
-    description: Second large hero word (bottom of notebook card)
-    max_length: 12
+    description: Second large hero word (bottom-right of card, right-aligned). At 15.16rem.
+    max_length: 4
+    max_length_cyrillic: 3
     overflow: shrink-font
+    note: "Latin max 4, Cyrillic max 3 narrow chars. Wide Cyrillic overflows 45.26% container."
   DATE:
     description: Date or subtitle line below WORD_1
     max_length: 30

@@ -6,13 +6,17 @@ figma_source:
 
 slots:
   WORD_1:
-    description: First large hero word (top of teal notebook card)
-    max_length: 12
+    description: First large hero word (top of teal notebook card). At 15.16rem Staatliches in wider 57.92% container.
+    max_length: 5
+    max_length_cyrillic: 5
     overflow: shrink-font
+    note: "WORD_1 has wider container than cover (57.92%). 4-5 Cyrillic chars fit."
   WORD_2:
-    description: Second large hero word (bottom of teal notebook card)
-    max_length: 12
+    description: Second large hero word (bottom-right, right-aligned). At 15.16rem in narrow 32.6% container.
+    max_length: 3
+    max_length_cyrillic: 2
     overflow: shrink-font
+    note: "Narrow container (32.6%). Latin max 3, Cyrillic max 2-3 narrow chars (В,А,С,Н,Т,Л fit)."
   PRESENTER:
     description: Contact info, name, or closing statement
     max_length: 60
