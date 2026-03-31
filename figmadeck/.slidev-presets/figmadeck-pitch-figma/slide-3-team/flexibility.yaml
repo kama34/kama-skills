@@ -1,0 +1,70 @@
+archetype: figmadeck-pitch-team
+content_type: team
+figma_source:
+  nodeId: "1:63"
+  name: "Our Team"
+
+slots:
+  SECTION_TITLE:
+    description: Section heading (top-left, uppercase)
+    max_length: 20
+    overflow: truncate
+  AGENCY:
+    description: Agency name in footer (right)
+    max_length: 40
+    overflow: truncate
+  PHASE:
+    description: Phase label in footer (far right)
+    max_length: 15
+    overflow: truncate
+  MEMBER_1_NAME:
+    description: First team member name
+    max_length: 25
+    overflow: wrap
+  MEMBER_1_ROLE:
+    description: First team member role/title
+    max_length: 30
+    overflow: wrap
+  IMAGE_1:
+    description: First team member photo URL
+    overflow: object-fit-cover
+  MEMBER_2_NAME:
+    description: Second team member name
+    max_length: 25
+    overflow: wrap
+  MEMBER_2_ROLE:
+    description: Second team member role/title
+    max_length: 30
+    overflow: wrap
+  IMAGE_2:
+    description: Second team member photo URL
+    overflow: object-fit-cover
+  MEMBER_3_NAME:
+    description: Third team member name
+    max_length: 25
+    overflow: wrap
+  MEMBER_3_ROLE:
+    description: Third team member role/title
+    max_length: 30
+    overflow: wrap
+  IMAGE_3:
+    description: Third team member photo URL
+    overflow: object-fit-cover
+
+layout:
+  grid_columns: fixed
+  cards:
+    count_in_figma: 3
+    min: 2
+    max: 4
+    scaling: grid-auto
+  preserve:
+    - 3-column-layout
+    - photo-card-proportions
+    - font-size-hierarchy
+    - color-usage
+  flexible:
+    - member-count
+    - name-content
+    - role-content
+    - bio-content

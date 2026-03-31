@@ -1,0 +1,67 @@
+archetype: figmadeck-pitch-agenda-shapes
+content_type: scope
+figma_source:
+  nodeId: "1:84"
+  name: "Agenda Shapes"
+
+slots:
+  SECTION_TITLE:
+    description: Section heading (top-left, uppercase)
+    max_length: 20
+    overflow: truncate
+  AGENCY:
+    description: Agency name in footer (right)
+    max_length: 40
+    overflow: truncate
+  PHASE:
+    description: Phase label in footer (far right)
+    max_length: 15
+    overflow: truncate
+  NUM_1:
+    description: Number or label on shape 1 (leftmost)
+    max_length: 4
+    overflow: truncate
+  LABEL_1:
+    description: Text below shape 1
+    max_length: 25
+    overflow: wrap
+  NUM_2:
+    description: Number or label on shape 2
+    max_length: 4
+    overflow: truncate
+  LABEL_2:
+    description: Text below shape 2
+    max_length: 25
+    overflow: wrap
+  NUM_3:
+    description: Number or label on shape 3
+    max_length: 4
+    overflow: truncate
+  LABEL_3:
+    description: Text below shape 3
+    max_length: 25
+    overflow: wrap
+  NUM_4:
+    description: Number or label on shape 4 (rightmost)
+    max_length: 4
+    overflow: truncate
+  LABEL_4:
+    description: Text below shape 4
+    max_length: 25
+    overflow: wrap
+
+layout:
+  grid_columns: fixed
+  cards:
+    count_in_figma: 4
+    min: 3
+    max: 5
+    scaling: grid-auto
+  preserve:
+    - 4-column-layout
+    - tall-rounded-shape-proportions
+    - color-per-column
+    - font-size-hierarchy
+  flexible:
+    - number-values
+    - label-content

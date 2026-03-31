@@ -1,0 +1,25 @@
+{
+  "fileKey": "6iJhgnLC8oiDd4r6Tyqtl2",
+  "fileName": "pitch",
+  "sourceUrl": "https://www.figma.com/design/6iJhgnLC8oiDd4r6Tyqtl2/pitch?node-id=0-1",
+  "extractedAt": "2026-03-31T12:00:00Z",
+  "frameSize": { "width": 1920, "height": 1080 },
+  "renderSize": { "width": 960, "height": 540 },
+  "slideCount": 14,
+  "slides": [
+    { "index": 1,  "nodeId": "1:32",  "archetype": "figmadeck-pitch-cover",           "name": "Cover" },
+    { "index": 2,  "nodeId": "1:49",  "archetype": "figmadeck-pitch-agenda-numbers",  "name": "Agenda Numbers" },
+    { "index": 3,  "nodeId": "1:63",  "archetype": "figmadeck-pitch-team",            "name": "Our Team" },
+    { "index": 4,  "nodeId": "1:84",  "archetype": "figmadeck-pitch-agenda-shapes",   "name": "Agenda Shapes" },
+    { "index": 5,  "nodeId": "1:102", "archetype": "figmadeck-pitch-vision-light",    "name": "Vision Light" },
+    { "index": 6,  "nodeId": "1:119", "archetype": "figmadeck-pitch-vision-dark",     "name": "Vision Dark" },
+    { "index": 7,  "nodeId": "1:124", "archetype": "figmadeck-pitch-list",            "name": "What We Do" },
+    { "index": 8,  "nodeId": "1:141", "archetype": "figmadeck-pitch-cards4",          "name": "Our Principles" },
+    { "index": 9,  "nodeId": "1:165", "archetype": "figmadeck-pitch-process",         "name": "Our Process" },
+    { "index": 10, "nodeId": "1:185", "archetype": "figmadeck-pitch-vision-light",    "name": "Vision Light Alt", "duplicateOf": "figmadeck-pitch-vision-light" },
+    { "index": 11, "nodeId": "1:202", "archetype": "figmadeck-pitch-visual",          "name": "Project Visual" },
+    { "index": 12, "nodeId": "1:204", "archetype": "figmadeck-pitch-clients-gallery", "name": "Clients Gallery" },
+    { "index": 13, "nodeId": "1:214", "archetype": "figmadeck-pitch-clients-logos",   "name": "Clients Logos" },
+    { "index": 14, "nodeId": "1:225", "archetype": "figmadeck-pitch-cta",             "name": "Thank You" }
+  ]
+}

@@ -1,0 +1,38 @@
+<div style="position:absolute;inset:0;z-index:1;background:var(--bg-alt);overflow:hidden;">
+  <!-- Section title: orange. left=3.65%, top=3.7% -->
+  <p style="position:absolute;left:3.65%;top:3.7%;font-family:var(--font-heading);font-weight:400;font-size:2.2rem;line-height:1.046;letter-spacing:0.1219rem;color:var(--color-accent);font-style:normal;text-transform:uppercase;">{{SECTION_TITLE}}</p>
+  <!-- Footer -->
+  <p style="position:absolute;right:18.02%;top:4.26%;font-family:var(--font-meta);font-weight:400;font-size:0.65rem;color:var(--color-text-on-dark);text-align:right;white-space:nowrap;">{{AGENCY}}</p>
+  <p style="position:absolute;right:3.59%;top:4.26%;font-family:var(--font-meta);font-weight:400;font-size:0.65rem;color:var(--color-text-on-dark);text-align:right;white-space:nowrap;">{{PHASE}}</p>
+
+  <!-- Masonry 3-col layout. Figma col widths: ~569-570px each, col spacing ~10px -->
+  <!-- Col 1: left=70px/1920=3.65% -->
+  <!-- Col 1 img tall: top=200px/1080=18.52%, h=554px/1080=51.3% -->
+  <div style="position:absolute;left:3.65%;top:18.52%;width:29.64%;height:51.3%;border-radius:var(--card-radius);background:#222;overflow:hidden;">
+    <img src="{{IMAGE_1}}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.background='#333'" />
+  </div>
+  <!-- Col 1 img short: top=794px/1080=73.52%, h=235px/1080=21.76% -->
+  <div style="position:absolute;left:3.65%;top:73.52%;width:29.64%;height:21.76%;border-radius:var(--card-radius);background:#222;overflow:hidden;">
+    <img src="{{IMAGE_2}}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.background='#333'" />
+  </div>
+
+  <!-- Col 2: left=679px/1920=35.36% -->
+  <!-- Col 2 img short: top=18.52%, h=235px/1080=21.76% -->
+  <div style="position:absolute;left:35.36%;top:18.52%;width:29.48%;height:21.76%;border-radius:var(--card-radius);background:#222;overflow:hidden;">
+    <img src="{{IMAGE_3}}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.background='#333'" />
+  </div>
+  <!-- Col 2 img tall: top=478px/1080=44.26%, h=552px/1080=51.11% -->
+  <div style="position:absolute;left:35.36%;top:44.26%;width:29.48%;height:51.11%;border-radius:var(--card-radius);background:#222;overflow:hidden;">
+    <img src="{{IMAGE_4}}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.background='#333'" />
+  </div>
+
+  <!-- Col 3: left=1286px/1920=66.98% -->
+  <!-- Col 3 img tall-short: top=18.52%, h=405px/1080=37.5% -->
+  <div style="position:absolute;left:66.98%;top:18.52%;width:29.64%;height:37.5%;border-radius:var(--card-radius);background:#222;overflow:hidden;">
+    <img src="{{IMAGE_5}}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.background='#333'" />
+  </div>
+  <!-- Col 3 img medium: top=645px/1080=59.72%, h=383px/1080=35.46% -->
+  <div style="position:absolute;left:66.98%;top:59.72%;width:29.69%;height:35.46%;border-radius:var(--card-radius);background:#222;overflow:hidden;">
+    <img src="{{IMAGE_6}}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.background='#333'" />
+  </div>
+</div>

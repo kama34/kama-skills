@@ -8,3 +8,5 @@
 !README.md
 !.slidev-presets/
 !.slidev-presets/**
+!edu_*/
+!edu_*/**

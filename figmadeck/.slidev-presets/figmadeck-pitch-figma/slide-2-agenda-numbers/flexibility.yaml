@@ -1,0 +1,50 @@
+archetype: figmadeck-pitch-agenda-numbers
+content_type: scope
+figma_source:
+  nodeId: "1:49"
+  name: "Agenda Numbers"
+
+slots:
+  NUM_1:
+    description: Large stencil numeral, top-left (orange)
+    max_length: 2
+    overflow: shrink-font
+  LABEL_1:
+    description: Section label below NUM_1
+    max_length: 20
+    overflow: truncate
+  NUM_2:
+    description: Large stencil numeral, top-right (teal)
+    max_length: 2
+    overflow: shrink-font
+  LABEL_2:
+    description: Section label below NUM_2
+    max_length: 20
+    overflow: truncate
+  NUM_3:
+    description: Large stencil numeral, bottom-left (gold)
+    max_length: 2
+    overflow: shrink-font
+  LABEL_3:
+    description: Section label below NUM_3
+    max_length: 20
+    overflow: truncate
+  NUM_4:
+    description: Large stencil numeral, bottom-right (pink)
+    max_length: 2
+    overflow: shrink-font
+  LABEL_4:
+    description: Section label below NUM_4
+    max_length: 20
+    overflow: truncate
+
+layout:
+  grid_columns: fixed
+  preserve:
+    - 2x2-grid-layout
+    - stencil-numeral-size
+    - color-per-quadrant
+    - font-size-hierarchy
+  flexible:
+    - numeral-values
+    - label-content

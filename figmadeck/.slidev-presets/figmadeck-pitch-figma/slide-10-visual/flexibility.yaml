@@ -1,0 +1,24 @@
+archetype: figmadeck-pitch-visual
+content_type: visual-break
+figma_source:
+  nodeId: "1:202"
+  name: "Project Visual"
+
+slots:
+  IMAGE_URL:
+    description: Full-bleed background image URL
+    overflow: object-fit-cover
+  TITLE:
+    description: Centered overlay title (uppercase, BioRhyme Expanded)
+    max_length: 60
+    overflow: shrink-font
+
+layout:
+  grid_columns: fixed
+  preserve:
+    - full-bleed-image
+    - centered-title-overlay
+    - font-size-hierarchy
+  flexible:
+    - image-content
+    - title-content

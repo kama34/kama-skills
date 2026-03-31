@@ -1,0 +1,52 @@
+archetype: figmadeck-pitch-list
+content_type: context
+figma_source:
+  nodeId: "1:124"
+  name: "What We Do"
+
+slots:
+  SECTION_TITLE:
+    description: Gold section heading (Staatliches, top-left)
+    max_length: 20
+    overflow: truncate
+  AGENCY:
+    description: Agency name in footer (right)
+    max_length: 40
+    overflow: truncate
+  PHASE:
+    description: Phase label in footer (far right)
+    max_length: 15
+    overflow: truncate
+  ITEM_1:
+    description: First list item (large body text, row 1)
+    max_length: 80
+    overflow: wrap
+  ITEM_2:
+    description: Second list item (large body text, row 2)
+    max_length: 80
+    overflow: wrap
+  ITEM_3:
+    description: Third list item (large body text, row 3)
+    max_length: 80
+    overflow: wrap
+  ITEM_4:
+    description: Fourth list item (large body text, row 4)
+    max_length: 80
+    overflow: wrap
+
+layout:
+  grid_columns: fixed
+  cards:
+    count_in_figma: 4
+    min: 3
+    max: 4
+    scaling: stack
+  preserve:
+    - black-background
+    - dashed-separator-lines
+    - geometric-icon-per-row
+    - icon-colors-sequence
+    - font-size-hierarchy
+  flexible:
+    - item-content
+    - item-count

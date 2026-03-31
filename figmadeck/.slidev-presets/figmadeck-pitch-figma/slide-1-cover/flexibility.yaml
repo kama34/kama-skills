@@ -1,0 +1,37 @@
+archetype: figmadeck-pitch-cover
+content_type: intro
+figma_source:
+  nodeId: "1:32"
+  name: "Cover"
+
+slots:
+  WORD_1:
+    description: First large hero word (top of notebook card)
+    max_length: 12
+    overflow: shrink-font
+  WORD_2:
+    description: Second large hero word (bottom of notebook card)
+    max_length: 12
+    overflow: shrink-font
+  DATE:
+    description: Date or subtitle line below WORD_1
+    max_length: 30
+    overflow: truncate
+  PRESENTER:
+    description: Presenter name and/or role
+    max_length: 40
+    overflow: truncate
+
+layout:
+  grid_columns: fixed
+  preserve:
+    - notebook-card-shape
+    - binder-tabs-left
+    - font-size-hierarchy
+    - color-usage
+    - border-radius
+  flexible:
+    - word-1-content
+    - word-2-content
+    - date-content
+    - presenter-content

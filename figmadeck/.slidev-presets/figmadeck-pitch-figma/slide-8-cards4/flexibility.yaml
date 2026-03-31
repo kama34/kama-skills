@@ -1,0 +1,87 @@
+archetype: figmadeck-pitch-cards4
+content_type: credentials
+figma_source:
+  nodeId: "1:141"
+  name: "Our Principles"
+
+slots:
+  SECTION_TITLE:
+    description: Section heading (top-left, uppercase)
+    max_length: 25
+    overflow: truncate
+  AGENCY:
+    description: Agency name in footer (right)
+    max_length: 40
+    overflow: truncate
+  PHASE:
+    description: Phase label in footer (far right)
+    max_length: 15
+    overflow: truncate
+  CARD_1_NUM:
+    description: Large stencil numeral on card 1 (gold)
+    max_length: 2
+    overflow: shrink-font
+  CARD_1_TITLE:
+    description: Card 1 title (uppercase, BioRhyme Expanded)
+    max_length: 30
+    overflow: wrap
+  CARD_1_DESC:
+    description: Card 1 body description
+    max_length: 120
+    overflow: wrap
+  CARD_2_NUM:
+    description: Large stencil numeral on card 2 (pink)
+    max_length: 2
+    overflow: shrink-font
+  CARD_2_TITLE:
+    description: Card 2 title (uppercase, BioRhyme Expanded)
+    max_length: 30
+    overflow: wrap
+  CARD_2_DESC:
+    description: Card 2 body description
+    max_length: 120
+    overflow: wrap
+  CARD_3_NUM:
+    description: Large stencil numeral on card 3 (orange)
+    max_length: 2
+    overflow: shrink-font
+  CARD_3_TITLE:
+    description: Card 3 title (uppercase, BioRhyme Expanded)
+    max_length: 30
+    overflow: wrap
+  CARD_3_DESC:
+    description: Card 3 body description
+    max_length: 120
+    overflow: wrap
+  CARD_4_NUM:
+    description: Large stencil numeral on card 4 (teal)
+    max_length: 2
+    overflow: shrink-font
+  CARD_4_TITLE:
+    description: Card 4 title (uppercase, BioRhyme Expanded)
+    max_length: 30
+    overflow: wrap
+  CARD_4_DESC:
+    description: Card 4 body description
+    max_length: 120
+    overflow: wrap
+
+layout:
+  grid_columns: fixed
+  cards:
+    count_in_figma: 4
+    min: 3
+    max: 5
+    scaling: grid-auto
+  preserve:
+    - 4-column-layout
+    - tall-card-proportions
+    - stencil-numeral-hero
+    - color-per-card
+    - border-radius-xl
+    - font-size-hierarchy
+  flexible:
+    - card-count
+    - numeral-values
+    - title-content
+    - description-content

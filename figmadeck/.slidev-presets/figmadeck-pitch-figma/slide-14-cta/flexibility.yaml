@@ -1,0 +1,32 @@
+archetype: figmadeck-pitch-cta
+content_type: cta
+figma_source:
+  nodeId: "1:225"
+  name: "Thank You"
+
+slots:
+  WORD_1:
+    description: First large hero word (top of teal notebook card)
+    max_length: 12
+    overflow: shrink-font
+  WORD_2:
+    description: Second large hero word (bottom of teal notebook card)
+    max_length: 12
+    overflow: shrink-font
+  PRESENTER:
+    description: Contact info, name, or closing statement
+    max_length: 60
+    overflow: wrap
+
+layout:
+  grid_columns: fixed
+  preserve:
+    - teal-notebook-card
+    - binder-tabs-left
+    - split-word-layout
+    - font-size-hierarchy
+    - border-radius
+  flexible:
+    - word-1-content
+    - word-2-content
+    - presenter-content
