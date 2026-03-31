@@ -25,6 +25,73 @@ If no `edu_*` directories exist, start with `edu_01/`.
 
 Store `fileKey` and `nodeId` list from `source.json` for screenshot comparison in each QA cycle.
 
+## FDL-0: Pixel-Perfect Calibration (learn_0)
+
+**Purpose:** Before learning with diverse outlines, verify that the extracted archetypes + preset can reproduce the original Figma template exactly. This is the "ground truth test" — if the system can't match the original, it can't produce good variations.
+
+### FDL-0a: Build calibration outline from Figma
+
+For each **unique archetype** (one slide per archetype, not all 20 Figma slides), extract the original text content from `blueprint.json` (`characters` fields). Assemble into a calibration outline at `<edu_dir>/learn_0/outline.md`.
+
+Example: if the preset has 15 unique archetypes → calibration outline has 15 slides, each using its archetype's original Figma text.
+
+### FDL-0b: Generate calibration presentation
+
+Run `generation-pipeline.md` with the calibration outline. Each slide must use its corresponding archetype — no composition planning needed, the mapping is 1:1.
+
+Output to `<edu_dir>/learn_0/`.
+
+### FDL-0c: Pixel-perfect QA cycle
+
+Run a **strict variant** of `qa-cycle.md`:
+- **Skip all design-rules checks** — no text density, hierarchy, or contrast checks. The goal is pixel-perfect reproduction, not design quality.
+- **Run ONLY Figma comparison** (Phase A structural/style + Phase B visual) with **zero tolerance for FAIL/CRITICAL**:
+  - ALL properties must be within the tolerance table thresholds
+  - Zero element overlap
+  - Zero position deviations beyond ±5%
+  - Zero font-size deviations beyond ±0.15rem
+  - Zero color deviations beyond ΔE 5
+- **Pass condition**: every slide passes ALL checks with zero FAIL and zero CRITICAL. This is a checklist, not a score — one failure means another iteration.
+- **Fix cycle**: fix issues → re-generate → re-compare. Fixes go to archetype.html + preset.md + flexibility.yaml (same as regular learn).
+- Export PDF after each iteration for visual review.
+
+### FDL-0d: Verification from scratch
+
+After FDL-0c achieves zero-FAIL on all slides:
+
+1. **Delete** `<edu_dir>/learn_0/slides.md` and all generated artifacts (keep outline.md)
+2. **Re-generate** the calibration presentation from scratch using the updated archetypes/preset — a clean generation with NO manual fixes carried over
+3. **Run the same strict QA** (FDL-0c checks)
+4. If pixel-perfect **without any QA iterations** → **learn_0 PASSED**
+5. If not → return to FDL-0c with the new issues, fix archetypes, repeat verification
+
+### FDL-0e: Commit + report
+
+```bash
+git add <edu_dir>/learn_0/
+git add .slidev-presets/figmadeck-<name>.preset.md
+git add .slidev-presets/figmadeck-<name>-figma/
+git commit -m "learn(figmadeck): learn_0 pixel-perfect calibration PASSED"
+git tag figmadeck-learn-<edu_dir>-calibration
+```
+
+Print:
+```
+━━━ learn_0: Pixel-Perfect Calibration ━━━
+
+Status: PASSED
+QA iterations to achieve pixel-perfect: <N>
+Verification from scratch: PASSED (zero issues on first run)
+Archetypes calibrated: <count>/<total>
+Archetype fixes applied: <list>
+
+Proceeding to learn_1..N with diverse outlines.
+```
+
+**If learn_0 fails** after 10 iterations without reaching zero-FAIL → STOP. Report which archetypes/properties cannot be reproduced. Do NOT proceed to learn_1..N — the extraction needs to be re-run or archetypes manually reviewed.
+
+---
+
 ## FDL-2: Generate N Diverse Outlines
 
 All outlines in Russian. Must vary across:
