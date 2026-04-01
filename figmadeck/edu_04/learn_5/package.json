@@ -1,0 +1,17 @@
+{
+  "name": "figmadeck-pitch-arka-agency",
+  "private": true,
+  "scripts": {
+    "dev": "slidev --open",
+    "build": "slidev build",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@slidev/cli": "^0.49.0",
+    "@slidev/theme-default": "latest",
+    "figmadeck-pitch-theme": "file:./theme"
+  },
+  "devDependencies": {
+    "playwright-chromium": "^1.42.0"
+  }
+}

@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Staatliches&family=Stardos+Stencil:wght@400;700&family=BioRhyme+Expanded:wght@700;800&family=BioRhyme:wght@700&family=Archivo:ital,wght@0,100..900;1,100..900&family=Work+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg-base: #ded8cb;
+  --bg-alt: #000000;
+  --color-text: #000000;
+  --color-muted: #ded8cb;
+  --color-accent: #ff6a3b;
+  --color-accent-rgb: 255, 106, 59;
+  --bg-accent: rgba(255, 106, 59, 0.12);
+  --color-text-on-dark: #ded8cb;
+  --color-teal: #15857a;
+  --color-blue: #4076ba;
+  --color-gold: #a97c50;
+  --color-pink: #c04277;
+  --font-display: 'Stardos Stencil', sans-serif;
+  --font-heading: 'Staatliches', sans-serif;
+  --font-section: 'BioRhyme Expanded', sans-serif;
+  --font-body: 'Archivo', sans-serif;
+  --font-meta: 'Work Sans', sans-serif;
+  --gap: 1.5rem;
+  --pad: 2rem;
+  --card-radius: 1.25rem;
+  --card-radius-xl: 3.125rem;
+  --slidev-font-sans: 'Archivo', sans-serif;
+  --slidev-font-mono: 'Fira Code', monospace;
+  --slidev-theme-primary: #ff6a3b;
+}
+
+.slidev-layout {
+  background-color: var(--bg-base);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+.slidev-layout * {
+  box-sizing: border-box;
+}
