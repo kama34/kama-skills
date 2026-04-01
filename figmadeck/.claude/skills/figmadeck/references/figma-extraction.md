@@ -480,4 +480,4 @@ Palette: <bg-base> / <accent> / <text>
 | Nesting > 3 levels | Flatten during extraction, log |
 | Serif font detected | Replace with sans-serif, log |
 | Accent hue in blacklist (240–290, sat >50%) | Shift hue, log replacement |
-| Figma API unavailable during later learning cycles | Use cached `blueprint.json` + `reference.png` |
+| Figma API unavailable during later learning cycles | Use cached `design-context.html` + `reference.png` from `figmadeck-<name>-figma/` |
