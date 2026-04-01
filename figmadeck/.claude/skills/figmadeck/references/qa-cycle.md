@@ -243,30 +243,81 @@ Generated page: <pageId>
 
 Runs AFTER Phase D score is computed, BEFORE declaring DONE.
 
+### Step E0: Remove Interactive/Widget Elements
+
+**BEFORE visual assessment**, scan each slide for interactive elements that should NEVER appear in generated presentations:
+
+```js
+// Find and hide interactive/widget elements
+const toHide = frame.findAll(n =>
+  n.type === "WIDGET" ||
+  n.type === "SHAPE_WITH_TEXT" ||
+  n.name.toLowerCase().match(/poll|vote|facepile|slider|survey|quiz|reaction/)
+);
+for (const node of toHide) {
+  node.visible = false;
+}
+```
+
+These are FigJam/interactive elements from the template (polls, voting scales, reactions). They are never relevant to generated content — always hide them.
+
 ### Step E1: Visual Assessment
 
-For each slide, look at the filled screenshot and the original template screenshot. Evaluate:
+For each slide, get a fresh screenshot (`get_screenshot`) and evaluate:
 
 1. **Does the text content match the visual style?** Playful illustrations + serious financial data = bad fit. Clean layout + wrong content type = bad fit.
-2. **Is the text-to-visual ratio preserved?** Template 30% text / 70% visual → after fill 80% text / 20% visual = bad fit.
-3. **Are visual elements relevant?** Shopping cart illustration + team structure content = bad fit.
+2. **Is the text-to-visual ratio preserved?** Template had 30% text / 70% visual, but after fill it's 80% text / 20% visual = bad fit.
+3. **Are visual elements (illustrations, icons, decorative images) relevant to the content?**
+   - Shopping cart illustration + team structure content = irrelevant
+   - Computer/monitor icon + financial data = irrelevant
+   - Abstract geometric shapes or gradients = neutral (always OK)
+   - Icons that match the topic (chart icon + data slide) = relevant
 
-If fit is **poor** → proceed to Step E2.
 If fit is **good** → skip to DONE.
+If **only specific visual elements are irrelevant** (but template layout fits) → proceed to Step E2a.
+If **entire template layout doesn't fit the content** → proceed to Step E2b.
 
-### Step E2: Retemplate
+### Step E2a: Hide Irrelevant Visual Elements (cascade)
+
+When the template layout is fine but specific illustrations/icons don't match the content:
+
+**Step 1 — Hide:** Set `node.visible = false` on the irrelevant elements via `use_figma`.
+
+**Step 2 — Evaluate:** Get a fresh screenshot. Does the slide look good without those elements?
+- If YES (clean, balanced, no awkward gaps) → **DONE** for this slide. Log: "Hid irrelevant visual elements: <list>"
+- If NO (awkward empty space, unbalanced layout) → proceed to Step 3
+
+**Step 3 — Rebalance:** Try to improve the layout after hiding:
+- If the hidden element left a large gap → move remaining content to fill it (adjust `node.x`/`node.y`)
+- If text was constrained to make room for the illustration → expand text container width
+- Get screenshot, re-evaluate
+
+**Step 4 — Still not good?** If rebalancing didn't help → proceed to Step E2b (full retemplate).
+
+### Step E2b: Retemplate (full swap)
+
+The entire template doesn't fit this content. Swap to a different template:
 
 1. Review ALL available templates from the slide map (Step 3 analysis)
-2. Select better-fitting template (text-heavy → text-only; metrics → stat; process → timeline)
-3. If NO better template → keep current, log "best available"
-4. Delete current filled slide → clone new template → fill → run Phases A-D on this slide only
+2. Select better-fitting template:
+   - Text-heavy content with no matching visuals → text-only or two-column template
+   - Metrics/numbers → stat or metric template
+   - Process/steps without matching illustrations → timeline or simple list template
+3. If NO better template exists → keep current with hidden elements, log "best available"
+4. Delete current filled slide → clone new template → fill with same content → run Phases A-D for this slide only
 5. Run Step E1 on the new version
+6. If still poor fit → keep the better of the two (original with hidden elements vs retemplate)
 
 ### Step E3: Compare and Keep
 
-If retemplated: compare original fill vs retemplate on structural score + visual fit. Keep the winner, delete the loser.
+If retemplate was tried: compare original (with hidden elements) vs retemplated version on:
+- Structural score (Phase A)
+- Visual balance
+- Content readability
 
-**Phase E adds at most 1 retemplate attempt per slide per QA iteration.** If Phase E keeps triggering across iterations, the template set is inadequate for this outline.
+Keep the winner, delete the loser.
+
+**Phase E cascade per slide:** E0 (widgets) → E1 (assess) → E2a (hide + rebalance) → E2b (retemplate) → E3 (compare). At most 1 retemplate attempt per slide per QA iteration.
 
 ---
 
