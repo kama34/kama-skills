@@ -2,6 +2,10 @@
 
 Process slides ONE AT A TIME. Check → fix → confirm → next slide.
 
+## References
+
+Read `references/design-rules.md` for universal design rules (spacing, hierarchy, contrast, density). Apply during visual check (STEP 2) and fixes (STEP 3).
+
 ## Critical Rules
 
 1. **NEVER add content not in the outline.** Only use text from the outline. Do not invent, expand, or rephrase beyond what the outline provides.
@@ -10,6 +14,7 @@ Process slides ONE AT A TIME. Check → fix → confirm → next slide.
 4. **Fix priority: expand first, shorten last.** Expand container width → move elements → shorten text → reduce font → retemplate.
 5. **Overlap with ANY element is CRITICAL.** Text overlapping lines, shapes, separators, icons — all unacceptable. Move the decorative elements OR shorten the text.
 6. **Expand width guardrail:** Never expand beyond `frame.width - node.x - 70px`.
+7. **Coverage exception:** If original template coverage ≤ 0.30, do not penalize generated slide for low coverage (template is naturally sparse).
 
 ---
 
@@ -115,6 +120,41 @@ for (const t of textNodes) {
     if (tx < bx+other.width && tx+t.width > bx && ty < by+other.height && ty+t.height > by) {
       checks.overlapCount++;
       issues.push({ type: "CRITICAL", desc: `Overlap: "${t.characters.substring(0,15)}" ↔ ${other.type} "${other.name}"` });
+    }
+  }
+}
+
+  // Proximity: unrelated elements closer than 16px (but not overlapping)
+  for (const other of allVisible) {
+    if (t.id === other.id || isRelated) continue;
+    const bx = other.absoluteTransform[0][2], by = other.absoluteTransform[1][2];
+    const dx = Math.max(0, Math.max(bx-(tx+t.width), tx-(bx+other.width)));
+    const dy = Math.max(0, Math.max(by-(ty+t.height), ty-(by+other.height)));
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist > 0 && dist < 16) {
+      checks.proximityViolations++;
+      issues.push({ type: "FAIL", desc: `Proximity: "${t.characters.substring(0,15)}" ${Math.round(dist)}px from ${other.type}` });
+    }
+  }
+}
+
+// --- Group homogeneity: repeated elements with inconsistent content length ---
+const childFrames = frame.children.filter(n => n.type === "FRAME" && n.visible);
+const similarGroups = childFrames.filter(cf =>
+  childFrames.filter(o => Math.abs(o.width-cf.width)<50 && Math.abs(o.height-cf.height)<100).length >= 3
+);
+if (similarGroups.length >= 3) {
+  const heroTexts = similarGroups.map(cf => {
+    const texts = cf.findAll(n => n.type === "TEXT");
+    return texts.sort((a,b) => (b.fontSize||0)-(a.fontSize||0))[0];
+  }).filter(Boolean);
+  if (heroTexts.length >= 3) {
+    const lengths = heroTexts.map(h => h.characters.length);
+    const median = lengths.sort((a,b)=>a-b)[Math.floor(lengths.length/2)];
+    for (const h of heroTexts) {
+      if (h.characters.length > median * 3) {
+        issues.push({ type: "FAIL", desc: `Group imbalance: "${h.characters.substring(0,15)}" is ${h.characters.length} chars, median=${median}` });
+      }
     }
   }
 }
