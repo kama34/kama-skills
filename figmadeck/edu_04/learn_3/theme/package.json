@@ -1,0 +1,9 @@
+{
+  "name": "figmadeck-pitch-theme",
+  "version": "0.0.1",
+  "description": "Slidev theme for Pitch Deck Figma template",
+  "keywords": ["slidev-theme"],
+  "slidev": {
+    "colorSchema": "light"
+  }
+}
