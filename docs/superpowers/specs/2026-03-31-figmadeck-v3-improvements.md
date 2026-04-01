@@ -2,10 +2,11 @@
 
 ## Overview
 
-Three categories of changes:
+Four categories of changes:
 1. **New QA features**: visual content-template fit assessment, content-template swap, distance preservation between elements
-2. **P1 bug fixes**: mixed-style text, component instances, clone/remove ordering, originalSlideNodeId handoff, auth timeout
-3. **P2/P3 fixes**: subtitle detection, footer zone %, overflow absolute coords, design-rules cleanup, placeholder detection, prototype connections, page selection, learn language
+2. **New generation feature**: oversized typography budget — calculate character capacity before fill
+3. **P1 bug fixes**: mixed-style text, component instances, clone/remove ordering, originalSlideNodeId handoff, auth timeout
+4. **P2/P3 fixes**: subtitle detection, footer zone %, overflow absolute coords, design-rules cleanup, placeholder detection, prototype connections, page selection, learn language
 
 ---
 
@@ -139,6 +140,74 @@ When a gap violation is detected:
 ### Minimum Gap Rule
 
 **Absolute minimum: 16px between any two elements that were originally separate.** If two elements had 0 gap in the original (touching or overlapping by design), preserve that — don't add artificial spacing.
+
+---
+
+## New Feature 3: Oversized Typography Character Budget
+
+### Problem
+
+Templates with oversized decorative titles (fontSize > 80px, like "PITCH DECK" at ~200px) are designed for **very few characters** — often just 1-3 short words. When replaced with longer text (especially Russian, which is 20-40% longer than English), the text overflows catastrophically: letters overlap, text bleeds outside the container, the slide becomes unreadable.
+
+The agent currently treats this as "decorative element = template design, not an error" — **this is WRONG**. The oversized text IS content that MUST be adapted.
+
+### Fix: Character Budget Calculation in Step 5
+
+Before replacing ANY text node, calculate the **character budget** — how many characters can physically fit:
+
+```javascript
+function calculateCharBudget(node) {
+  const fontSize = node.fontSize;
+  const avgCharWidth = fontSize * 0.6; // approximate for sans-serif
+  const containerWidth = node.width;
+  const containerHeight = node.height;
+  const lineHeight = node.lineHeight.value || fontSize * 1.2;
+
+  const charsPerLine = Math.floor(containerWidth / avgCharWidth);
+  const maxLines = Math.floor(containerHeight / lineHeight);
+  const totalBudget = charsPerLine * maxLines;
+
+  return { charsPerLine, maxLines, totalBudget, fontSize };
+}
+```
+
+### Decision Logic
+
+```
+IF fontSize > 80px (oversized decorative):
+  1. Calculate character budget
+  2. IF newText.length > totalBudget:
+     → AGGRESSIVELY shorten text to fit budget
+     → Not "preserve meaning at 70%" — shorten to EXACT budget
+     → Prefer: key phrase, 2-3 impactful words max
+     → Example: "Презентация, которая убеждает" → "Убеждай" or "Pitch Day"
+  3. IF newText.length > totalBudget * 2 (way too long):
+     → This template slot is INCOMPATIBLE with this content
+     → Trigger Phase E: find a template with smaller title font
+  4. NEVER leave oversized text overflowing — this is CRITICAL severity
+
+IF fontSize 40-80px (large but not decorative):
+  Apply normal overflow handling (shorten → reduce font → speaker notes)
+
+IF fontSize < 40px (normal):
+  Apply normal overflow handling
+```
+
+### QA Integration
+
+In QA Phase A, add a specific check:
+
+```markdown
+### Oversized Text Overflow
+
+For each TEXT node with fontSize > 80px:
+- Is the text visually contained within its bounding box? (not clipped, not overlapping neighbors)
+- Can you READ the text? (letters not overlapping each other)
+- Does it look intentional? (like the original template's dramatic typography)
+
+If ANY oversized text is unreadable or overflowing → **CRITICAL**
+This is NOT "decorative design" — it's a fill error that MUST be fixed.
+```
 
 ---
 
