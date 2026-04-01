@@ -87,153 +87,118 @@ STEP 5: Content-template fit (Phase E)
 
 ## STEP 1: Structural Check
 
-One `use_figma` call for THIS slide. Returns a `checks` object.
+**Split into 2 lightweight `use_figma` calls** to avoid Plugin API hangs. Do NOT combine into one massive call.
+
+### Call 1: Linear checks (O(n) — fast)
+
+Coverage, boundary, word-break, oversized, inner padding, group homogeneity.
 
 ```js
 await figma.setCurrentPageAsync(generatedPage);
 const frame = figma.getNodeById(slideId);
 const fY = frame.absoluteTransform[1][2], fH = frame.height, fW = frame.width;
-
-const checks = {
-  overlapCount: 0, boundaryBreaches: 0, wordBreaks: 0,
-  proximityViolations: 0, innerPaddingFails: 0,
-  oversizedOverflows: 0, unchangedPlaceholders: 0,
-  contentCoverage: 0, artifactsFound: 0
-};
 const issues = [];
 
-// --- Coverage ---
-let contentArea = 0;
+// Coverage
+let ca = 0;
 for (const n of frame.findAll(n => n.visible)) {
-  if (["TEXT","FRAME","RECTANGLE","GROUP"].includes(n.type))
-    contentArea += n.width * n.height;
+  if (["TEXT","FRAME","RECTANGLE","GROUP"].includes(n.type)) ca += n.width * n.height;
 }
-checks.contentCoverage = Math.min(1.0, contentArea / (fW * fH));
+const contentCoverage = Math.min(1.0, ca / (fW * fH));
 
-// --- All visible nodes ---
-const allVisible = frame.findAll(n => n.visible && n.id !== frame.id);
-const textNodes = allVisible.filter(n => n.type === "TEXT");
+// Text checks (linear)
+const textNodes = frame.findAll(n => n.type === "TEXT" && n.visible);
+let boundaryBreaches=0, wordBreaks=0, oversizedOverflows=0, innerPaddingFails=0;
 
 for (const t of textNodes) {
-  const tx = t.absoluteTransform[0][2], ty = t.absoluteTransform[1][2];
-  const fs = typeof t.fontSize === 'number' ? t.fontSize : 16;
-
-  // Boundary: text exceeds slide frame
-  if (ty + t.height > fY + fH + 1) {
-    checks.boundaryBreaches++;
-    issues.push({ type: "CRITICAL", desc: `Boundary: "${t.characters.substring(0,20)}" +${Math.round(ty+t.height-fY-fH)}px` });
-  }
-
-  // Word-break: word longer than container width in chars
+  const ty = t.absoluteTransform[1][2], fs = typeof t.fontSize==='number' ? t.fontSize : 16;
+  if (ty + t.height > fY + fH + 1) { boundaryBreaches++; issues.push({type:"CRITICAL",desc:`Boundary: "${t.characters.substring(0,20)}"`}); }
   const cpl = Math.floor(t.width / (fs * 0.6));
-  if (cpl > 0) {
-    for (const w of t.characters.split(/\s+/)) {
-      if (w.length > cpl) {
-        checks.wordBreaks++;
-        issues.push({ type: "CRITICAL", desc: `Word-break: "${w}" (${w.length}>${cpl})`, nodeId: t.id });
-        break;
-      }
-    }
-  }
-
-  // Oversized text overflow (fontSize > 80px)
-  if (fs > 80 && ty + t.height > fY + fH) {
-    checks.oversizedOverflows++;
-    issues.push({ type: "CRITICAL", desc: `Oversized: "${t.characters.substring(0,15)}" fs=${fs}` });
-  }
-
-  // Inner padding: text touching container edge
+  if (cpl > 0) { for (const w of t.characters.split(/\s+/)) { if (w.length > cpl) { wordBreaks++; issues.push({type:"CRITICAL",desc:`Word-break: "${w}"`,nodeId:t.id}); break; } } }
+  if (fs > 80 && ty + t.height > fY + fH) { oversizedOverflows++; }
   if (t.parent && t.parent.type === "FRAME" && t.parent.id !== frame.id) {
-    const px = t.parent.absoluteTransform[0][2], py = t.parent.absoluteTransform[1][2];
-    const padL = tx - px, padR = (px + t.parent.width) - (tx + t.width);
-    const padB = (py + t.parent.height) - (ty + t.height);
-    if (padL < 8 || padR < 8 || padB < 4) {
-      checks.innerPaddingFails++;
-      issues.push({ type: "FAIL", desc: `Padding: "${t.characters.substring(0,15)}" pad=${Math.round(Math.min(padL,padR,padB))}px` });
-    }
-  }
-
-  // Overlap: text vs ALL other visible elements (lines, shapes, rectangles)
-  for (const other of allVisible) {
-    if (t.id === other.id) continue;
-    // Skip ancestor/descendant relationships
-    let isRelated = false;
-    let c = t.parent; while(c) { if(c.id===other.id) { isRelated=true; break; } c=c.parent; }
-    c = other.parent; while(c) { if(c.id===t.id) { isRelated=true; break; } c=c.parent; }
-    if (isRelated) continue;
-    // Skip siblings in same top-level section
-    let tTop = t, oTop = other;
-    while(tTop.parent && tTop.parent.id !== frame.id) tTop = tTop.parent;
-    while(oTop.parent && oTop.parent.id !== frame.id) oTop = oTop.parent;
-    if (tTop.id === oTop.id) continue;
-
-    const bx = other.absoluteTransform[0][2], by = other.absoluteTransform[1][2];
-    if (tx < bx+other.width && tx+t.width > bx && ty < by+other.height && ty+t.height > by) {
-      checks.overlapCount++;
-      issues.push({ type: "CRITICAL", desc: `Overlap: "${t.characters.substring(0,15)}" ↔ ${other.type} "${other.name}"` });
-    }
+    const px=t.parent.absoluteTransform[0][2], py=t.parent.absoluteTransform[1][2], tx=t.absoluteTransform[0][2];
+    const padL=tx-px, padR=(px+t.parent.width)-(tx+t.width), padB=(py+t.parent.height)-(ty+t.height);
+    if (padL<8||padR<8||padB<4) { innerPaddingFails++; issues.push({type:"FAIL",desc:`Padding: "${t.characters.substring(0,15)}" ${Math.round(Math.min(padL,padR,padB))}px`}); }
   }
 }
 
-  // Proximity: unrelated elements closer than 16px (but not overlapping)
-  for (const other of allVisible) {
-    if (t.id === other.id || isRelated) continue;
-    const bx = other.absoluteTransform[0][2], by = other.absoluteTransform[1][2];
-    const dx = Math.max(0, Math.max(bx-(tx+t.width), tx-(bx+other.width)));
-    const dy = Math.max(0, Math.max(by-(ty+t.height), ty-(by+other.height)));
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    if (dist > 0 && dist < 16) {
-      checks.proximityViolations++;
-      issues.push({ type: "FAIL", desc: `Proximity: "${t.characters.substring(0,15)}" ${Math.round(dist)}px from ${other.type}` });
-    }
+// Group homogeneity
+const cfs = frame.children.filter(n => n.type==="FRAME" && n.visible);
+const sim = cfs.filter(cf => cfs.filter(o => Math.abs(o.width-cf.width)<50 && Math.abs(o.height-cf.height)<100).length >= 3);
+if (sim.length >= 3) {
+  const heroes = sim.map(cf => cf.findAll(n=>n.type==="TEXT").sort((a,b)=>(b.fontSize||0)-(a.fontSize||0))[0]).filter(Boolean);
+  if (heroes.length >= 3) {
+    const lens = heroes.map(h=>h.characters.length).sort((a,b)=>a-b);
+    const med = lens[Math.floor(lens.length/2)];
+    for (const h of heroes) { if (h.characters.length > med*3) issues.push({type:"FAIL",desc:`Group: "${h.characters.substring(0,15)}" ${h.characters.length}ch, med=${med}`}); }
   }
 }
 
-// --- Group homogeneity: repeated elements with inconsistent content length ---
-const childFrames = frame.children.filter(n => n.type === "FRAME" && n.visible);
-const similarGroups = childFrames.filter(cf =>
-  childFrames.filter(o => Math.abs(o.width-cf.width)<50 && Math.abs(o.height-cf.height)<100).length >= 3
-);
-if (similarGroups.length >= 3) {
-  const heroTexts = similarGroups.map(cf => {
-    const texts = cf.findAll(n => n.type === "TEXT");
-    return texts.sort((a,b) => (b.fontSize||0)-(a.fontSize||0))[0];
-  }).filter(Boolean);
-  if (heroTexts.length >= 3) {
-    const lengths = heroTexts.map(h => h.characters.length);
-    const median = lengths.sort((a,b)=>a-b)[Math.floor(lengths.length/2)];
-    for (const h of heroTexts) {
-      if (h.characters.length > median * 3) {
-        issues.push({ type: "FAIL", desc: `Group imbalance: "${h.characters.substring(0,15)}" is ${h.characters.length} chars, median=${median}` });
+return { contentCoverage, boundaryBreaches, wordBreaks, oversizedOverflows, innerPaddingFails, issues, textCount: textNodes.length };
+```
+
+### Call 2: Overlap + proximity + placeholders
+
+Only TEXT nodes vs top-level sections (not all visible — reduces O(n²) dramatically).
+
+```js
+await figma.setCurrentPageAsync(generatedPage);
+const frame = figma.getNodeById(slideId);
+const issues = [];
+let overlapCount=0, proximityViolations=0, unchangedPlaceholders=0;
+
+const textNodes = frame.findAll(n => n.type === "TEXT" && n.visible);
+// Only check against TOP-LEVEL children of frame (not all descendants)
+const topChildren = frame.children.filter(n => n.visible);
+
+for (const t of textNodes) {
+  const tx=t.absoluteTransform[0][2], ty=t.absoluteTransform[1][2];
+  // Find which top-level section this text belongs to
+  let tTop = t; while(tTop.parent && tTop.parent.id !== frame.id) tTop = tTop.parent;
+
+  for (const section of topChildren) {
+    if (section.id === tTop.id) continue; // same section — skip
+    const bx=section.absoluteTransform[0][2], by=section.absoluteTransform[1][2];
+
+    // Overlap
+    if (tx < bx+section.width && tx+t.width > bx && ty < by+section.height && ty+t.height > by) {
+      overlapCount++;
+      issues.push({type:"CRITICAL",desc:`Overlap: "${t.characters.substring(0,15)}" ↔ ${section.type} "${section.name}"`});
+    }
+    // Proximity (only if no overlap)
+    else {
+      const dx = Math.max(0, Math.max(bx-(tx+t.width), tx-(bx+section.width)));
+      const dy = Math.max(0, Math.max(by-(ty+t.height), ty-(by+section.height)));
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist > 0 && dist < 16) {
+        proximityViolations++;
+        issues.push({type:"FAIL",desc:`Proximity: "${t.characters.substring(0,15)}" ${Math.round(dist)}px from ${section.type}`});
       }
     }
   }
 }
 
-// --- Unchanged placeholders ---
-// (compare with original template - use origId from clone step)
+// Placeholders (compare with original)
 await figma.setCurrentPageAsync(templatePage);
 const origFrame = figma.getNodeById(origSlideId);
 if (origFrame) {
-  const origChars = origFrame.findAll(n => n.type === "TEXT").map(n => n.characters);
+  const origChars = origFrame.findAll(n => n.type==="TEXT").map(n => n.characters);
   await figma.setCurrentPageAsync(generatedPage);
   for (const t of textNodes) {
-    if (typeof t.fontSize === 'number' && t.fontSize > 14 &&
-        origChars.includes(t.characters) && t.characters.length > 3) {
-      checks.unchangedPlaceholders++;
-      issues.push({ type: "CRITICAL", desc: `Placeholder: "${t.characters.substring(0,25)}"` });
+    if (typeof t.fontSize==='number' && t.fontSize > 14 && origChars.includes(t.characters) && t.characters.length > 3) {
+      unchangedPlaceholders++;
+      issues.push({type:"CRITICAL",desc:`Placeholder: "${t.characters.substring(0,25)}"`});
     }
   }
 }
 
-// --- Artifacts: elements created by agent that don't belong ---
-// Small shapes/arrows that weren't in the original template
-// (compare child count: if adapted has MORE children than original → suspicious)
-
-return { slide: slideIndex, checks, issues };
+return { overlapCount, proximityViolations, unchangedPlaceholders, issues };
 ```
 
-**If `checks` structure is missing → this slide was NOT checked → cannot proceed.**
+**Merge results from both calls** into the `checks` object before proceeding to STEP 2.
+
+**If either call is missing → STEP 1 was NOT complete → cannot proceed.**
 
 ---
 
