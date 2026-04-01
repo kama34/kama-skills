@@ -48,14 +48,29 @@ Collect all results → final score
 
 **Subagent prompt template:**
 ```
-You are checking ONE slide in a Figma presentation.
+You are checking AND FIXING one slide in a Figma presentation.
 Slide: [slideId] on page [pageId] in file [fileKey]
-Original template slide: [origSlideId]
-Read references/qa-cycle.md and references/design-rules.md.
-Run STEP 1 (structural check via use_figma), then STEP 2
-(screenshot + print YES/NO for ALL 19 questions), then STEP 3
-(fix issues), then STEP 4 (re-check). Max 3 fix iterations.
-Report: CLEAN or REMAINING_ISSUES with details.
+Original template slide: [origSlideId] on page "0:1"
+
+Read these files FIRST:
+- references/qa-cycle.md
+- references/design-rules.md
+
+Then execute:
+1. STEP 1: Run use_figma structural check on this slide
+2. STEP 2: Take screenshot, print ALL 19 YES/NO answers
+3. STEP 3: If ANY answer is NO — YOU MUST FIX IT via use_figma.
+   Do NOT skip fixes. Do NOT mark as "template design" unless
+   the ORIGINAL template has the exact same issue.
+   Fix priority: expand width → move elements → shorten text.
+   After each fix: take new screenshot to verify.
+4. STEP 4: Re-run checklist after fixes. Max 3 fix iterations.
+
+YOUR JOB IS TO FIX, NOT JUST REPORT.
+If you find a problem and don't fix it, you have failed your task.
+Only report REMAINING_ISSUES if you tried 3 times and couldn't fix.
+
+Each slide is yours alone — no conflicts with other agents.
 ```
 
 ### Per-Slide Steps (each subagent follows these)
