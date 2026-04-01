@@ -8,7 +8,7 @@ Read `references/design-rules.md` for universal design rules (spacing, hierarchy
 
 ## Critical Rules
 
-1. **NEVER add content not in the outline.** Only use text from the outline. Do not invent, expand, or rephrase beyond what the outline provides.
+1. **NEVER add content not in the outline.** Only use text from the outline. You MAY shorten/rephrase to fit, but NEVER invent new sentences, add new facts, or expand beyond what the outline provides.
 2. **NEVER skip the structural check.** Every slide gets a `use_figma` call BEFORE screenshots.
 3. **Every fix gets a screenshot.** Fix → screenshot → verify. If problem remains → fix again.
 4. **Fix priority: expand first, shorten last.** Expand container width → move elements → shorten text → reduce font → retemplate.
@@ -186,15 +186,42 @@ return { slide: slideIndex, checks, issues };
 
 ---
 
-## STEP 2: Screenshot + Visual Check
+## STEP 2: Screenshot + Visual Checklist
 
 Take screenshot of THIS slide: `get_screenshot(adaptedSlideId, fileKey)`
 
-Look at it and check:
-- Does it look clean and professional?
-- Any visual glitches, broken elements, stray shapes?
-- Text readable, not cramped, not overflowing?
-- Consistent with the template's design language?
+Go through this checklist. Answer YES/NO for each. ANY "NO" = issue to fix in STEP 3.
+
+### Text Fit (answer for EVERY text element on the slide)
+- [ ] Does ALL text fit inside its container? No clipping, no overflow beyond edges?
+- [ ] Is every word complete? No mid-word breaks, no syllable splits?
+- [ ] Does footer/breadcrumb text fit on ONE line? No wrapping to 2+ lines?
+- [ ] Is there NO single lonely word on the last line of any text block? (widows)
+- [ ] Does every text inside a card/container have visible padding from ALL edges? (not touching any edge)
+
+### Content Integrity
+- [ ] Is ALL text content from the outline? Nothing invented or added beyond what outline provides?
+- [ ] Are there NO unchanged placeholder texts from the template? (English placeholders in Russian presentation = problem)
+- [ ] Are there NO artifacts from previous fixes? (stray arrows, duplicate shapes, extra elements that weren't in template)
+
+### Layout & Spacing
+- [ ] Is there at least 16px gap between any two UNRELATED elements? (text not pressed against a card, icon, or shape it doesn't belong to)
+- [ ] Does text NOT overlap with any lines, separators, shapes, or decorative elements?
+- [ ] Is the slide NOT overly empty? (if template had illustrations that were removed, was the space filled or slide retemplated?)
+- [ ] Are margins consistent with other slides in the deck?
+
+### Typography & Hierarchy
+- [ ] Is the heading clearly the LARGEST and most dominant element? (3:1 ratio vs body text)
+- [ ] Are there at most 3 font sizes visible on this slide?
+- [ ] Is body text left-aligned? (not center-aligned for multi-line blocks)
+- [ ] Can you understand the main point within 3 seconds?
+
+### Comparison with Original Template
+- [ ] Does the slide look like it belongs to the SAME presentation as the template?
+- [ ] Are colors, fonts, and visual style preserved from the template?
+- [ ] If visual elements (illustrations, icons) are present — do they match the CONTENT of this slide?
+
+**Scoring: count the YES answers. 18-19 = clean. 15-17 = needs minor fixes. <15 = needs major fixes or retemplate.**
 
 ---
 
