@@ -248,18 +248,18 @@ Runs AFTER Phase D score is computed, BEFORE declaring DONE.
 **BEFORE visual assessment**, scan each slide for interactive elements that should NEVER appear in generated presentations:
 
 ```js
-// Find and hide interactive/widget elements
-const toHide = frame.findAll(n =>
+// Find and REMOVE interactive/widget elements
+const toRemove = frame.findAll(n =>
   n.type === "WIDGET" ||
   n.type === "SHAPE_WITH_TEXT" ||
   n.name.toLowerCase().match(/poll|vote|facepile|slider|survey|quiz|reaction/)
 );
-for (const node of toHide) {
-  node.visible = false;
+for (const node of toRemove) {
+  node.remove();  // Use remove(), NOT visible=false — widgets may ignore visibility
 }
 ```
 
-These are FigJam/interactive elements from the template (polls, voting scales, reactions). They are never relevant to generated content — always hide them.
+These are FigJam/interactive elements from the template (polls, voting scales, reactions). They are never relevant to generated content — always **remove** them (not just hide). Figma WIDGET nodes may not respect `visible = false` — `remove()` is the only reliable way to eliminate them.
 
 ### Step E1: Visual Assessment
 
@@ -297,11 +297,23 @@ When the template layout is fine but specific illustrations/icons don't match th
 - Get screenshot, re-evaluate
 - If still looks empty or awkward → proceed to Step 4
 
-**Step 4 — Retemplate decision:** After hiding and optional rebalancing, critically evaluate: **did hiding make the slide BETTER or WORSE than the original?**
-- Take screenshots of BOTH: original (before hiding) and current (after hiding + rebalancing)
-- Compare side by side. Which one would you present to a client?
-- If hiding made it worse or left it empty → **undo hides** (restore visibility) and proceed to Step E2b (full retemplate with a different template)
-- If hiding made it better but still imperfect → accept, log as "improved but not ideal"
+**Step 4 — Retemplate decision (MANDATORY if hiding failed):**
+
+After hiding + optional rebalancing, evaluate content coverage again.
+
+**Decision tree:**
+- Content coverage ≥ 50% AND no irrelevant visuals visible → **DONE**, slide is fixed
+- Content coverage 40-50% AND slide looks balanced → **DONE**, accept as "statement" variant
+- Content coverage < 40% OR irrelevant visuals still visible OR slide looks empty/broken:
+  → **MUST proceed to E2b** (full retemplate with a different template)
+  → Do NOT undo hides and keep the original — the original had irrelevant content, that's why we're here
+  → Do NOT "restore" irrelevant illustrations as "visual anchors" — they are WRONG for this content
+
+**CRITICAL: There are only two acceptable outcomes from Phase E:**
+1. Slide looks good after hiding + rebalancing → keep
+2. Slide doesn't look good after hiding → **retemplate with a different template** (E2b)
+
+**NEVER go back to the original with irrelevant visuals.** "Original with wrong illustrations" is NOT better than "retemplated with correct text-only layout". If E1 identified visuals as irrelevant, they stay irrelevant — restoring them is not a valid fix.
 
 ### Step E2b: Retemplate (full swap)
 
