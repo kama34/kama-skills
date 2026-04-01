@@ -18,18 +18,47 @@ Read `references/design-rules.md` for universal design rules (spacing, hierarchy
 
 ---
 
-## Per-Slide Loop
+## Execution: One Subagent Per Slide (parallel)
+
+**Launch a SEPARATE subagent for EACH slide.** Subagents run in parallel. Each subagent:
+- Receives: slideId, origSlideId, fileKey, pageId, outline content for this slide
+- Reads: this qa-cycle.md + design-rules.md
+- Performs: STEP 1-5 for its ONE slide only
+- Prints: the full YES/NO checklist for its slide
+- Fixes issues until clean or max 3 iterations
+- Returns: CLEAN or REMAINING_ISSUES
+- Dies when done
 
 ```
-for each slide (in order, 1 to N):
+Launch N subagents in parallel (Agent tool):
+  Subagent 1 → check+fix slide 1
+  Subagent 2 → check+fix slide 2
+  ...
+  Subagent N → check+fix slide N
 
-  STEP 1: Structural check (use_figma)
-  STEP 2: Screenshot + visual check
-  STEP 3: Fix issues (if any)
-  STEP 4: Re-check until clean
-  STEP 5: Content-template fit (Phase E)
+Wait for all to complete → collect results → final score
+```
 
-when all slides clean → final score
+**Subagent prompt template:**
+```
+You are checking ONE slide in a Figma presentation.
+Slide: [slideId] on page [pageId] in file [fileKey]
+Original template slide: [origSlideId]
+Read references/qa-cycle.md and references/design-rules.md.
+Run STEP 1 (structural check via use_figma), then STEP 2
+(screenshot + print YES/NO for ALL 19 questions), then STEP 3
+(fix issues), then STEP 4 (re-check). Max 3 fix iterations.
+Report: CLEAN or REMAINING_ISSUES with details.
+```
+
+### Per-Slide Steps (each subagent follows these)
+
+```
+STEP 1: Structural check (use_figma)
+STEP 2: Screenshot + visual checklist (MUST print all 19 YES/NO answers)
+STEP 3: Fix issues (if any)
+STEP 4: Re-check until clean (max 3 iterations)
+STEP 5: Content-template fit (Phase E)
 ```
 
 ---
@@ -221,7 +250,41 @@ Go through this checklist. Answer YES/NO for each. ANY "NO" = issue to fix in ST
 - [ ] Are colors, fonts, and visual style preserved from the template?
 - [ ] If visual elements (illustrations, icons) are present — do they match the CONTENT of this slide?
 
-**Scoring: count the YES answers. 18-19 = clean. 15-17 = needs minor fixes. <15 = needs major fixes or retemplate.**
+**MANDATORY OUTPUT: You MUST print the checklist below for this slide with YES or NO for EACH line.** Do not skip any question. Do not summarize as "all clean". Print every single answer.
+
+```
+Slide [N] Visual Checklist:
+Text Fit:
+  1. All text inside containers?          [YES/NO]
+  2. Every word complete, no mid-breaks?  [YES/NO]
+  3. Footer/breadcrumb on one line?       [YES/NO]
+  4. No widow (lonely last word)?         [YES/NO]
+  5. Text padding from container edges?   [YES/NO]
+Content:
+  6. All text from outline only?          [YES/NO]
+  7. No unchanged placeholders?           [YES/NO]
+  8. No artifacts from previous fixes?    [YES/NO]
+Layout:
+  9. 16px+ gap between unrelated items?   [YES/NO]
+  10. No text overlap with decorations?   [YES/NO]
+  11. Slide not overly empty?             [YES/NO]
+  12. Margins consistent?                 [YES/NO]
+Typography:
+  13. Heading clearly dominant (3:1)?     [YES/NO]
+  14. Max 3 font sizes?                   [YES/NO]
+  15. Body text left-aligned?             [YES/NO]
+  16. Main point clear in 3 seconds?      [YES/NO]
+Template:
+  17. Same style as original template?    [YES/NO]
+  18. Colors/fonts preserved?             [YES/NO]
+  19. Visual elements match content?      [YES/NO]
+Score: [X]/19
+```
+
+**If any answer is NO → that item becomes a fix target in STEP 3.**
+**If the checklist is not printed → STEP 2 was NOT executed → slide is NOT checked.**
+
+Scoring: 19/19 = CLEAN. 16-18 = minor fixes. <16 = major fixes or retemplate.
 
 ---
 
