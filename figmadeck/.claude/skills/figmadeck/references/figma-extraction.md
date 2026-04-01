@@ -76,77 +76,52 @@ Collect `effects` array:
 
 ## FIG-3: Per-Slide Extraction
 
-For each slide frame from FIG-1, extract four levels of data:
+For each slide frame from FIG-1, extract three levels of data using `get_design_context` as the PRIMARY source.
 
-### Level 1 — Screenshot (visual reference)
+### Level 1 — Code from `get_design_context` (PRIMARY)
 
-- Call `mcp__figma__get_design_context(nodeId, fileKey)` → returns screenshot inline + React+Tailwind code
-- Call `mcp__figma__get_screenshot(nodeId, fileKey)` → returns screenshot URL. Download via WebFetch and save to `figmadeck-<name>-figma/slide-<N>-<name>/reference.png` — this is the persistent visual reference used as fallback when Figma API is unavailable during learning cycles.
-- Save React+Tailwind code as code hint for layout understanding
+Call `mcp__figma__get_design_context(nodeId, fileKey, clientLanguages: "html,css", clientFrameworks: "unknown")` for each slide frame.
 
-### Level 2 — Structure (positions and sizes)
+Returns: React+Tailwind code + screenshot + contextual metadata (design tokens, annotations, Code Connect mappings).
 
-- Call `mcp__figma__get_metadata(nodeId, fileKey)` → XML with node IDs, layer types, names, positions, sizes
-- Parse into a structured list: `[{name, type, x, y, width, height, children: [...]}]`
+The React+Tailwind code contains:
+- Correct flex/grid from Figma's own auto-layout interpretation
+- Correct absolute positioning for fixed-position elements
+- Gradient backgrounds as CSS values
+- Image references via Figma CDN URLs (`https://figma-*.amazonaws.com/...`)
+- Shadow and blur effects as CSS properties
+- Auto-layout constraints mapped to flex
 
-### Level 3 — Detailed properties (exact CSS values)
+Save the code output to `figmadeck-<name>-figma/slide-<N>-<name>/design-context.html`.
 
-Call `mcp__figma__use_figma` with JS that for each child element (recursive, max depth 3) extracts:
+### Level 2 — Screenshot (visual reference)
 
-- `fills` (array of paint objects), `strokes`, `effects` (shadow, blur)
-- `fontSize`, `fontFamily`, `fontWeight`, `lineHeight`, `letterSpacing`
-- `layoutMode` (HORIZONTAL/VERTICAL/NONE), `itemSpacing`, `paddingLeft/Right/Top/Bottom`
-- `constraints`, `layoutAlign`, `layoutGrow`, `layoutSizingHorizontal/Vertical`
-- `cornerRadius`, `opacity`
-- `characters` (text content — for determining which elements become slots)
-- `type` (TEXT, FRAME, RECTANGLE, ELLIPSE, etc.)
+Call `mcp__figma__get_screenshot(nodeId, fileKey)` → download via WebFetch and save to `figmadeck-<name>-figma/slide-<N>-<name>/reference.png`.
 
-Save as `blueprint.json` in `figmadeck-<name>-figma/slide-<N>-<name>/blueprint.json`:
+This is the pixel-perfect reference used for QA comparison. It is the ground truth for all visual fidelity scoring.
 
-```json
-{
-  "slideIndex": 1,
-  "slideName": "Cover",
-  "frameWidth": 1440,
-  "frameHeight": 810,
-  "elements": [
-    {
-      "name": "Title",
-      "type": "TEXT",
-      "x": 120, "y": 280, "width": 1200, "height": 80,
-      "fontSize": 48, "fontFamily": "Inter", "fontWeight": 700,
-      "lineHeight": 1.1, "letterSpacing": -0.02,
-      "fills": [{"type": "SOLID", "color": "#1A1A2E"}],
-      "characters": "Presentation Title Here",
-      "slot": "TITLE"
-    },
-    {
-      "name": "Card Container",
-      "type": "FRAME",
-      "x": 120, "y": 400, "width": 1200, "height": 300,
-      "layoutMode": "HORIZONTAL", "itemSpacing": 24,
-      "paddingLeft": 0, "paddingTop": 0,
-      "cornerRadius": 0,
-      "children": [
-        {
-          "name": "Card 1",
-          "type": "FRAME",
-          "x": 0, "y": 0, "width": 384, "height": 300,
-          "cornerRadius": 12,
-          "fills": [{"type": "SOLID", "color": "#F5F5F0"}],
-          "layoutMode": "VERTICAL", "itemSpacing": 12,
-          "paddingLeft": 24, "paddingTop": 24,
-          "children": ["..."]
-        }
-      ]
-    }
-  ]
-}
-```
+### Level 3 — Metadata (for QA only)
 
-### Level 4 — Code hint
+Call `mcp__figma__get_metadata(nodeId, fileKey)` → XML with node IDs, layer types, names, positions, sizes.
 
-Already obtained in Level 1 via `get_design_context` — the React+Tailwind code. Used as supplementary hint for understanding grid structure (flex vs grid, column ratios).
+Save as `figmadeck-<name>-figma/slide-<N>-<name>/metadata.xml`.
+
+**CRITICAL:** This is used ONLY for QA structural comparison in qa-cycle.md Phase A — NOT for archetype generation. Do not parse or use metadata.xml when building archetypes.
+
+### Asset Download (NEW)
+
+After obtaining Level 1 output, scan `design-context.html` for image URLs:
+- Figma CDN pattern: `https://figma-*.amazonaws.com/...`
+- Localhost pattern: `http://localhost:...`
+
+For each image URL found:
+1. Download via WebFetch
+2. Save to `figmadeck-<name>-figma/slide-<N>-<name>/assets/image-<N>.png` (incrementing N per slide)
+3. Replace the URL in `design-context.html` with the relative path (e.g., `assets/image-1.png`)
+
+For image fills that appear as background on frames: download and note as `background-image: url(assets/...)` in the archetype during FIG-4 transpilation.
+
+**Note on blueprint.json:** REMOVED as archetype generation source. The `use_figma` Plugin API JS extraction (old Level 3 / Level 4) is no longer used for building archetypes. If detailed property values are needed for QA style comparison, `use_figma` JS calls are made during QA Phase A, not during extraction.
 
 ---
 
@@ -199,35 +174,87 @@ Analyze elements in the blueprint using these heuristics:
 | No text, only images/shapes/fills | `visual-break` |
 | Unrecognized pattern | `context` |
 
-### Step 4b: HTML Skeleton
+### Step 4b: Transpile React+Tailwind → HTML+inline CSS
 
-Convert Figma layout to HTML with `{{SLOT}}` markers:
+Take `design-context.html` from FIG-3 Level 1 and post-process it into a static HTML archetype:
 
-**Layout mapping:**
+**1. Strip React syntax:**
+- `<div className="..."` → `<div style="...">` (convert all Tailwind classes to inline style in step 2)
+- Remove React-specific attributes: `key`, `ref`, `onClick`
+- Convert `className` to `class` where CSS class names are needed (e.g., slot class markers)
 
-- **Auto-layout HORIZONTAL** → `display:flex; flex-direction:row; gap:<itemSpacing>px`
-- **Auto-layout VERTICAL** → `display:flex; flex-direction:column; gap:<itemSpacing>px`
-- **No auto-layout (absolute positioning)** → `position:relative` container with `position:absolute` children
-- **Nested frames** → nested `<div>` elements. **Max 3 levels** — if deeper, flatten (merge intermediate frames' styles into parent or child). Log: `Slide <N>: nesting flattened from <X> to 3 levels`
+**2. Convert Tailwind classes to inline CSS** — replace every utility class with its CSS equivalent as inline `style=""`:
 
-**Slot naming convention:**
+| Tailwind | CSS |
+|----------|-----|
+| `flex` | `display:flex` |
+| `flex-col` | `flex-direction:column` |
+| `flex-row` | `flex-direction:row` |
+| `items-center` | `align-items:center` |
+| `items-start` | `align-items:flex-start` |
+| `items-end` | `align-items:flex-end` |
+| `justify-between` | `justify-content:space-between` |
+| `justify-center` | `justify-content:center` |
+| `justify-end` | `justify-content:flex-end` |
+| `gap-<N>` | `gap:<N*0.25>rem` |
+| `gap-[Xpx]` | `gap:Xpx` |
+| `w-full` | `width:100%` |
+| `w-[X%]` | `width:X%` |
+| `w-[Xpx]` | `width:Xpx` |
+| `h-full` | `height:100%` |
+| `h-[Xpx]` | `height:Xpx` |
+| `flex-1` | `flex:1` |
+| `p-<N>` | `padding:<N*0.25>rem` |
+| `px-<N>` | `padding-left:<N*0.25>rem;padding-right:<N*0.25>rem` |
+| `py-<N>` | `padding-top:<N*0.25>rem;padding-bottom:<N*0.25>rem` |
+| `pt-<N>` | `padding-top:<N*0.25>rem` |
+| `pb-<N>` | `padding-bottom:<N*0.25>rem` |
+| `mt-<N>` | `margin-top:<N*0.25>rem` |
+| `mb-<N>` | `margin-bottom:<N*0.25>rem` |
+| `text-xl` | `font-size:1.25rem` |
+| `text-2xl` | `font-size:1.5rem` |
+| `text-3xl` | `font-size:1.875rem` |
+| `text-4xl` | `font-size:2.25rem` |
+| `text-[Xpx]` | `font-size:Xpx` |
+| `font-bold` | `font-weight:700` |
+| `font-semibold` | `font-weight:600` |
+| `font-medium` | `font-weight:500` |
+| `leading-tight` | `line-height:1.25` |
+| `leading-snug` | `line-height:1.375` |
+| `leading-normal` | `line-height:1.5` |
+| `leading-[X]` | `line-height:X` |
+| `tracking-wide` | `letter-spacing:0.025em` |
+| `tracking-wider` | `letter-spacing:0.05em` |
+| `tracking-[X]` | `letter-spacing:X` |
+| `text-[#XXXXXX]` | `color:#XXXXXX` (then step 3 converts to var) |
+| `bg-[#XXXXXX]` | `background:#XXXXXX` (then step 3 converts to var) |
+| `rounded-xl` | `border-radius:0.75rem` |
+| `rounded-2xl` | `border-radius:1rem` |
+| `rounded-full` | `border-radius:9999px` |
+| `rounded-[Xpx]` | `border-radius:Xpx` |
+| `border` | `border:1px solid` |
+| `absolute` | `position:absolute` |
+| `relative` | `position:relative` |
+| `inset-0` | `inset:0` |
+| `z-<N>` | `z-index:N` |
+| `overflow-hidden` | `overflow:hidden` |
+| `object-cover` | `object-fit:cover` |
+| `object-contain` | `object-fit:contain` |
 
-- Single heading → `{{TITLE}}`
-- Single subtitle/paragraph → `{{SUBTITLE}}` or `{{DESCRIPTION}}`
-- Items in repeated grid → `{{CARD_1_TITLE}}`, `{{CARD_1_DESC}}`, `{{CARD_2_TITLE}}`, etc.
-- Large number → `{{METRIC_VALUE}}`
-- Small label above metric → `{{METRIC_LABEL}}`
-- Primary image area → `{{IMAGE_URL}}`
-- Optional caption → `{{CAPTION}}`
+For any Tailwind class not in this table, derive its CSS equivalent from its name. When uncertain, log: `Slide <N>: unmapped class "<class>" — inlined as best-effort`.
 
-**Viewport conversion** — Figma uses arbitrary coords (e.g., 1440×810), figmadeck renders at 960×540:
+**3. Replace hardcoded hex with CSS variables** — scan all `color`, `background`, `background-color`, `border-color`, `fill`, `stroke` values:
+- Match each hex/rgb value to the preset's `var(--*)` by color proximity (deltaE < 3 using CIEDE2000)
+- `#1a1a2e` ≈ `var(--bg-accent)`, `#f1f1f1` ≈ `var(--bg-base)`, `#ffe614` ≈ `var(--color-accent)`
+- For gradient stops: replace each stop's color if it matches a preset variable
+- Leave `rgba(...)` transparency values intact — only replace the color portion if deltaE < 3
+- If no preset variable matches within deltaE 3 → keep the original hex (it may be a one-off gradient stop or decoration)
 
-- Position: `figma_x / figma_frame_width * 100` → percentage
-- Font size: `figma_fontSize / 16` → rem, then apply Font Size Floor: body ≥ 1.25rem, heading ≥ 2.2rem, label ≥ 0.65rem
-- Spacing (gap, padding): `figma_px / 16` → rem
-- Proportions (width ratios between siblings) → preserved as fr units or percentages
+**4. Replace image URLs with local paths** — Figma CDN URLs (`https://figma-*.amazonaws.com/...`) → relative `assets/image-<N>.png` paths (already downloaded in FIG-3 Asset Download step). For `{{IMAGE}}` slots in visual-break archetypes: keep as slot marker instead of an asset path.
 
-Wrap entire skeleton in:
+**CRITICAL — Font Size Floor exception:** During FIG-4 transpilation, do NOT apply Font Size Floor (body ≥ 1.25rem, heading ≥ 2.2rem, label ≥ 0.65rem). Preserve exact Figma values. The Font Size Floor applies ONLY during content generation (learn_1..N and regular generation), never during archetype extraction.
+
+Wrap the entire transpiled output in:
 
 ```html
 <div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding:...">
@@ -237,7 +264,37 @@ Wrap entire skeleton in:
 
 All slides use `layout: none` + `.slidev-layout { padding: 0 !important; overflow: hidden; }`.
 
-### Step 4c: Flexibility Rules
+### Step 4c: Insert {{SLOT}} markers
+
+Identify all text content in the transpiled HTML and replace with slot markers:
+
+1. Find all text nodes: content of `<h1>`, `<h2>`, `<h3>`, `<p>`, `<span>`, `<div>` elements that contain only readable text (not structural containers)
+2. Replace with `{{SLOT_NAME}}`:
+   - First large heading → `{{TITLE}}`
+   - Subtitle or description paragraph → `{{SUBTITLE}}` or `{{DESCRIPTION}}`
+   - Repeated items in grid/flex row → `{{CARD_1_TITLE}}`, `{{CARD_1_DESC}}`, `{{CARD_2_TITLE}}`, `{{CARD_2_DESC}}`, etc.
+   - Large standalone number → `{{METRIC_VALUE}}`
+   - Small label above/below metric → `{{METRIC_LABEL}}`
+   - Footer breadcrumb / section indicator → `{{BREADCRUMB}}`, `{{SECTION}}`, `{{PAGE_NUM}}`
+   - Primary image area → `{{IMAGE_URL}}`
+   - Optional caption → `{{CAPTION}}`
+3. Record the original Figma text for each slot in `flexibility.yaml` as `original_text` (used during learn_0 QA to validate slot sizing and overflow behavior)
+
+### Step 4d: CSS rendering fixes
+
+Apply these corrections to every archetype during transpilation:
+
+- **Letter-spacing**: if Figma value is a percentage → convert to `em` (e.g., `2%` → `letter-spacing: 0.02em`). If in `px` → convert: `letterSpacing_px / fontSize_px` → `em`
+- **Line-height**: always use unitless ratio — `lineHeight_px / fontSize_px` → e.g., `line-height: 1.43`
+- **Coordinates**: `Math.round()` all `top`, `left`, `width`, `height`, `gap`, `padding` values to integers to avoid sub-pixel rendering glitches
+- **Box-shadow**: if Figma shadow specifies `blur: Xpx` → CSS `box-shadow` blur = `X * 2`px (Figma's blur is half of CSS blur)
+- **Font feature settings**: preserve any `font-feature-settings` property returned by `get_design_context` — do not strip it
+
+### Step 4e: Deduplication
+
+Same 6 criteria as Step 4-pre — applied again after transpilation to confirm deduplication decisions were correct. If transpiled output reveals structural differences not caught in Step 4-pre, create separate archetypes and update `source.json`.
+
+### Step 4f: Flexibility Rules
 
 For each archetype, generate a `flexibility.yaml` stored alongside the archetype:
 
@@ -250,13 +307,23 @@ figma_source:
 
 slots:
   title:
+    original_text: "<verbatim text from Figma>"
     max_length: <estimated from text box width: width_px / avg_char_width>
     overflow: shrink-font     # shrink-font | truncate | wrap
+  description:
+    original_text: "<verbatim text from Figma>"
+    max_length: <estimated>
+    overflow: wrap
   cards:                       # only if repeated elements detected
     count_in_figma: <N>
     min: <max(2, N-1)>
     max: <N+2>
     scaling: grid-auto         # grid-auto (change columns) | wrap (overflow row) | stack (vertical)
+    items:
+      - slot: card_1_title
+        original_text: "<verbatim text from Figma>"
+      - slot: card_1_desc
+        original_text: "<verbatim text from Figma>"
 
 layout:
   grid_columns: flexible       # flexible (can change col count) | fixed (exact match required)
@@ -293,11 +360,17 @@ Assemble all outputs into a complete preset.
   figmadeck-<name>-figma/                   # Figma reference data
     source.json                             # file metadata + node index
     slide-1-<name>/
-      blueprint.json                        # element properties (FIG-3 Level 3)
-      archetype.html                        # HTML skeleton with {{SLOT}} (FIG-4b)
-      flexibility.yaml                      # scaling rules (FIG-4c)
+      design-context.html                   # React+Tailwind code from get_design_context (FIG-3 Level 1)
+      reference.png                         # pixel-perfect screenshot (FIG-3 Level 2)
+      metadata.xml                          # structural XML for QA only (FIG-3 Level 3)
+      assets/                               # downloaded image assets (FIG-3 Asset Download)
+      archetype.html                        # transpiled HTML+inline CSS with {{SLOT}} (FIG-4b/4c)
+      flexibility.yaml                      # scaling rules + original_text (FIG-4f)
     slide-2-<name>/
-      blueprint.json
+      design-context.html
+      reference.png
+      metadata.xml
+      assets/
       archetype.html
       flexibility.yaml
     ...
@@ -338,6 +411,24 @@ cover_style: figmadeck-<cover-slide-name>
 ### Theme Directory
 
 Generate from the CSS block (same as `--create-preset` step 4b): `package.json`, `styles/index.css`, layout Vue files (`none.vue`, `default.vue`, `cover.vue`, `section.vue`, `end.vue`).
+
+Every generated `styles/index.css` **MUST** include these rendering alignment rules:
+
+```css
+/* Figma rendering alignment */
+.slidev-layout * {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+}
+
+/* Consistent box model */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+```
+
+These rules ensure that text rendering and element sizing in Slidev match Figma's rendering as closely as possible.
 
 ### source.json
 
