@@ -21,6 +21,8 @@ Every slide is checked on every iteration. Fixes are applied via `use_figma` bef
 
 ## Phase A: Structural Check (programmatic)
 
+**HARD GATE — Phase A is MANDATORY.** You MUST run `use_figma` programmatic checks BEFORE taking any screenshots. Do NOT skip to Phase B. Phase A catches problems that are invisible in screenshots (text 1px beyond boundary, 6px gaps, unchanged placeholder text). If you only do screenshots, you WILL miss critical issues.
+
 One `use_figma` call per slide (or batch per page).
 
 **MANDATORY:** `await figma.setCurrentPageAsync(generatedPage)` at start of every call.
@@ -55,6 +57,36 @@ Content enters bottom 44–56px of frame → severity **FAIL**
 
 `node.textAutoResize === "TRUNCATE"` or text visually clipped → severity **CRITICAL**
 
+### Unchanged Placeholder Text Detection (NEW)
+
+Scan ALL text nodes for template placeholder content that was NOT replaced:
+
+```js
+// Known placeholder patterns from common templates
+const placeholderPatterns = [
+  /^Reviews\s*\//, /Mobile Strategy/, /Product review/,
+  /Month XX/, /How we'll win/, /Concept \d/,
+  /^Note$/, /^Title$/, /^Heading$/,
+  /Lorem ipsum/, /placeholder/i
+];
+
+for (const textNode of frame.findAll(n => n.type === "TEXT")) {
+  for (const pattern of placeholderPatterns) {
+    if (pattern.test(textNode.characters)) {
+      issues.push({
+        type: "CRITICAL",
+        description: `Unchanged placeholder text: "${textNode.characters}"`,
+        nodeIds: [textNode.id]
+      });
+    }
+  }
+}
+```
+
+Also check footer breadcrumbs specifically:
+- Footer text that still contains the ORIGINAL TEMPLATE language (English in a Russian presentation, or generic "Reviews / Mobile Strategy") → **CRITICAL**
+- Page numbers that don't match sequential 1..N order → **FAIL**
+
 ### Return Format
 
 ```js
@@ -65,6 +97,8 @@ return {
   ]
 }
 ```
+
+**Phase A MUST produce a non-empty result for every slide** — even if zero issues found. If Phase A returns nothing, it was not run correctly.
 
 ---
 
@@ -134,6 +168,10 @@ Each sub-score is 0–10. Weighted sum = final score out of 10.
 | Design Critique | 30% | 10 if zero integrity issues. Deduct 3 per CRITICAL, 1 per FAIL (min 0). |
 
 **Target: ≥ 9/10**
+
+**HARD GATE:** If Phase A was not executed (no `use_figma` structural check calls were made), the Structural sub-score is automatically **0/10**. You CANNOT score ≥ 9 without Phase A. This prevents the agent from skipping programmatic checks and relying only on screenshots.
+
+**HARD GATE:** If ANY unchanged placeholder text is found (Phase A "Unchanged Placeholder" check), the score is automatically capped at **5/10** regardless of other sub-scores. Placeholder text = the presentation is not adapted.
 
 ### Fixes via `use_figma`
 

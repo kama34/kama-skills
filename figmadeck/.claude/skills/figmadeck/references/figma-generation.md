@@ -249,6 +249,80 @@ Applied in order — stop at first resolution:
 5. If still overflowing: **expand container** — increase `node.height` if space exists below
 6. Last resort: add a note text node positioned below the slide frame (visible in Figma but outside slide bounds)
 
+### Footer Update (MANDATORY)
+
+After filling main content, **ALWAYS** update footer text nodes. These are template placeholders that MUST be replaced:
+
+```js
+// Find footer nodes: bottom 56px of frame, small text
+const footerNodes = frame.findAll(n =>
+  n.type === "TEXT" &&
+  n.absoluteTransform[1][2] + n.height > frame.height - 56 &&
+  n.fontSize <= 14
+);
+
+for (const fNode of footerNodes) {
+  await figma.loadFontAsync(fNode.fontName);
+
+  // Determine what to fill based on position
+  const relativeX = fNode.absoluteTransform[0][2] - frame.absoluteTransform[0][2];
+
+  if (relativeX < frame.width * 0.25) {
+    // Left area: breadcrumb (company/project name)
+    fNode.characters = outlineSlide.projectName || "Presentation";
+  } else if (relativeX < frame.width * 0.5) {
+    // Center-left: section name
+    fNode.characters = outlineSlide.sectionName || outlineSlide.title;
+  } else if (relativeX > frame.width * 0.9) {
+    // Far right: page number (updated in Step 5b)
+    // Will be set in the final numbering pass
+  } else {
+    // Center-right: subsection or topic
+    fNode.characters = outlineSlide.subtitle || outlineSlide.title;
+  }
+}
+```
+
+**Never leave template footer text** like "Reviews / Mobile Strategy" or "Product review — Month XX". These are **CRITICAL** failures in QA.
+
+### Page Numbering (Step 5b — after all slides filled)
+
+After ALL slides have been filled with content, run one final `use_figma` call to update page numbers:
+
+```js
+await figma.setCurrentPageAsync(generatedPage);
+
+// Get slides in x-order (left to right = presentation order)
+const slides = generatedPage.children
+  .filter(n => n.type === "FRAME")
+  .sort((a, b) => a.x - b.x);
+
+for (let i = 0; i < slides.length; i++) {
+  const frame = slides[i];
+  // Find the page number node: rightmost text in footer zone, contains a number
+  const footerTexts = frame.findAll(n =>
+    n.type === "TEXT" &&
+    n.absoluteTransform[1][2] + n.height > frame.height - 56
+  );
+  const pageNumNode = footerTexts
+    .sort((a, b) => b.absoluteTransform[0][2] - a.absoluteTransform[0][2])[0]; // rightmost
+
+  if (pageNumNode) {
+    await figma.loadFontAsync(pageNumNode.fontName);
+    pageNumNode.characters = String(i + 1);
+  }
+}
+```
+
+### Empty Visual Areas
+
+During Step 3 (Analyze), identify **non-text areas**: frames with no TEXT children, large gray rectangles, image placeholders. Mark them in the slide map as `visualArea: true`.
+
+During Step 5, for each visual area:
+- If outline provides data for it (chart data, images, metrics) → keep and adapt
+- If outline has NO data for it → **hide** the placeholder: `node.visible = false`
+- After hiding, check if remaining content needs to be repositioned to fill the freed space
+
 ### Special Characters
 
 After clone, Unicode normalization may differ. Rules:
@@ -265,6 +339,7 @@ return {
   filled: true,
   fontSubstitutions: [{ original, fallback }],  // empty if none
   overflowsResolved: number,
+  footerUpdated: true,
 };
 ```
 
