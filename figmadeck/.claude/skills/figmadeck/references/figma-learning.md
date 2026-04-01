@@ -44,7 +44,20 @@ This validates: `use_figma` page creation works, `get_screenshot` comparison wor
 
 ## FDL-2: Generate N Diverse Outlines
 
-All outlines in **Russian**. Must vary across:
+Outline language should **match the template's primary language**.
+Detect from Step 3 analysis: examine the text content of the template's
+TEXT nodes. What language are they written in? Generate outlines in
+that same language.
+
+If template language is ambiguous or mixed (e.g., half English, half
+Russian) → ask the user: "What language should the generated
+presentations use?"
+
+If template is in English → generate English outlines.
+If template is in Russian → generate Russian outlines.
+Other languages → detect and match.
+
+Must vary across:
 
 - **Industries**: tech, education, healthcare, finance, creative, nonprofit, SaaS, retail, AI/ML, sustainability
 - **Formats**: pitch, lecture, product launch, report, onboarding, keynote
