@@ -127,6 +127,14 @@ Slide | Content Type | Archetype ID                    | Variant | Figma Node ID
 
 ## Step 5: Write slides.md
 
+**Archetype format (Pipeline v2):** Archetypes are now generated from `get_design_context` output, transpiled from React+Tailwind to HTML+inline CSS. They contain:
+- Inline `style=""` attributes (not Tailwind classes)
+- `var(--*)` CSS variable references for colors
+- Flex/grid layout from Figma's own auto-layout interpretation
+- Preserved gradient backgrounds, shadows, and image assets
+
+The **VERBATIM COPY RULE** still applies — copy the transpiled archetype HTML exactly, replace only `{{SLOT}}` markers with content.
+
 ### 5a: VERBATIM Copy
 
 **COPY** each archetype.html **VERBATIM** — literal character-for-character, not "inspired by". Every inline style, every class, every HTML element, every attribute preserved exactly.
