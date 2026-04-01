@@ -400,9 +400,10 @@ When fixing issues, you MUST try strategies in this EXACT order. Do NOT jump to 
 4. **FOURTH: Reduce fontSize** — minimum = original × 0.85.
 5. **LAST RESORT: Retemplate** — if nothing works, swap to a different template (Phase E2b).
 
-**NEVER as a fix:**
-- Do NOT create new elements (no new shapes, arrows, icons, text nodes)
-- Do NOT replace meaningful content with a symbol/arrow unless it's a Group Homogeneity pattern match
+**Judgment rules for fixes:**
+- Creating new elements IS allowed when it serves the content (e.g., adding a text node for missing info, cloning a card for additional items)
+- Do NOT add decorative elements that don't serve the content (e.g., placing a small white arrow on top of an existing pink arrow is pointless — either keep the original or remove it)
+- If content doesn't fit and no fix works → remove/hide the problematic element entirely rather than replace it with a meaningless symbol
 - Do NOT "restore" hidden irrelevant elements
 - Do NOT set text to empty string
 
