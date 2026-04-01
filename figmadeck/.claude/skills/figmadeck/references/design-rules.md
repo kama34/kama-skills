@@ -268,7 +268,7 @@ The tinting reduces eye strain and makes the design feel intentional rather than
 
 ### No Overlap — Ever
 
-No text, image, or content element may overlap another content element. Overlap of content elements is always a layout failure. The only permitted overlapping is deliberate decorative layering from the Figma template (background orbs, texture patterns, decorative shapes) that are behind content with `z-index: 0` and `pointer-events: none`.
+No text, image, or content element may overlap another content element. Overlap of content elements is always a layout failure. The only permitted overlapping is deliberate decorative layering from the Figma template (background orbs, texture patterns, decorative shapes) that are behind content as locked background layers.
 
 **Why:** Overlapping content elements force the viewer to mentally separate them, adding cognitive work with no benefit. Overlap also signals layout failure — it reads as "this didn't fit."
 
@@ -299,15 +299,15 @@ When text overflows or risks overflow, apply this priority order:
 
 **CRITICAL: Never reduce font size below minimums** (body ≥ 1.25rem, heading ≥ 2.2rem, label ≥ 0.65rem). Shrinking text to fit is always wrong — the content must be reduced instead.
 
-### `position: absolute` Only for Decorative Elements
+### Absolute Positioning Only for Decorative Elements
 
-Absolute positioning for main content elements is an anti-pattern: it breaks when text length changes. Use `position: absolute` only for:
+Absolute positioning in Figma canvas (non-auto-layout frames) for main content elements is an anti-pattern: it breaks when text length changes. Use absolute positioning only for:
 - Slide number badges
 - Logo placement
-- Decorative shapes (`z-index: 0; pointer-events: none`)
+- Decorative shapes (behind content, `z-index: 0` equivalent — locked layers)
 - Background textures
 
-All content elements must be positioned by flexbox or CSS grid so they reflow correctly when content changes.
+All content elements must be positioned by Figma auto-layout (horizontal/vertical) so they reflow correctly when content changes.
 
 ---
 
@@ -361,47 +361,15 @@ Every data visualization must include a source citation: small text (caption/lab
 
 ---
 
-## Section 8: Animation
+## Section 8: Figma Prototyping
 
-### Only `transform` + `opacity` — GPU-Accelerated Properties
+Figma presentations use Smart Animate and prototype transitions for slide navigation. These are set in the template and preserved by clone — figmadeck does not modify them.
 
-Animate only `transform` (translate, scale, rotate) and `opacity`. Never animate `width`, `height`, `top`, `left`, `margin`, or `padding`.
+**What figmadeck preserves:** existing prototype connections between slides (navigate-to actions, transition types, animation curves).
 
-**Why:** Width, height, and position properties trigger layout recalculation on every animation frame, causing jank. Transform and opacity are composited on the GPU and run at 60fps without layout thrashing.
+**What figmadeck updates after reorder:** sequential navigation connections are remapped to match the new slide order (see figma-generation.md Step 4).
 
-### Timing Ranges
-
-| Animation type | Duration range |
-|----------------|---------------|
-| Slide transitions | 200–400ms |
-| Element entrances | 150–300ms |
-| Micro-interactions | 100–200ms |
-
-Animations faster than 100ms are imperceptible. Animations slower than 500ms feel sluggish and distract from content. The 2026 professional standard (per SlideRabbit and PitchWorx trend reports) is shorter, tighter animations than the 2016–2020 era — "fussy animations that distract" are explicitly called out as an anti-pattern.
-
-### `v-click` for Pacing Only — Not Decoration
-
-Click reveals (`v-click`, `v-clicks`) must be used for genuine pacing: revealing information step by step to guide the audience's attention and allow time for each point to land. They must not be used to add visual interest or animation for its own sake.
-
-**Maximum 5–8 clicks per slide.** More than 8 clicks on a single slide creates a click marathon that frustrates rather than paces. Most slides should have 0–3 click reveals.
-
-**Rule (Slidev best practices, 2026):** "Reserve v-click for genuine pacing needs; 5–8 clicks max per slide." When in doubt, do not use v-click — reveal everything at once and let the speaker control pacing verbally.
-
-### No Decorative Animation
-
-Animation that exists purely for visual interest — spinning logos, text that bounces in, elements that continuously pulse — is always wrong. Every animation must have a communicative purpose: revealing information in sequence, drawing attention to a specific element, or indicating state change.
-
-The `prefers-reduced-motion` media query must be respected:
-```css
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-```
-
-Decorative animations that cannot be justified by a communicative purpose must be removed.
+**What is NOT supported:** creating new animations, modifying transition types, adding interactive overlays. These must be done manually in Figma after generation.
 
 ---
 
@@ -465,9 +433,6 @@ Use this checklist before finalizing any slide:
 - [ ] Hero metric ≥ 2× supporting metrics
 - [ ] Source citation included
 
-**Animation:**
-- [ ] Only transform + opacity animated
-- [ ] Timing within ranges (200–400ms transitions, 150–300ms entrances)
-- [ ] v-click used for pacing only
-- [ ] ≤ 5–8 clicks per slide
-- [ ] No decorative animation
+**Figma Prototyping:**
+- [ ] Prototype connections point to correct slide order
+- [ ] Auto-layout constraints preserved after text fill
