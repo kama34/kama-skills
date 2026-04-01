@@ -353,26 +353,124 @@ frame.findAll(n => n.type === "WIDGET" || n.type === "SHAPE_WITH_TEXT")
 
 ---
 
-## Final Score
+## Global Consistency Pass
 
-After ALL slides are processed:
+After ALL per-slide subagents complete, run ONE global pass to fix inconsistencies across slides:
+
+1. **Breadcrumbs/footers**: find the footer element that was fixed (e.g., expanded to 460px) on one slide. Apply the SAME fix to ALL slides. One `use_figma` call that iterates all slides and normalizes footer containers.
+2. **Page numbers**: verify sequential 1..N. One `use_figma` call.
+3. **Font consistency**: verify all slides use the same font families. If one subagent swapped a font on its slide, apply the same swap everywhere.
+
+---
+
+## QA Level 2: Designer Critic
+
+After Level 1 (structural + visual checklist) is complete, run a **Designer Critic** review.
+
+### How it works
+
+Launch ONE subagent as a **professional presentation designer** who reviews the ENTIRE deck.
+
+**Designer Critic prompt:**
+```
+You are a professional presentation designer with 10 years of experience.
+You are reviewing a completed presentation in Figma.
+
+File: [fileKey], Page: [pageId]
+Slides: [list of slideIds]
+
+Take a screenshot of EACH slide. For each, answer:
+1. Would you show this slide to a client? (YES/NO)
+2. What is the #1 thing that looks unprofessional? (specific: "breadcrumb wraps", "too much empty space", "text too close to card edge")
+3. How specifically to fix it? (exact instruction: "expand node X width to Y", "shorten text to Z", "remove node X")
+
+After reviewing all slides, list the TOP 5 most impactful fixes across the entire deck, in priority order.
+
+You do NOT fix anything yourself. You only critique and provide specific fix instructions.
+```
+
+Then launch a **Fixer subagent** that applies the Designer's top 5 fixes via `use_figma`.
+
+Then re-run the Designer for a second pass. If Designer says "all good" → done. If not → one more fix cycle. **Max 2 Designer iterations.**
+
+### What Designer catches that Level 1 misses
+- "This breadcrumb wraps — expand it" (visual, not structural)
+- "Too much empty space after hiding illustrations" (design judgment)
+- "White arrow artifact — remove it" (context awareness)
+- "Text touches card edge — needs 12px padding" (design standard, not just min 8px)
+- "Slide feels unbalanced — text is all in top-left corner" (composition)
+
+---
+
+## QA Level 3: Client Simulator
+
+After Designer Critic is complete, run a **Client Simulator** review.
+
+### How it works
+
+Determine the "client persona" from the outline: look at the topic, audience, and tone.
+- Startup pitch → "Tech-savvy investor, values clarity and numbers"
+- Educational lecture → "Professor, values structure and depth"
+- Sales presentation → "Marketing director, values visual impact"
+- Corporate report → "CEO, values brevity and bottom line"
+
+Launch ONE subagent as this persona.
+
+**Client Simulator prompt:**
+```
+You are [persona description based on outline topic and audience].
+You ordered a presentation on [topic]. You are seeing it for the first time.
+
+File: [fileKey], Page: [pageId]
+Take a screenshot of EACH slide.
+
+For each slide, answer as the client:
+1. Do I understand this slide immediately? (YES/NO)
+2. Does it match what I asked for in my brief? (YES/NO)
+3. What would I ask to change? (in the client's voice: "Make the title bigger", "I don't understand slide 3", "Where are the numbers I mentioned?")
+
+After all slides, give your overall reaction:
+- Would you approve this presentation as-is? (YES/NO)
+- What are your top 3 change requests?
+
+You do NOT fix anything. You give feedback as the client.
+```
+
+Then launch a **Fixer subagent** that applies the Client's top 3 requests.
+
+Then re-run the Client for approval. If "approved" → done. **Max 2 Client iterations.**
+
+### What Client catches that Designer misses
+- "I can't understand slide 3 — what's the point?" (clarity)
+- "Where are the revenue numbers I mentioned in the brief?" (content completeness)
+- "This doesn't feel like MY presentation — too generic" (brand fit)
+- "The conclusion slide doesn't have a call to action" (business need)
+
+---
+
+## Full Pipeline Summary
 
 ```
-clean_slides = slides with zero CRITICAL and zero FAIL
-total_slides = N
-score = clean_slides / total_slides * 10
-
-If score >= 9 → DONE
-If score < 9 → report which slides still have issues
+Generation (clone → fill)
+      ↓
+Level 1: Structural + Visual Checklist (per-slide subagents, batches of 4)
+      ↓ Global consistency pass (breadcrumbs, page numbers)
+      ↓
+Level 2: Designer Critic (1 subagent reviews all → fixer applies top 5 → max 2 iterations)
+      ↓
+Level 3: Client Simulator (1 subagent as persona → fixer applies top 3 → max 2 iterations)
+      ↓
+DONE → Final Report
 ```
 
 ### Final Report
 
 ```
 ━━━ QA Complete ━━━
-Score: X.X/10
+Level 1: X/10 (structural + visual checklist)
+Level 2: Designer — [approved / X fixes applied]
+Level 3: Client — [approved / X changes applied]
 Clean slides: X/N
-Issues remaining: [slide numbers + descriptions]
 Generated page: <pageId>
 ```
 
