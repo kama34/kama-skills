@@ -23,7 +23,46 @@ Every slide is checked on every iteration. Fixes are applied via `use_figma` bef
 
 **HARD GATE — Phase A is MANDATORY.** You MUST run `use_figma` programmatic checks BEFORE taking any screenshots. Do NOT skip to Phase B. Phase A catches problems that are invisible in screenshots (text 1px beyond boundary, 6px gaps, unchanged placeholder text). If you only do screenshots, you WILL miss critical issues.
 
-One `use_figma` call per slide (or batch per page).
+**PROOF OF EXECUTION:** Phase A MUST produce a `use_figma` return value for EACH slide containing:
+```js
+return {
+  slide: slideIndex,
+  checks: {
+    overlapCount: N,        // how many TEXT↔ALL overlaps found
+    boundaryBreaches: N,    // how many texts exceed parent
+    wordBreaks: N,          // how many mid-word breaks detected
+    proximityViolations: N, // how many unrelated elements too close
+    innerPaddingFails: N,   // how many texts touching container edge
+    oversizedOverflows: N,  // how many fontSize>80 texts overflowing
+    unchangedPlaceholders: N, // how many original texts unchanged
+    contentCoverage: 0.XX,  // visible content area / slide area (programmatic)
+  },
+  issues: [...]             // detailed issue list
+}
+```
+
+**If this return structure is missing → Phase A was NOT executed → Structural score = 0/10.**
+**If `contentCoverage < 0.30` → CRITICAL: slide is too empty → needs retemplate.**
+**If `contentCoverage < 0.40` → FAIL: slide needs rebalancing.**
+
+### Content Coverage Calculation (MANDATORY — programmatic, not visual estimate)
+
+```js
+// Calculate actual content coverage for the slide
+const allVisible = frame.findAll(n => n.visible && n.type !== "PAGE");
+let contentArea = 0;
+for (const node of allVisible) {
+  if (node.type === "TEXT" || node.type === "FRAME" || node.type === "RECTANGLE" || node.type === "GROUP") {
+    contentArea += node.width * node.height;
+  }
+}
+const slideArea = frame.width * frame.height;
+const contentCoverage = Math.min(1.0, contentArea / slideArea); // cap at 1.0 (overlapping elements)
+```
+
+**Do NOT estimate coverage visually.** Use the programmatic calculation above.
+
+One `use_figma` call per slide (or batch of 3-5 slides).
 
 **MANDATORY:** `await figma.setCurrentPageAsync(generatedPage)` at start of every call.
 
@@ -319,26 +358,66 @@ Per slide, evaluate three areas:
 
 Each sub-score is 0–10. Weighted sum = final score out of 10.
 
+**Structural score is COMPUTED from Phase A return data — not from visual impression:**
+
+```
+structural_score = 10
+for each slide:
+  structural_score -= 3 * checks.overlapCount
+  structural_score -= 3 * checks.boundaryBreaches
+  structural_score -= 3 * checks.wordBreaks
+  structural_score -= 3 * checks.oversizedOverflows
+  structural_score -= 2 * checks.unchangedPlaceholders
+  structural_score -= 1 * checks.proximityViolations
+  structural_score -= 1 * checks.innerPaddingFails
+  if checks.contentCoverage < 0.30: structural_score -= 3  // too empty
+  if checks.contentCoverage < 0.40: structural_score -= 1  // needs rebalance
+structural_score = max(0, structural_score)
+```
+
 | Component | Weight | Scoring Logic |
 |-----------|--------|---------------|
-| Structural | 40% | 10 if zero CRITICAL/FAIL. Deduct 3 per CRITICAL, 1 per FAIL (min 0). |
+| Structural | 40% | **Computed from Phase A data** (formula above). NOT from visual impression. |
 | Visual | 30% | Agent score 1–10 based on style correspondence (Phase B). |
 | Design Critique | 30% | 10 if zero integrity issues. Deduct 3 per CRITICAL, 1 per FAIL (min 0). |
 
 **Target: ≥ 9/10**
 
-**HARD GATE:** If Phase A was not executed (no `use_figma` structural check calls were made), the Structural sub-score is automatically **0/10**. You CANNOT score ≥ 9 without Phase A. This prevents the agent from skipping programmatic checks and relying only on screenshots.
+**HARD GATE 1:** If Phase A `checks` structure is missing from ANY slide → Structural = **0/10**. No exceptions.
 
-**HARD GATE:** If ANY unchanged placeholder text is found (Phase A "Unchanged Placeholder" check), the score is automatically capped at **5/10** regardless of other sub-scores. Placeholder text = the presentation is not adapted.
+**HARD GATE 2:** If ANY unchanged placeholder text found → score capped at **5/10**.
+
+**HARD GATE 3:** If ANY slide has `contentCoverage < 0.30` → score capped at **7/10** until retemplated.
+
+### Fix Strategy — MANDATORY PRIORITY ORDER
+
+When fixing issues, you MUST try strategies in this EXACT order. Do NOT jump to shortening text first.
+
+**For text overflow / word-break / proximity issues:**
+1. **FIRST: Expand container width** — `node.resize(node.width * 1.2, node.height); node.textAutoResize = "HEIGHT"`. Try up to 30% wider. This is the PREFERRED fix because it doesn't lose content.
+2. **SECOND: Expand container and move siblings** — if expanding would overlap with a neighbor, move the neighbor to make room.
+3. **THIRD: Shorten text** — rephrase to ~70% length, preserving core meaning.
+4. **FOURTH: Reduce fontSize** — minimum = original × 0.85.
+5. **LAST RESORT: Retemplate** — if nothing works, swap to a different template (Phase E2b).
+
+**NEVER as a fix:**
+- Do NOT create new elements (no new shapes, arrows, icons, text nodes)
+- Do NOT replace meaningful content with a symbol/arrow unless it's a Group Homogeneity pattern match
+- Do NOT "restore" hidden irrelevant elements
+- Do NOT set text to empty string
 
 ### Fixes via `use_figma`
 
 One `use_figma` call per fix — incremental, not batched:
 
-| Issue | Fix |
+| Issue | Fix (in priority order) |
 |-------|-----|
-| Overlap | `node.resize(smallerWidth, height)` or shorten `node.characters` |
-| Boundary breach | `node.textAutoResize = "HEIGHT"`, then reduce `fontSize` if still overflowing |
+| Word-break | 1. Expand width → 2. Shorten text → 3. Reduce font |
+| Overlap TEXT↔element | 1. Expand width of text → 2. Move text away → 3. Shorten text |
+| Boundary breach | 1. Expand container → 2. `textAutoResize = "HEIGHT"` → 3. Reduce font |
+| Proximity < 16px | 1. Move element → 2. Expand text width (reduces height) → 3. Shorten text |
+| Inner padding < 8px | 1. Move text inward → 2. Reduce text width → 3. Shorten text |
+| Content coverage < 40% | Phase E → retemplate |
 | Gap too small | Adjust `node.y` or `node.x` to restore ≥ 8px gap |
 | Footer invaded | Shift all content elements upward |
 
