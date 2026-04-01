@@ -55,6 +55,22 @@ This file is stored in the user's home directory (outside any git repository). I
    - Delete `~/.claude/figmadeck-auth.json`
    - Run First Run Flow
 
+## Timeouts and Error Handling
+
+**Navigation timeout:** All Playwright navigation calls use `{ timeout: 30000 }` (30 seconds).
+
+**Distinguish error types:**
+- **Network error**: page didn't load (timeout, DNS failure, connection refused) → NOT an auth problem
+- **Auth failure**: page loaded, login form shows error message → wrong credentials
+- **2FA failure**: 2FA form shows error after code submission → wrong code
+
+**Retry policy:**
+- Network errors: retry up to 3 times with 10-second pause between attempts
+- Auth failures: ask for new credentials, max 3 attempts total
+- 2FA failures: ask for new code, max 3 attempts
+
+**Hard stop:** If 3 attempts all fail → error: `"Unable to authenticate after 3 attempts. Check your credentials and network connection."` Do NOT loop forever.
+
 ## Usage in Pipeline
 
 Auth check is the FIRST step of any operation that needs Playwright:
