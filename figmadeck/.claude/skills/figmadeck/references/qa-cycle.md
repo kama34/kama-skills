@@ -43,7 +43,15 @@ Intersection → severity **CRITICAL**
 
 ### Boundary Check
 
-For each TEXT node: `node.y + node.height > parent.height` → severity **CRITICAL**
+For each TEXT node, check using absolute coordinates:
+
+```js
+const nodeBottom = node.absoluteTransform[1][2] + node.height;
+const frameBottom = parentFrame.absoluteTransform[1][2] + parentFrame.height;
+if (nodeBottom > frameBottom)
+```
+
+→ severity **CRITICAL**
 
 ### Gap Check
 
@@ -51,37 +59,35 @@ Distance between adjacent elements < 8px → severity **FAIL**
 
 ### Footer Zone
 
-Content enters bottom 44–56px of frame → severity **FAIL**
+Content enters bottom `frame.height * 0.08` of frame → severity **FAIL**
 
 ### Text Truncation
 
 `node.textAutoResize === "TRUNCATE"` or text visually clipped → severity **CRITICAL**
 
-### Unchanged Placeholder Text Detection (NEW)
+### Oversized Text Overflow
 
-Scan ALL text nodes for template placeholder content that was NOT replaced:
+For each TEXT node with fontSize > 80px:
+- Check: is the text visually contained within its bounding box?
+- Check: does `node.width` contain all characters without overlap? (`node.characters.length * fontSize * 0.6 > node.width * maxLines` → overflow)
+- Check: `node.absoluteTransform[1][2] + node.height > parentFrame.absoluteTransform[1][2] + parentFrame.height`?
 
-```js
-// Known placeholder patterns from common templates
-const placeholderPatterns = [
-  /^Reviews\s*\//, /Mobile Strategy/, /Product review/,
-  /Month XX/, /How we'll win/, /Concept \d/,
-  /^Note$/, /^Title$/, /^Heading$/,
-  /Lorem ipsum/, /placeholder/i
-];
+If ANY oversized text is unreadable or overflowing → severity **CRITICAL**
 
-for (const textNode of frame.findAll(n => n.type === "TEXT")) {
-  for (const pattern of placeholderPatterns) {
-    if (pattern.test(textNode.characters)) {
-      issues.push({
-        type: "CRITICAL",
-        description: `Unchanged placeholder text: "${textNode.characters}"`,
-        nodeIds: [textNode.id]
-      });
-    }
-  }
-}
-```
+**This is NOT "decorative design" — it is a fill error. Oversized decorative titles (like "PITCH DECK") are designed for 1-3 short words. Longer text MUST be shortened to fit the character budget, or the slide must be retemplated (Phase E).**
+
+### Unchanged Placeholder Text Detection
+
+Compare each text node's content against the ORIGINAL template text:
+
+1. For each TEXT node on the adapted slide, find the corresponding
+   original node using the `origId` mapping from Step 2 (clone step)
+2. Call `use_figma` to read the original node's `.characters` on the template page
+3. If `adaptedText === originalText` AND this node has role
+   title/description/subtitle/body (not footer, not decorative) →
+   **CRITICAL: text was never replaced**
+
+This is template-agnostic — works for any template, any language.
 
 Also check footer breadcrumbs specifically:
 - Footer text that still contains the ORIGINAL TEMPLATE language (English in a Russian presentation, or generic "Reviews / Mobile Strategy") → **CRITICAL**
@@ -103,6 +109,20 @@ return {
 ---
 
 ## Phase B: Visual Comparison
+
+**IMPORTANT:** The `originalSlideNodeId` used for comparison comes from
+the clone step (Step 2) return value — the `origId` field for each slide.
+This is the node ID on the ORIGINAL template page, NOT the cloned page.
+
+```js
+slideMapping = {
+  adaptedSlideId: "99:125",      // on generated page
+  originalSlideNodeId: "1:42",   // on template page (Page 1)
+}
+```
+
+Pass this mapping through the entire pipeline. Do NOT guess or
+reconstruct node IDs — use exactly what the clone step returned.
 
 For each slide, call `get_screenshot` twice and compare visually.
 
@@ -137,7 +157,7 @@ Per slide, evaluate three areas:
 | Text overlaps another element | **CRITICAL** | Shorten or reposition |
 | Text extends beyond container boundary | **CRITICAL** | `textAutoResize = "HEIGHT"` + check |
 | Elements too close (< 8px gap) | **FAIL** | Increase gap |
-| Footer zone (bottom 44–56px) occupied | **FAIL** | Push content up |
+| Footer zone (bottom `frame.height * 0.08`) occupied | **FAIL** | Push content up |
 
 ### Visual Hierarchy
 
@@ -207,7 +227,7 @@ Remaining: <list of unresolved issues>
 
 ### Final Summary (on DONE)
 
-Print when score reaches ≥ 9/10:
+Print when score reaches ≥ 9/10 AND Phase E passed (no poor fits remaining):
 
 ```
 ━━━ QA Complete ━━━
@@ -216,6 +236,37 @@ Iterations: N
 Total fixes applied: X
 Generated page: <pageId>
 ```
+
+---
+
+## Phase E: Content-Template Fit Assessment
+
+Runs AFTER Phase D score is computed, BEFORE declaring DONE.
+
+### Step E1: Visual Assessment
+
+For each slide, look at the filled screenshot and the original template screenshot. Evaluate:
+
+1. **Does the text content match the visual style?** Playful illustrations + serious financial data = bad fit. Clean layout + wrong content type = bad fit.
+2. **Is the text-to-visual ratio preserved?** Template 30% text / 70% visual → after fill 80% text / 20% visual = bad fit.
+3. **Are visual elements relevant?** Shopping cart illustration + team structure content = bad fit.
+
+If fit is **poor** → proceed to Step E2.
+If fit is **good** → skip to DONE.
+
+### Step E2: Retemplate
+
+1. Review ALL available templates from the slide map (Step 3 analysis)
+2. Select better-fitting template (text-heavy → text-only; metrics → stat; process → timeline)
+3. If NO better template → keep current, log "best available"
+4. Delete current filled slide → clone new template → fill → run Phases A-D on this slide only
+5. Run Step E1 on the new version
+
+### Step E3: Compare and Keep
+
+If retemplated: compare original fill vs retemplate on structural score + visual fit. Keep the winner, delete the loser.
+
+**Phase E adds at most 1 retemplate attempt per slide per QA iteration.** If Phase E keeps triggering across iterations, the template set is inadequate for this outline.
 
 ---
 
