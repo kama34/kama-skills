@@ -27,19 +27,36 @@ One `use_figma` call per slide (or batch per page).
 
 **MANDATORY:** `await figma.setCurrentPageAsync(generatedPage)` at start of every call.
 
-### Overlap Detection
+### Overlap Detection (TEXT ↔ ALL elements)
 
-For each pair of visible nodes on a slide, compute bounding boxes using `absoluteTransform` + `width` / `height`:
+Check overlap between EVERY visible TEXT node and EVERY other visible node on the slide — not just TEXT↔TEXT. This catches text overlapping dashed lines, shapes, icons, rectangles, vectors.
 
 ```js
-const ax = nodeA.absoluteTransform[0][2], ay = nodeA.absoluteTransform[1][2];
-const bx = nodeB.absoluteTransform[0][2], by = nodeB.absoluteTransform[1][2];
-const overlap =
-  ax < bx + nodeB.width && ax + nodeA.width > bx &&
-  ay < by + nodeB.height && ay + nodeA.height > by;
+const allVisible = frame.findAll(n => n.visible && n.id !== frame.id);
+const textNodes = allVisible.filter(n => n.type === "TEXT");
+
+for (const text of textNodes) {
+  for (const other of allVisible) {
+    if (text.id === other.id) continue;
+    if (text.parent === other || other.parent === text) continue; // skip parent-child
+
+    const ax = text.absoluteTransform[0][2], ay = text.absoluteTransform[1][2];
+    const bx = other.absoluteTransform[0][2], by = other.absoluteTransform[1][2];
+    const overlap =
+      ax < bx + other.width && ax + text.width > bx &&
+      ay < by + other.height && ay + text.height > by;
+
+    if (overlap) {
+      issues.push({ type: "CRITICAL",
+        desc: `Text "${text.characters.substring(0,20)}" overlaps ${other.type} "${other.name}"` });
+    }
+  }
+}
 ```
 
-Intersection → severity **CRITICAL**
+This catches: text overlapping dashed lines (LINE), decorative shapes (RECTANGLE, ELLIPSE, VECTOR), icons (GROUP, FRAME), and other text nodes.
+
+→ severity **CRITICAL**
 
 ### Boundary Check
 
@@ -52,6 +69,108 @@ if (nodeBottom > frameBottom)
 ```
 
 → severity **CRITICAL**
+
+### Word-Break Detection (NEW)
+
+After text fill, check if text is breaking mid-word due to narrow container:
+
+```js
+for (const textNode of frame.findAll(n => n.type === "TEXT" && n.visible)) {
+  const fontSize = typeof textNode.fontSize === 'number' ? textNode.fontSize : 16;
+  const charsPerLine = Math.floor(textNode.width / (fontSize * 0.6));
+
+  // If any word in the text is longer than charsPerLine → it WILL break mid-word
+  const words = textNode.characters.split(/\s+/);
+  const longWords = words.filter(w => w.length > charsPerLine);
+
+  if (longWords.length > 0) {
+    issues.push({ type: "CRITICAL",
+      desc: `Word-break: "${longWords[0]}" (${longWords[0].length} chars) exceeds container width (${charsPerLine} chars/line)`,
+      nodeId: textNode.id });
+  }
+
+  // Also check: if text height grew beyond 150% of what a single line would be,
+  // the container is probably too narrow for this content
+  const singleLineHeight = fontSize * 1.3;
+  const expectedLines = Math.ceil(textNode.characters.length / charsPerLine);
+  const actualHeight = textNode.height;
+  if (actualHeight > singleLineHeight * expectedLines * 1.3) {
+    issues.push({ type: "FAIL",
+      desc: `Text overflow: "${textNode.characters.substring(0,20)}" wraps excessively — container too narrow`,
+      nodeId: textNode.id });
+  }
+}
+```
+
+**Auto-fix**: expand container width (`node.resize(node.width * 1.3, node.height)` + `textAutoResize = "HEIGHT"`), or shorten text to fit.
+
+→ severity **CRITICAL** for mid-word breaks, **FAIL** for excessive wrapping
+
+### Proximity Check for Unrelated Elements (NEW)
+
+Check distance between elements that are NOT in the same group/auto-layout:
+
+```js
+for (const text of textNodes) {
+  for (const other of allVisible) {
+    if (text.id === other.id) continue;
+    if (text.parent === other.parent && text.parent.type !== "PAGE") continue; // siblings in same group = OK
+
+    const tx = text.absoluteTransform[0][2], ty = text.absoluteTransform[1][2];
+    const ox = other.absoluteTransform[0][2], oy = other.absoluteTransform[1][2];
+
+    // Calculate minimum distance between bounding boxes
+    const dx = Math.max(0, Math.max(ox - (tx + text.width), tx - (ox + other.width)));
+    const dy = Math.max(0, Math.max(oy - (ty + text.height), ty - (oy + other.height)));
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > 0 && distance < 16) {
+      issues.push({ type: "FAIL",
+        desc: `Proximity: "${text.characters.substring(0,20)}" is ${Math.round(distance)}px from ${other.type} "${other.name}" — min 16px required`,
+        nodeIds: [text.id, other.id] });
+    }
+  }
+}
+```
+
+This catches: title pressed against a card edge, text too close to decorative shapes.
+
+→ severity **FAIL**
+
+### Inner Padding Check (NEW)
+
+For each TEXT node inside a FRAME container, check distance from text edges to container edges:
+
+```js
+for (const textNode of frame.findAll(n => n.type === "TEXT" && n.visible)) {
+  const parent = textNode.parent;
+  if (parent.type !== "FRAME" || parent.id === frame.id) continue; // only check nested containers
+
+  const tx = textNode.absoluteTransform[0][2], ty = textNode.absoluteTransform[1][2];
+  const px = parent.absoluteTransform[0][2], py = parent.absoluteTransform[1][2];
+
+  const paddingLeft = tx - px;
+  const paddingTop = ty - py;
+  const paddingRight = (px + parent.width) - (tx + textNode.width);
+  const paddingBottom = (py + parent.height) - (ty + textNode.height);
+
+  const minPadding = 8;
+  if (paddingLeft < minPadding || paddingRight < minPadding) {
+    issues.push({ type: "FAIL",
+      desc: `Inner padding: "${textNode.characters.substring(0,20)}" has ${Math.round(Math.min(paddingLeft, paddingRight))}px horizontal padding in "${parent.name}" — min ${minPadding}px`,
+      nodeId: textNode.id });
+  }
+  if (paddingBottom < minPadding && paddingBottom < paddingTop * 0.5) {
+    issues.push({ type: "FAIL",
+      desc: `Inner padding: "${textNode.characters.substring(0,20)}" touches bottom of "${parent.name}" — ${Math.round(paddingBottom)}px padding`,
+      nodeId: textNode.id });
+  }
+}
+```
+
+This catches: text touching the edge of a card/container without proper padding.
+
+→ severity **FAIL**
 
 ### Gap Check
 
@@ -75,6 +194,25 @@ For each TEXT node with fontSize > 80px:
 If ANY oversized text is unreadable or overflowing → severity **CRITICAL**
 
 **This is NOT "decorative design" — it is a fill error. Oversized decorative titles (like "PITCH DECK") are designed for 1-3 short words. Longer text MUST be shortened to fit the character budget, or the slide must be retemplated (Phase E).**
+
+### Group Homogeneity Check
+
+For each slide that contains **repeated elements** (cards, list items, process steps, agenda items — identified by multiple child frames with similar structure):
+
+1. **Identify the group**: child frames with ≥ 2 TEXT nodes each, similar width/height (±20%), and consistent internal layout
+2. **For each element**, record:
+   - Hero text node: `characters.length`, `fontSize`, overflow status (does text extend beyond container?)
+   - Body text node: `characters.length`, overflow status
+3. **Pattern detection**: determine the dominant pattern across the group:
+   - If ≥ 2/3 of hero texts are 1 character → pattern is "single char"
+   - If ≥ 2/3 of hero texts are 1-3 words → pattern is "short phrase"
+   - If ≥ 2/3 of body texts are ≤ N words → pattern is "brief"
+4. **Outlier detection**: any element that deviates from the dominant pattern AND has overflow → severity **FAIL**
+   - Description must include: `"Group homogeneity: {N-1} elements follow pattern '{pattern}', element {i} deviates with '{actual}' and overflows"`
+   - Suggested fix: 3 alternatives that match the group pattern (e.g., single symbol, abbreviation, shorter phrasing)
+5. **Even without overflow**: if one element is 3× longer than the group median → severity **WARN** (visual imbalance)
+
+**Example**: Cards with hero text `["P", "S", "I", "5с"]` → pattern is "single char" (3/4 match). "5с" deviates + overflows → **FAIL**. Suggested alternatives: `["!", "★", "✓"]`.
 
 ### Unchanged Placeholder Text Detection
 
