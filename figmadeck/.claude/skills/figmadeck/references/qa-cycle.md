@@ -62,6 +62,17 @@ const contentCoverage = Math.min(1.0, contentArea / slideArea); // cap at 1.0 (o
 
 **Do NOT estimate coverage visually.** Use the programmatic calculation above.
 
+**Template-inherent whitespace exception:** Before penalizing low coverage, check the ORIGINAL template's coverage using the same formula. If the generated slide's coverage is within 10% of the original template's coverage → the low coverage is template design, not a fill error. Skip the coverage penalty.
+
+```js
+// Compare against original template
+const origCoverage = /* calculate for original slide */;
+if (generatedCoverage <= origCoverage * 1.1) {
+  // Template is naturally sparse — not a fill error
+  // Skip coverage penalty
+}
+```
+
 One `use_figma` call per slide (or batch of 3-5 slides).
 
 **MANDATORY:** `await figma.setCurrentPageAsync(generatedPage)` at start of every call.
@@ -406,6 +417,17 @@ When fixing issues, you MUST try strategies in this EXACT order. Do NOT jump to 
 - If content doesn't fit and no fix works → remove/hide the problematic element entirely rather than replace it with a meaningless symbol
 - Do NOT "restore" hidden irrelevant elements
 - Do NOT set text to empty string
+
+**Overlap with template decorative elements (lines, shapes, separators):**
+Text overlapping with dashed lines, separator rules, or decorative shapes is NEVER acceptable — even if those elements are part of the original template design. The text must fit BETWEEN the decorative elements. Fixes in priority order:
+1. **Move the decorative elements** (lines, separators) to accommodate the longer text — shift them down/apart
+2. **Shorten the text** to fit within the existing space between elements
+3. **Retemplate** if the slot is fundamentally too small
+
+Do NOT dismiss overlap with template elements as "template design" — it is a real layout violation that must be fixed.
+
+**Expand width guardrail:**
+When expanding a text container to reduce line count, NEVER expand beyond: `frame.width - text.x - margin` (where margin = 70px or the original right margin). If expanding would push text beyond the slide frame → cap at frame boundary.
 
 ### Fixes via `use_figma`
 
