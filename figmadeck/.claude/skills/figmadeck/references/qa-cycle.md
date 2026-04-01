@@ -30,14 +30,21 @@ Read `references/design-rules.md` for universal design rules (spacing, hierarchy
 - Dies when done
 
 ```
-Launch N subagents in parallel (Agent tool):
-  Subagent 1 → check+fix slide 1
-  Subagent 2 → check+fix slide 2
-  ...
-  Subagent N → check+fix slide N
+Launch subagents in BATCHES of 3-4 (not all at once — Figma API rate limit):
 
-Wait for all to complete → collect results → final score
+  Batch 1: Subagent 1-4 → check+fix slides 1-4 (parallel)
+  Wait for batch 1 to complete
+  Batch 2: Subagent 5-8 → check+fix slides 5-8 (parallel)
+  Wait for batch 2 to complete
+  Batch 3: Subagent 9-N → check+fix remaining slides (parallel)
+  Wait for batch 3 to complete
+
+Collect all results → final score
 ```
+
+**Rate limit protection:** Max 4 subagents running simultaneously. Each subagent makes ~3-5 MCP calls (use_figma + get_screenshot). 4 × 5 = 20 concurrent calls is the safe limit for Figma API.
+
+**Timeout:** If a subagent hangs > 3 minutes on a single MCP call (use_figma or get_screenshot), the main agent should stop it and retry that slide in the next batch. Do not wait indefinitely.
 
 **Subagent prompt template:**
 ```
