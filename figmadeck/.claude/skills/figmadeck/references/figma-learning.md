@@ -45,27 +45,39 @@ Output to `<edu_dir>/learn_0/`.
 
 ### FDL-0c: Pixel-perfect QA cycle
 
-Run a **strict variant** of `qa-cycle.md`:
-- **Skip all design-rules checks** — no text density, hierarchy, or contrast checks. The goal is pixel-perfect reproduction, not design quality.
-- **Run ONLY Figma comparison** (Phase A structural/style + Phase B visual) with **zero tolerance for FAIL/CRITICAL**:
-  - ALL properties must be within the tolerance table thresholds
-  - Zero element overlap
-  - Zero position deviations beyond ±5%
-  - Zero font-size deviations beyond ±0.15rem
-  - Zero color deviations beyond ΔE 5
-- **Pass condition**: every slide passes ALL checks with zero FAIL and zero CRITICAL. This is a checklist, not a score — one failure means another iteration.
-- **Fix cycle**: fix issues → re-generate → re-compare. Fixes go to archetype.html + preset.md + flexibility.yaml (same as regular learn).
-- Export PDF after each iteration for visual review.
+Run a **strict variant** of `qa-cycle.md` with these overrides:
+
+**What to SKIP:**
+- Skip all design-rules checks (text density, hierarchy, contrast) — original Figma content is the truth
+- Skip Font Size Floor — reproduce Figma values exactly, even if body < 1.25rem
+
+**What to RUN:**
+- Phase A: Figma structural comparison (positions, proportions, hierarchy) — full tolerance table
+- Phase A: Figma style comparison (font-size, colors, spacing, radius) — full tolerance table
+- Phase B Step B2: **Quantitative pixel diff** — this is the primary pass/fail criterion
+- Phase B Step B3: Design critique **Element Integrity only** (overlap, cut-off, boundary) — skip hierarchy/consistency checks
+
+**Pass condition (ALL must be true):**
+1. `diffRatio < 0.05` (≤5% pixel difference) for EVERY slide
+2. Zero CRITICAL issues from design critique Element Integrity
+3. All structural positions within ±5% tolerance
+4. All style values within tolerance table thresholds
+
+**If any condition fails:** fix issues → re-generate → re-compare. Fixes go to archetype.html + preset.md CSS + flexibility.yaml.
+
+Export PDF after each iteration for visual review (same FDL-3b2 procedure).
 
 ### FDL-0d: Verification from scratch
 
-After FDL-0c achieves zero-FAIL on all slides:
+After FDL-0c achieves pass on all slides:
 
-1. **Delete** `<edu_dir>/learn_0/slides.md` and all generated artifacts (keep outline.md)
-2. **Re-generate** the calibration presentation from scratch using the updated archetypes/preset — a clean generation with NO manual fixes carried over
-3. **Run the same strict QA** (FDL-0c checks)
-4. If pixel-perfect **without any QA iterations** → **learn_0 PASSED**
+1. **Delete** `<edu_dir>/learn_0/slides.md` and all generated artifacts (keep outline.md and reference PNGs)
+2. **Re-generate** the calibration presentation from scratch using the updated archetypes/preset — clean generation, no carried-over fixes
+3. **Run the same strict QA** as FDL-0c — quantitative pixel diff + element integrity
+4. If `diffRatio < 0.05` for ALL slides AND zero CRITICAL on **first QA iteration** (no fix cycles needed) → **learn_0 PASSED**
 5. If not → return to FDL-0c with the new issues, fix archetypes, repeat verification
+
+**Maximum attempts:** If verification fails 3 times → STOP. Report which archetypes/properties cannot be reproduced pixel-perfect. Do NOT proceed to learn_1..N.
 
 ### FDL-0e: Commit + report
 
