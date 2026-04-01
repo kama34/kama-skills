@@ -404,9 +404,23 @@ After reviewing all slides, list the TOP 5 most impactful fixes across the entir
 You do NOT fix anything yourself. You only critique and provide specific fix instructions.
 ```
 
-Then launch a **Fixer subagent** that applies the Designer's top 5 fixes via `use_figma`.
+**MANDATORY CYCLE (do NOT skip any step):**
 
-Then re-run the Designer for a second pass. If Designer says "all good" → done. If not → one more fix cycle. **Max 2 Designer iterations.**
+```
+Iteration 1:
+  1. Designer Critic subagent → reviews all slides → returns top 5 fixes
+  2. Fixer subagent → applies fixes via use_figma
+  3. Designer Critic subagent (AGAIN, fresh) → reviews SAME slides after fixes
+     → returns: "APPROVED" or new list of fixes
+  4. If NOT approved → Fixer applies new fixes
+
+Iteration 2 (if needed):
+  5. Designer Critic subagent (AGAIN) → final review
+  6. If still NOT approved → log remaining issues, move to Level 3
+
+Max 2 full iterations (Critic → Fix → Critic → Fix → Critic).
+Do NOT skip the re-review after fixes. The whole point is the CYCLE.
+```
 
 ### What Designer catches that Level 1 misses
 - "This breadcrumb wraps — expand it" (visual, not structural)
@@ -451,9 +465,23 @@ After all slides, give your overall reaction:
 You do NOT fix anything. You give feedback as the client.
 ```
 
-Then launch a **Fixer subagent** that applies the Client's top 3 requests.
+**MANDATORY CYCLE (do NOT skip any step):**
 
-Then re-run the Client for approval. If "approved" → done. **Max 2 Client iterations.**
+```
+Iteration 1:
+  1. Client Simulator subagent → reviews all slides → returns top 3 requests
+  2. Fixer subagent → applies requests via use_figma
+  3. Client Simulator subagent (AGAIN, fresh) → reviews SAME slides after fixes
+     → returns: "APPROVED" or new requests
+  4. If NOT approved → Fixer applies new requests
+
+Iteration 2 (if needed):
+  5. Client Simulator subagent (AGAIN) → final approval
+  6. If still NOT approved → log remaining requests as "client preferences"
+
+Max 2 full iterations (Client → Fix → Client → Fix → Client).
+Do NOT skip the re-review after fixes.
+```
 
 ### What Client catches that Designer misses
 - "I can't understand slide 3 — what's the point?" (clarity)
