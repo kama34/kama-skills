@@ -418,7 +418,8 @@ Iteration 2 (if needed):
   5. Designer Critic subagent (AGAIN) → final review
   6. If still NOT approved → log remaining issues, move to Level 3
 
-Max 2 full iterations (Critic → Fix → Critic → Fix → Critic).
+Loop until Designer says "APPROVED" or no progress detected.
+**No progress** = same number of issues (or more) for 2 consecutive iterations → stop.
 Do NOT skip the re-review after fixes. The whole point is the CYCLE.
 ```
 
@@ -479,7 +480,8 @@ Iteration 2 (if needed):
   5. Client Simulator subagent (AGAIN) → final approval
   6. If still NOT approved → log remaining requests as "client preferences"
 
-Max 2 full iterations (Client → Fix → Client → Fix → Client).
+Loop until Client says "APPROVED" or no progress detected.
+**No progress** = same number of requests (or more) for 2 consecutive iterations → stop.
 Do NOT skip the re-review after fixes.
 ```
 
