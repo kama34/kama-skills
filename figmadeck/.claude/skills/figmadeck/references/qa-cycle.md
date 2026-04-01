@@ -281,18 +281,27 @@ If **entire template layout doesn't fit the content** → proceed to Step E2b.
 
 When the template layout is fine but specific illustrations/icons don't match the content:
 
-**Step 1 — Hide:** Set `node.visible = false` on the irrelevant elements via `use_figma`.
+**Step 1 — Hide:** Set `node.visible = false` on the irrelevant elements via `use_figma`. Hide only the elements identified as irrelevant — do not expand the scope to related elements.
 
-**Step 2 — Evaluate:** Get a fresh screenshot. Does the slide look good without those elements?
-- If YES (clean, balanced, no awkward gaps) → **DONE** for this slide. Log: "Hid irrelevant visual elements: <list>"
-- If NO (awkward empty space, unbalanced layout) → proceed to Step 3
+**Step 2 — Empty space check:** Get a fresh screenshot. Evaluate content coverage:
+- Visible content area / total slide area
+- If content occupies **less than 30% of slide area** → the slide is TOO EMPTY → go directly to Step 4
+- If content occupies 30-50% → rebalanceable → proceed to Step 3
+- If content occupies > 50% → looks good → **DONE**
 
-**Step 3 — Rebalance:** Try to improve the layout after hiding:
-- If the hidden element left a large gap → move remaining content to fill it (adjust `node.x`/`node.y`)
-- If text was constrained to make room for the illustration → expand text container width
+**CRITICAL RULE: A slide with > 40% empty whitespace after hiding is NOT a "statement slide" or "generous whitespace" — it is a broken slide that needs retemplate.** Do NOT accept it as valid. Do NOT score it 9/10.
+
+**Step 3 — Rebalance (only if 30-50% content coverage):**
+- Expand text containers to fill available width
+- Move remaining content towards center if pushed to one side
 - Get screenshot, re-evaluate
+- If still looks empty or awkward → proceed to Step 4
 
-**Step 4 — Still not good?** If rebalancing didn't help → proceed to Step E2b (full retemplate).
+**Step 4 — Retemplate decision:** After hiding and optional rebalancing, critically evaluate: **did hiding make the slide BETTER or WORSE than the original?**
+- Take screenshots of BOTH: original (before hiding) and current (after hiding + rebalancing)
+- Compare side by side. Which one would you present to a client?
+- If hiding made it worse or left it empty → **undo hides** (restore visibility) and proceed to Step E2b (full retemplate with a different template)
+- If hiding made it better but still imperfect → accept, log as "improved but not ideal"
 
 ### Step E2b: Retemplate (full swap)
 
