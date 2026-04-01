@@ -25,6 +25,7 @@ slots:
     description: Text below shape 1
     max_length: 25
     overflow: wrap
+    note: "Single Cyrillic words max 6 chars (container ~240px; 7-char Cyr breaks mid-word). Multi-word labels OK — natural space-break. Confirmed: АЛЕРТЫ(6)✓, МОНИТОР(7)✗"
   NUM_2:
     description: Number or label on shape 2
     max_length: 4
@@ -33,6 +34,7 @@ slots:
     description: Text below shape 2
     max_length: 25
     overflow: wrap
+    note: "Single Cyrillic words max 6 chars. Multi-word labels OK."
   NUM_3:
     description: Number or label on shape 3
     max_length: 4
@@ -41,6 +43,7 @@ slots:
     description: Text below shape 3
     max_length: 25
     overflow: wrap
+    note: "Single Cyrillic words max 6 chars. Multi-word labels OK."
   NUM_4:
     description: Number or label on shape 4 (rightmost)
     max_length: 4
@@ -49,6 +52,7 @@ slots:
     description: Text below shape 4
     max_length: 25
     overflow: wrap
+    note: "Single Cyrillic words max 6 chars. Multi-word labels OK."
 
 layout:
   grid_columns: fixed
