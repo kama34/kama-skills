@@ -80,7 +80,15 @@ return { pageId: newPage.id, slides };
 
 ## Step 3: Analyze Template Slides
 
-**One `use_figma` call on the cloned page.**
+**IMPORTANT: Keep `use_figma` calls lightweight.** The Plugin API can hang on heavy scripts that traverse entire node trees. Split analysis into two calls:
+
+**Call 1 — Frame inventory (fast):** List all top-level frames with basic info (id, name, x, width, height, childCount). No `findAll`, no deep traversal.
+
+**Call 2 — Text analysis per batch of 3-5 slides:** For each batch, find TEXT nodes and detect roles. Return the slide map incrementally. If the template has 18 slides, use 4 calls (5+5+5+3) instead of one massive call.
+
+**Never put `findAll` + role detection + content type detection in a single `use_figma` call for ALL slides.** This is the #1 cause of Plugin API hangs.
+
+### Call 1: Frame Inventory
 
 ```js
 const generatedPage = figma.root.children.find(p => p.id === pageId);
