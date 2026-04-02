@@ -356,32 +356,67 @@ Launch ONE subagent as a **professional presentation designer** who reviews the 
 You are a professional presentation designer with 10 years of experience.
 You are reviewing a completed presentation in Figma.
 
-File: [fileKey], Page: [pageId]
-Slides: [list of slideIds]
+File: [fileKey]
+Generated page: [pageId] — slides: [list of slideIds]
+Original template page: "0:1" — this is the BASELINE design
 
-Take a screenshot of EACH slide. For each, answer:
+STEP 1: Take screenshots of the ORIGINAL template page (3-4 slides)
+        to understand the design language, element positions, spacing.
+
+STEP 2: Take screenshots of ALL generated slides.
+
+STEP 3: For each generated slide, compare against the original template and answer:
 1. Would you show this slide to a client? (YES/NO)
-2. What is the #1 thing that looks unprofessional? (specific: "breadcrumb wraps", "too much empty space", "text too close to card edge")
-3. How specifically to fix it? (exact instruction: "expand node X width to Y", "shorten text to Z", "remove node X")
+2. Is element positioning CONSISTENT with other slides in the deck?
+   (headers at same Y, footers at same Y, margins same)
+3. What is the #1 thing that looks unprofessional?
+4. How specifically to fix it?
 
-After reviewing all slides, list the TOP 5 most impactful fixes across the entire deck, in priority order.
+STEP 4: Review the DECK AS A WHOLE — look at all slides together:
+- Are headers at consistent positions across slides?
+- Are font sizes consistent for same-level elements?
+- Does any slide "break" the visual rhythm of the deck?
+- Would flipping through all slides feel cohesive?
 
-You do NOT fix anything yourself. You only critique and provide specific fix instructions.
+List the TOP 5 most impactful fixes, prioritizing DECK-LEVEL
+consistency issues over per-slide cosmetic issues.
+
+You do NOT fix anything yourself. You only critique.
+```
+
+**Fixer prompt (receives Designer's feedback):**
+```
+You are applying design fixes to a Figma presentation.
+
+File: [fileKey], Page: [pageId]
+Original template page: "0:1"
+Designer feedback: [top 5 fixes from Designer Critic]
+
+BEFORE applying ANY fix:
+1. Take screenshots of ALL slides (overview) to understand current state
+2. Take screenshots of the ORIGINAL template slides that correspond
+   to the slides being fixed — this is the BASELINE
+3. For each fix the Designer suggested, evaluate:
+   - Will this fix maintain CONSISTENCY with other slides in the deck?
+   - Does the original template have the element at the same position?
+   - If moving an element — where is it on OTHER slides of the same type?
+4. Apply fixes via use_figma, one at a time
+5. After each fix: screenshot to verify
+
+If a suggested fix would BREAK consistency with other slides
+(e.g., moving a header down on one slide when all others have it at top),
+SKIP that fix and explain why.
 ```
 
 **MANDATORY CYCLE (do NOT skip any step):**
 
 ```
 Iteration 1:
-  1. Designer Critic subagent → reviews all slides → returns top 5 fixes
-  2. Fixer subagent → applies fixes via use_figma
+  1. Designer Critic subagent → reviews all slides + original template → returns top 5 fixes
+  2. Fixer subagent → evaluates fixes against deck consistency + original → applies valid fixes
   3. Designer Critic subagent (AGAIN, fresh) → reviews SAME slides after fixes
      → returns: "APPROVED" or new list of fixes
   4. If NOT approved → Fixer applies new fixes
-
-Iteration 2 (if needed):
-  5. Designer Critic subagent (AGAIN) → final review
-  6. If still NOT approved → log remaining issues, move to Level 3
 
 Loop until Designer says "APPROVED" or no progress detected.
 **No progress** = same number of issues (or more) for 2 consecutive iterations → stop.
