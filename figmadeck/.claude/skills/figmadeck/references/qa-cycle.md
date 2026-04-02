@@ -98,6 +98,7 @@ Coverage, boundary, word-break, oversized, inner padding, group homogeneity.
 - Use `frame.children.filter()` (immediate children only) instead of `frame.findAll()` where possible
 - Do NOT return large data (textInfo, textSummary, origChars arrays). Return only checks + issues.
 - Keep return payload under 15KB to avoid 20KB use_figma response limit.
+- **SEQUENTIAL MCP CALLS ONLY:** Send ONE tool call at a time. Wait for response before sending the next. Do NOT send use_figma + use_figma + get_screenshot in parallel — Figma Plugin API is single-threaded and will deadlock. Order: Call 1 → wait → Call 2 → wait → screenshot → wait.
 
 ```js
 figma.skipInvisibleInstanceChildren = true; // CRITICAL: hundreds of times faster
