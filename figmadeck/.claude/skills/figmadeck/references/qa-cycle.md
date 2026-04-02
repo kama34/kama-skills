@@ -4,7 +4,9 @@ Process slides ONE AT A TIME. Check → fix → confirm → next slide.
 
 ## References
 
-Read `references/design-rules.md` for universal design rules (spacing, hierarchy, contrast, density). Apply during visual check (STEP 2) and fixes (STEP 3).
+Read BOTH before reviewing:
+- `references/design-rules.md` — universal design rules (spacing, hierarchy, contrast, density)
+- `references/design-lessons.md` — **real failures from past generations** (breadcrumb wrapping, oversized titles, stray arrows, text overflow patterns). These are specific problems that QA consistently misses.
 
 ## Critical Rules
 
@@ -366,6 +368,9 @@ Launch ONE subagent as a **professional presentation designer** who reviews the 
 You are a professional presentation designer with 10 years of experience.
 You are reviewing a completed presentation in Figma.
 
+Read references/design-lessons.md FIRST — it contains real failures
+from past generations that you MUST check for.
+
 File: [fileKey]
 Generated page: [pageId] — slides: [list of slideIds]
 Original template page: "0:1" — this is the BASELINE design
@@ -526,16 +531,46 @@ Level 1: Per-slide subagents (batches of 4, foreground, sequential MCP)
       ↓
 Level 2: Designer Critic cycle:
     Designer subagent → Fixer subagent → Designer subagent (re-review)
-    → if not approved → Fixer → Designer → ... until approved or no progress
+    → until approved or no progress
       ↓
 Level 3: Client Simulator cycle:
     Client subagent → Fixer subagent → Client subagent (re-review)
-    → if not approved → Fixer → Client → ... until approved or no progress
+    → until approved or no progress
+      ↓
+Level 4: Human Review
+    Show all slides to user → user feedback → Fixer → show again
+    → until user approves
+    → update design-lessons.md with new learnings
       ↓
 DONE → Final Report
 ```
 
 **"Template-inherent" is a TRIGGER for retemplating, not an excuse to skip.**
+
+---
+
+## QA Level 4: Human Review
+
+After Levels 1-3 complete, present the result to the user for final review.
+
+```
+Print:
+"QA Levels 1-3 complete. Here are screenshots of all slides.
+Please review and tell me what needs fixing."
+
+Take get_screenshot of EACH slide and show to the user.
+```
+
+**If user provides feedback:**
+1. Launch Fixer subagent with the user's specific instructions
+2. Apply fixes via use_figma (sequential)
+3. Screenshot each fixed slide → show to user
+4. If user has more feedback → repeat
+5. If user says "looks good" → DONE
+
+**This is the final checkpoint.** Human eyes catch what all automated checks miss. The user's feedback is the ultimate source of truth.
+
+**After Human Review: update `references/design-lessons.md`** with any new problems the user identified that QA missed. This makes future generations better.
 
 ### Final Report
 
