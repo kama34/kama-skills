@@ -397,25 +397,34 @@ You do NOT fix anything yourself. You only critique.
 **Fixer prompt (receives Designer's feedback):**
 ```
 You are applying design fixes to a Figma presentation.
+You MUST use the Agent tool to run as a SUBAGENT with clean context.
 
 File: [fileKey], Page: [pageId]
 Original template page: "0:1"
-Designer feedback: [top 5 fixes from Designer Critic]
+Designer/Client feedback: [list of fixes/requests]
 
-BEFORE applying ANY fix:
-1. Take screenshots of ALL slides (overview) to understand current state
-2. Take screenshots of the ORIGINAL template slides that correspond
-   to the slides being fixed — this is the BASELINE
-3. For each fix the Designer suggested, evaluate:
-   - Will this fix maintain CONSISTENCY with other slides in the deck?
-   - Does the original template have the element at the same position?
-   - If moving an element — where is it on OTHER slides of the same type?
-4. Apply fixes via use_figma, one at a time
-5. After each fix: screenshot to verify
+RULES:
+1. "Template-inherent" is NOT an excuse to skip a fix.
+   If a template element doesn't work for the content →
+   RETEMPLATE that slide (clone a different template from Page 1).
+   "Template design" means "this template is wrong for this content" = swap it.
 
-If a suggested fix would BREAK consistency with other slides
-(e.g., moving a header down on one slide when all others have it at top),
-SKIP that fix and explain why.
+2. For EVERY fix requested, you MUST try at least 3 strategies:
+   a. Expand/resize elements to fit
+   b. Shorten/rephrase content
+   c. Retemplate (clone different slide from original page)
+   Only after trying all 3 can you mark something as "cannot fix."
+
+3. BEFORE applying ANY fix:
+   - Take screenshots of ALL slides to understand current state
+   - Take screenshots of the ORIGINAL template slides — BASELINE
+   - For each fix: will it maintain consistency with other slides?
+
+4. SEQUENTIAL MCP calls only. One at a time. Wait for response.
+
+5. After EACH fix: take screenshot to verify it worked.
+
+6. Do NOT invent new content. Shorten/rephrase only from the outline.
 ```
 
 **MANDATORY CYCLE (do NOT skip any step):**
@@ -505,18 +514,28 @@ Do NOT skip the re-review after fixes.
 
 ## Full Pipeline Summary
 
+**ALL reviewers and fixers MUST be launched via Agent tool (subagents with clean context).** Do NOT run QA in the main thread. Each agent gets a fresh context with only the relevant prompt and references.
+
+**ALL MCP calls are SEQUENTIAL** — one at a time, wait for response, then next. No parallel use_figma/get_screenshot.
+
 ```
 Generation (clone → fill)
       ↓
-Level 1: Structural + Visual Checklist (per-slide subagents, batches of 4)
-      ↓ Global consistency pass (breadcrumbs, page numbers)
+Level 1: Per-slide subagents (batches of 4, foreground, sequential MCP)
+      ↓ Global consistency pass (main thread, one use_figma call)
       ↓
-Level 2: Designer Critic (1 subagent reviews all → fixer applies top 5 → max 2 iterations)
+Level 2: Designer Critic cycle:
+    Designer subagent → Fixer subagent → Designer subagent (re-review)
+    → if not approved → Fixer → Designer → ... until approved or no progress
       ↓
-Level 3: Client Simulator (1 subagent as persona → fixer applies top 3 → max 2 iterations)
+Level 3: Client Simulator cycle:
+    Client subagent → Fixer subagent → Client subagent (re-review)
+    → if not approved → Fixer → Client → ... until approved or no progress
       ↓
 DONE → Final Report
 ```
+
+**"Template-inherent" is a TRIGGER for retemplating, not an excuse to skip.**
 
 ### Final Report
 
