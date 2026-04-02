@@ -93,13 +93,20 @@ STEP 5: Content-template fit (Phase E)
 
 Coverage, boundary, word-break, oversized, inner padding, group homogeneity.
 
+**PERFORMANCE RULES (prevent Plugin API hangs):**
+- Add `figma.skipInvisibleInstanceChildren = true` at the START of every use_figma call
+- Use `frame.children.filter()` (immediate children only) instead of `frame.findAll()` where possible
+- Do NOT return large data (textInfo, textSummary, origChars arrays). Return only checks + issues.
+- Keep return payload under 15KB to avoid 20KB use_figma response limit.
+
 ```js
+figma.skipInvisibleInstanceChildren = true; // CRITICAL: hundreds of times faster
 await figma.setCurrentPageAsync(generatedPage);
 const frame = figma.getNodeById(slideId);
 const fY = frame.absoluteTransform[1][2], fH = frame.height, fW = frame.width;
 const issues = [];
 
-// Coverage
+// Coverage — use findAllWithCriteria for speed, or filter immediate children
 let ca = 0;
 for (const n of frame.findAll(n => n.visible)) {
   if (["TEXT","FRAME","RECTANGLE","GROUP"].includes(n.type)) ca += n.width * n.height;
@@ -135,7 +142,8 @@ if (sim.length >= 3) {
   }
 }
 
-return { contentCoverage, boundaryBreaches, wordBreaks, oversizedOverflows, innerPaddingFails, issues, textCount: textNodes.length };
+// KEEP RETURN SMALL — no textInfo, no textSummary, no large arrays
+return { contentCoverage: Math.round(contentCoverage*100)/100, boundaryBreaches, wordBreaks, oversizedOverflows, innerPaddingFails, issueCount: issues.length, issues: issues.slice(0,10) };
 ```
 
 ### Call 2: Overlap + proximity + placeholders
@@ -143,6 +151,7 @@ return { contentCoverage, boundaryBreaches, wordBreaks, oversizedOverflows, inne
 Only TEXT nodes vs top-level sections (not all visible — reduces O(n²) dramatically).
 
 ```js
+figma.skipInvisibleInstanceChildren = true; // CRITICAL
 await figma.setCurrentPageAsync(generatedPage);
 const frame = figma.getNodeById(slideId);
 const issues = [];
