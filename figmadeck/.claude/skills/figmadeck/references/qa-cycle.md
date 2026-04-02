@@ -537,9 +537,9 @@ Level 3: Client Simulator cycle:
     Client subagent → Fixer subagent → Client subagent (re-review)
     → until approved or no progress
       ↓
-Level 4: Human Review
-    Show all slides to user → user feedback → Fixer → show again
-    → until user approves
+Level 4: Senior Reviewer (strictest, reads design-lessons.md)
+    Senior subagent → Fixer subagent → Senior subagent (re-review)
+    → until APPROVED or no progress
     → update design-lessons.md with new learnings
       ↓
 DONE → Final Report
@@ -549,28 +549,60 @@ DONE → Final Report
 
 ---
 
-## QA Level 4: Human Review
+## QA Level 4: Senior Reviewer
 
-After Levels 1-3 complete, present the result to the user for final review.
+After Levels 1-3 complete, launch the **strictest critic** with access to Design Memory.
 
+Launch ONE subagent as a **Senior Design Director** who has the final sign-off.
+
+**Senior Reviewer prompt:**
 ```
-Print:
-"QA Levels 1-3 complete. Here are screenshots of all slides.
-Please review and tell me what needs fixing."
+You are a Senior Design Director with 15 years of experience.
+You give the FINAL sign-off on presentations. Your standards are
+the highest — you reject work that junior designers would approve.
 
-Take get_screenshot of EACH slide and show to the user.
+Read these files FIRST:
+- references/design-lessons.md — REAL failures from past generations.
+  Every single issue listed there MUST be checked.
+- references/design-rules.md — universal design rules.
+
+File: [fileKey], Page: [pageId]
+Original template page: "0:1"
+
+STEP 1: Take screenshots of EVERY slide (sequential MCP).
+
+STEP 2: For EACH slide, check EVERY item in design-lessons.md:
+  - Single word in oversized title?
+  - Breadcrumb wrapping to 2+ lines?
+  - Text crossing decorative lines?
+  - Stray arrows or artifacts from previous fixes?
+  - Text touching container edge without padding?
+  - Placeholder text remaining?
+  - "ЕЩЁ" or "→" as meaningless label?
+  - Content invented (not from outline)?
+
+STEP 3: Check the DECK AS A WHOLE:
+  - Consistent header positions?
+  - Consistent breadcrumbs on all slides?
+  - Sequential page numbers?
+  - Visual rhythm (cohesive flip-through)?
+
+STEP 4: For each problem found, give SPECIFIC fix instruction:
+  - Which node to change
+  - What to change it to
+  - If template doesn't work → "retemplate slide N to template X"
+
+Return: "APPROVED" or list of SPECIFIC fixes with priority.
+You do NOT fix anything. You only give the final verdict.
 ```
 
-**If user provides feedback:**
-1. Launch Fixer subagent with the user's specific instructions
-2. Apply fixes via use_figma (sequential)
-3. Screenshot each fixed slide → show to user
-4. If user has more feedback → repeat
-5. If user says "looks good" → DONE
+**MANDATORY CYCLE:**
+```
+Senior Reviewer → Fixer subagent → Senior Reviewer (re-review)
+→ until APPROVED or no progress (2 consecutive iterations same issues)
+```
 
-**This is the final checkpoint.** Human eyes catch what all automated checks miss. The user's feedback is the ultimate source of truth.
-
-**After Human Review: update `references/design-lessons.md`** with any new problems the user identified that QA missed. This makes future generations better.
+**After Senior Reviewer approves: update `references/design-lessons.md`** if any new failure patterns were discovered during this generation.
 
 ### Final Report
 
