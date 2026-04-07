@@ -256,6 +256,26 @@ for (let i = 0; i < orderedSlideIds.length; i++) {
 
 **One `use_figma` call PER SLIDE** (incremental, not batched). This keeps errors isolated — if one slide fails, others are unaffected.
 
+### Pre-fill: Group Pattern Check (MANDATORY for repeated elements)
+
+Before filling a slide that contains a **group of similar elements** (cards, list items, agenda items, process steps — identified by: multiple child frames with identical structure), run this check:
+
+1. **Identify the group**: find all child frames that share the same internal structure (same number of text nodes, same roles)
+2. **For each element in the group**, calculate the character budget of the "hero" text node (the one with the largest fontSize):
+   ```
+   budget = floor(containerWidth / (fontSize * 0.6)) * floor(containerHeight / (lineHeight || fontSize * 1.2))
+   ```
+3. **Compare each outline content item against its budget**:
+   - If content fits budget → OK
+   - If content exceeds budget → **generate 3 alternative texts** that fit:
+     1. Single symbol/emoji that represents the concept (e.g., "!" instead of "5с")
+     2. Shortened to 1-2 words max
+     3. Abbreviation or initialism
+   - **Pick the best alternative** that preserves meaning AND matches the pattern of sibling elements
+4. **Homogeneity rule**: if N-1 elements in the group follow a pattern (e.g., single character), the outlier MUST be adapted to match. A group of `["P", "S", "I", "5с"]` → the outlier "5с" must become a single character like `"!"` or `"✓"`.
+
+**This check prevents the most common fill failure**: content that fits semantically but not visually in a template slot designed for a different text pattern.
+
 ```js
 // Called once per slide
 await figma.setCurrentPageAsync(generatedPage);  // MANDATORY every call

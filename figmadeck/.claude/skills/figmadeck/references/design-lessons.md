@@ -70,3 +70,19 @@ These are problems that QA consistently misses despite having rules for them:
 3. **Empty slides after hiding visuals** — missed because coverage exception says "template is sparse"
 4. **Artifacts from previous fixes** — missed because structural check doesn't know what was in the original generation vs what was added by a fix
 5. **Single-word oversized titles** — missed because there's no "word count too low" check for oversized slots
+
+## Lessons From 2026-04-02 Generation (pitch template)
+
+**2-word title slots need 2 words.** Template "PITCH DECK" = 2 words. If content has only 1 word ("ПИТЧ" or "УБЕЖДАЕТ"), the cover looks empty. Solution: use the 2-title-node structure — upper node + lower node = 2 words (e.g. "ПИТЧ" / "AI", "ИТОГИ" / "ШАГ").
+
+**"ЕЩЁ" / "→" as labels = hack.** When real text doesn't fit a narrow container (66px), agents replace with meaningless symbols. Better: use short meaningful words ("ДА!", "ШАГ", "ЕЩЁ!") — max 3-4 chars that carry intent.
+
+**Figma auto-renames text nodes by content.** After setting `node.characters = "ПИТЧ"`, the node name changes from "Title" to "ПИТЧ". Subsequent code that searches by `node.name.includes("Title")` will FAIL. Always search by node ID or by position/fontSize, never by name after fill.
+
+**Group homogeneity check prevents pattern violations.** When filling cards [P, S, I, 5с], the 4th item "5с" overflows because the slot fits 1 character. Pre-fill check: if N-1 items follow a pattern (single char), the outlier must match. "5с" → "!" fixed the overflow.
+
+**Header 4 containers are often only 180px wide at 65px font.** That's ~3.7 chars max. Words like "ОШИБКИ" (6 chars), "ЦЕЛИ" (4 chars) can break. Always expand Header 4 to 400px+ after filling with longer text.
+
+**Breadcrumb "Презентация, которая убеждает" needs 460px+ width.** Default container is 290px — guaranteed to wrap. Apply to ALL slides in Global Consistency Pass, not just the one where it was noticed.
+
+**Statement slides have inverted hierarchy by design.** Templates like 1:102 and 1:185 put body at 65px and heading at 45px. This is intentional — body IS the hero. Don't "fix" this unless retemplating.
