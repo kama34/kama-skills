@@ -12,6 +12,7 @@ Community-driven collection of **skills** for [Claude Code](https://docs.anthrop
 |-------|-------------|------------|
 | **[slidev](./slidev/)** | Generate polished Slidev presentations from text outlines. Supports presets, auto-image placement, visual QA, PDF/PNG export, and a self-improving learning loop. | Advanced |
 | **[game-coach](./game-coach/)** | Gamified goal coaching with XP, levels (10), badges (15), quests, and streaks. Daily check-ins, GROW+WOOP mentor sessions, dashboards, and retrospective analysis. | Intermediate |
+| **[llm-wiki-projects](./llm-wiki-projects/)** | Create and maintain Obsidian-like LLM Wiki project knowledge bases with source provenance, maps, dashboards, and validation. | Advanced |
 
 ## What Are Skills?
 

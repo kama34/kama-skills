@@ -1,0 +1,4 @@
+interface:
+  display_name: "LLM Wiki Projects"
+  short_description: "Build governed Obsidian-style LLM wikis."
+  default_prompt: "Create or migrate this project into an Obsidian-like LLM Wiki with linked notes, project governance, source provenance, self-learning logs, maps, and validation."

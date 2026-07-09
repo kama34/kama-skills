@@ -1,0 +1,33 @@
+{
+  "nodes": [
+    {
+      "id": "1111111111111111",
+      "type": "text",
+      "x": 0,
+      "y": 0,
+      "width": 360,
+      "height": 160,
+      "text": "# Project Map\n\nUse this canvas as a spatial overview. Link important nodes to markdown notes."
+    },
+    {
+      "id": "2222222222222222",
+      "type": "file",
+      "x": 460,
+      "y": 0,
+      "width": 320,
+      "height": 160,
+      "file": "90-meta/index.md"
+    }
+  ],
+  "edges": [
+    {
+      "id": "3333333333333333",
+      "fromNode": "1111111111111111",
+      "fromSide": "right",
+      "toNode": "2222222222222222",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "catalog"
+    }
+  ]
+}

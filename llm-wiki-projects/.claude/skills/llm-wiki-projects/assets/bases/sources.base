@@ -1,0 +1,24 @@
+filters: 'type == "source"'
+properties:
+  file.name:
+    displayName: "Source"
+  source-kind:
+    displayName: "Type"
+  read-status:
+    displayName: "Read Status"
+  key-claims-extracted:
+    displayName: "Claims Extracted"
+  used-in:
+    displayName: "Used In"
+  updated:
+    displayName: "Updated"
+views:
+  - type: table
+    name: "Sources"
+    order:
+      - file.name
+      - source-kind
+      - read-status
+      - key-claims-extracted
+      - used-in
+      - updated

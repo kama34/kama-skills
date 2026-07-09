@@ -1,0 +1,21 @@
+filters:
+  or:
+    - 'type == "project"'
+    - 'type == "decision"'
+properties:
+  file.name:
+    displayName: "Page"
+  type:
+    displayName: "Type"
+  status:
+    displayName: "Status"
+  updated:
+    displayName: "Updated"
+views:
+  - type: table
+    name: "Projects and Decisions"
+    order:
+      - file.name
+      - type
+      - status
+      - updated

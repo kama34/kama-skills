@@ -30,6 +30,7 @@ Each skill directory serves dual purpose: **skill source** (in `.claude/skills/`
 | Game Coach (Gamified Goals) | `game-coach/` | `/game` |
 | Slidegen Image Presenter | `slidegen/` | `/slidegen` |
 | SlideCraft (Two-Layer Presentations) | `slidecraft/` | `/slidecraft` |
+| LLM Wiki Projects | `llm-wiki-projects/` | `/wiki` |
 
 ## Working with Skills
 

@@ -1,0 +1,9 @@
+# Ignore all experiment files in this skill's test directory
+*
+
+# But keep the published skill package and docs
+!.gitignore
+!.claude/
+!.claude/**
+!README.md
+!README.ru.md

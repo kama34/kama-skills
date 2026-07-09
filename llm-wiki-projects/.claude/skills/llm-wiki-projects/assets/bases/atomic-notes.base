@@ -1,0 +1,15 @@
+filters: 'type == "atomic"'
+properties:
+  file.name:
+    displayName: "Note"
+  status:
+    displayName: "Status"
+  updated:
+    displayName: "Updated"
+views:
+  - type: table
+    name: "Atomic Notes"
+    order:
+      - file.name
+      - status
+      - updated
