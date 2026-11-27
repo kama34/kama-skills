@@ -28,7 +28,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies and TDLib
-        run: python -m pip install -r requirements.txt --only-binary=:all: tdjson==1.8.71
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install --only-binary=:all: tdjson==1.8.71
       - name: Load the native TDLib and check the unbound account
         run: |
           python -c "import sys; sys.path.insert(0, 'scripts'); import reader; print(reader.TDLib().version); assert reader.run(reader.parse_args(['status']))['reason'] == 'login_required'"
