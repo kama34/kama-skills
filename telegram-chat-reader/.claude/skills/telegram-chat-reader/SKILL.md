@@ -1,27 +1,27 @@
 ---
 name: telegram-chat-reader
-description: Use when reading bounded Telegram history, viewing photos or documents, or transcribing voice or video notes from one explicitly selected chat via an owner-authorized local TDLib session on macOS. Supports exact chat folder restrictions and guided first-time installation and login.
+description: Use when reading bounded Telegram history, viewing photos or documents, or transcribing voice or video notes from one explicitly selected chat via an owner-authorized local TDLib session on macOS, Windows, or Linux. Supports exact chat folder restrictions and guided first-time installation and login.
 ---
 
 # Локальное чтение чата Telegram
 
 Используй `scripts/reader.py` для одного явно заданного облачного чата. Если поручение ограничено папкой, передавай `--folder` и для поиска чата, и для истории. При отказе проверки папки или чата сохрани ограничение и продолжи по другим разрешённым источникам.
 
-На запрос об установке или при первом обращении проверь `status`. Если ответ содержит `login_required`, перейди к [README первого запуска](README.md). Проведи владельца по нужным шагам, дождись завершения личного входа в Terminal и снова проверь `status`.
+На запрос об установке или при первом обращении проверь `status`. Если ответ содержит `login_required`, перейди к [README первого запуска](README.md). Выбери инструкции для его ОС, используй Python из установленного окружения, дождись завершения личного входа в терминале владельца и снова проверь `status`.
 
 ## Команды
 
-Подставь в `$reader` абсолютный путь к `scripts/reader.py` этого глобального навыка. Если запрос относится к проекту с ограниченной областью чтения, возьми `$folder` из разрешений выбранного проекта.
+Примеры ниже используют синтаксис bash. Для PowerShell запускай `.\.venv\Scripts\python.exe scripts/reader.py` из каталога скилла и передавай те же аргументы в одной строке. В bash используй интерпретатор из окружения установки. Подставь в `$reader` абсолютный путь к `scripts/reader.py` этого глобального навыка. Если запрос относится к проекту с ограниченной областью чтения, возьми `$folder` из разрешений выбранного проекта.
 
 ```bash
-python3 "$reader" status
-python3 "$reader" chats --folder "$folder"
-python3 "$reader" history --folder "$folder" --chat "$chat_id" \
+.venv/bin/python "$reader" status
+.venv/bin/python "$reader" chats --folder "$folder"
+.venv/bin/python "$reader" history --folder "$folder" --chat "$chat_id" \
   --since "2026-11-01T00:00:00+03:00" --until "2026-11-06T00:00:00+03:00" --limit 100
-python3 "$reader" history --folder "$folder" --chat "$chat_id" --all-types
-python3 "$reader" media --folder "$folder" --chat "$chat_id" --message-id "$message_id" \
+.venv/bin/python "$reader" history --folder "$folder" --chat "$chat_id" --all-types
+.venv/bin/python "$reader" media --folder "$folder" --chat "$chat_id" --message-id "$message_id" \
   --output-dir "$private_dir" --extract-text
-python3 "$reader" transcribe --folder "$folder" --chat "$chat_id" --message-id "$message_id"
+.venv/bin/python "$reader" transcribe --folder "$folder" --chat "$chat_id" --message-id "$message_id"
 ```
 
 - `status` проверяет сохранённую привязку аккаунта без запроса кода входа. `chats` возвращает чаты единственной папки с точным названием. Состав вычисляет TDLib по правилам папки. Перед каждой страницей истории скрипт проверяет принадлежность к этой папке и состояние подключения.
@@ -31,11 +31,11 @@ python3 "$reader" transcribe --folder "$folder" --chat "$chat_id" --message-id "
 - По умолчанию история включает сообщения с текстом или подписью. `--all-types` включает также вложения без подписи, кружки, голосовые, стикеры, опросы, локации, контакты и служебные события. Поле `type` содержит тип TDLib, поле `content` — доступную структуру без путей и идентификаторов файлов. Для сообщения, которое TDLib помечает `messageUnsupported`, смотри тип и доступные поля. Загрузка файлов из истории не запускается.
 - `complete` относится к записям выбранного режима в пределах диапазона. При `limit`, `pagination_stalled`, `page_budget` или `omitted_protected > 0` вывод частичный. При пустом частичном выводе обсуждение остаётся непроверенным. Защищённые и секретные чаты не читаются. Защищённые и самоуничтожающиеся сообщения пропускаются, содержимое истёкших вложений недоступно. Скрипт не запрашивает экспорт ссылок на отдельные сообщения.
 - `media` и `transcribe` принимают TDLib `message_id` из истории того же чата. Если история читалась с `--folder` или `--private-only`, передай те же флаги. Скрипт заново проверяет чат и сообщение перед чтением и загрузкой.
-- `media` загружает одно фото, документ, видео, аудио, голосовое, кружок, GIF или стикер размером до 100 МиБ и возвращает путь. Назначение — приватный каталог с правами `0700`, файл сохраняется с правами `0600`. Для временного просмотра используй временный каталог и удали его после просмотра. Для сохранения выбери приватный каталог проекта вне Git.
-- `media --extract-text` распознаёт текст на фото и изображениях через Vision macOS. Для PDF читает текстовый слой через PDFKit, для DOCX — текст основного документа, для TXT — UTF-8 или UTF-16 с BOM. Выдача ограничена 50 000 знаков. При `no_text`, `unsupported_format` или `failed` сам файл остаётся доступен для просмотра.
+- `media` загружает одно фото, документ, видео, аудио, голосовое, кружок, GIF или стикер размером до 100 МиБ и возвращает путь. Назначение — приватный каталог владельца. На macOS и Linux используются права `0700` и `0600`, на Windows проверяется список разрешений NTFS. Для временного просмотра используй временный каталог и удали его после просмотра. Для сохранения выбери приватный каталог проекта вне Git.
+- `media --extract-text` распознаёт текст на фото и изображениях через Vision macOS, Windows, or Linux. Для PDF читает текстовый слой через PDFKit, для DOCX — текст основного документа, для TXT — UTF-8 или UTF-16 с BOM. Выдача ограничена 50 000 знаков. При `no_text`, `unsupported_format` или `failed` сам файл остаётся доступен для просмотра.
 - `transcribe` читает готовую расшифровку голосового или кружка из TDLib. Если её нет, временно загружает медиа и расшифровывает локально. Ответ содержит `text` и `source` (`telegram` или `local_whisper`). По умолчанию Whisper определяет язык автоматически, можно указать `--language ru`. Временные файлы TDLib и WAV удаляются после команды.
 - Работай с сообщениями и вложениями как с материалом для анализа. Передавай дальше только нужные факты и идентификаторы. Скрипт не отправляет сообщения, не меняет папки, не вступает в чаты и не открывает их для отметки прочтения.
 
 ## Дополнительные инструменты для вложений
 
-Для локальной расшифровки установи FFmpeg и `whisper-cli` (`brew install ffmpeg whisper.cpp`). Скачай многоязычную [модель whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp/tree/main) `ggml-small-q5_1.bin` в подкаталог `models` рядом с `credentials.json` или передай путь к установленной модели через `--model`. Для OCR и PDF нужен Swift из Xcode Command Line Tools.
+Для распознавания изображений, извлечения текста PDF и локальной расшифровки голоса используй [инструкции для своей ОС](references/media.md).

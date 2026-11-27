@@ -211,6 +211,7 @@ class ReaderTests(unittest.TestCase):
 
 
 class LocalSessionTests(unittest.TestCase):
+    @unittest.skipUnless(sys.platform == 'darwin', 'macOS Keychain')
     def test_first_login_resumes_after_one_keychain_item_was_created(self):
         keychain = "/example/user.keychain-db"
         with tempfile.TemporaryDirectory() as directory:
@@ -235,6 +236,7 @@ class LocalSessionTests(unittest.TestCase):
             self.assertEqual(config["path"], keychain)
             self.assertEqual(config["api_hash_service"], "telegram-chat-reader.api_hash")
 
+    @unittest.skipUnless(sys.platform == 'darwin', 'macOS Keychain')
     def test_keychain_failure_does_not_create_configuration(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -250,11 +252,12 @@ class LocalSessionTests(unittest.TestCase):
 
     def test_unbound_status_does_not_open_a_tdlib_client(self):
         with tempfile.TemporaryDirectory() as directory:
-            with patch.object(reader, "STATE_DIR", Path(directory)), patch.object(reader, "TDLib") as tdlib:
+            with patch.object(reader, "STATE_DIR", Path(directory) / "fresh"), patch.object(reader, "TDLib") as tdlib:
                 result = reader.run(reader.parse_args(["status"]))
                 self.assertEqual(result, {"authorized": False, "reason": "login_required"})
                 tdlib.assert_not_called()
 
+    @unittest.skipUnless(sys.platform == 'darwin', 'macOS Keychain')
     def test_keychain_uses_exact_items_and_leaves_reference_file_unchanged(self):
         config = {"keychain": {
             "path": "/path/to/telegram.keychain-db",

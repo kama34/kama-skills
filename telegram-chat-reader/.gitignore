@@ -12,3 +12,11 @@
 !.claude/skills/telegram-chat-reader/tests/
 !.claude/skills/telegram-chat-reader/tests/test_reader.py
 !.claude/skills/telegram-chat-reader/tests/test_media.py
+!.claude/skills/telegram-chat-reader/requirements.txt
+!.claude/skills/telegram-chat-reader/references/
+!.claude/skills/telegram-chat-reader/references/tdlib.md
+!.claude/skills/telegram-chat-reader/references/media.md
+!.claude/skills/telegram-chat-reader/tests/test_credentials.py
+!.claude/skills/telegram-chat-reader/tests/test_storage.py
+!.claude/skills/telegram-chat-reader/tests/test_portable_media.py
+!.claude/skills/telegram-chat-reader/tests/test_tdlib.py

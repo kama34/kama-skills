@@ -91,7 +91,11 @@ class MediaTests(unittest.TestCase):
     def test_video_note_falls_back_to_local_asr(self):
         note = message(2, "messageVideoNote", video_note={"video": {"@type": "file", "id": 9}})
         scope = self.scope(responses=[note, note])
-        with patch.object(reader, "media_path", return_value=Path("/tmp/clip")), \
+        model = Mock()
+        model.is_file.return_value = True
+        with patch.object(reader, "DEFAULT_MODEL", model), \
+                patch.object(reader.shutil, "which", return_value="test-tool"), \
+                patch.object(reader, "media_path", return_value=Path("/tmp/clip")), \
                 patch.object(reader, "local_transcript", return_value="звук из кружка"):
             result = reader.transcribe(scope, 11, 2, Path("/tmp"), SimpleNamespace(language="ru", model=None))
         self.assertEqual(result["text"], "звук из кружка")

@@ -5,7 +5,6 @@ import argparse
 import codecs
 import ctypes
 import ctypes.util
-import fcntl
 import getpass
 import json
 import os
@@ -23,8 +22,34 @@ from contextlib import contextmanager, nullcontext
 from datetime import datetime, timezone
 from xml.etree import ElementTree
 
+if os.name == "nt":
+    import msvcrt
+    try:
+        import ntsecuritycon
+        import pywintypes
+        import win32api
+        import win32con
+        import win32file
+        import win32security
+    except ImportError:
+        raise SystemExit("Install pywin32 in the Python environment used by Telegram Chat Reader.")
+else:
+    import fcntl
 
-STATE_DIR = Path.home() / "Library/Application Support/2030ai/telegram-chat-reader"
+
+def state_directory():
+    if sys.platform == "darwin":
+        return Path.home() / "Library/Application Support/2030ai/telegram-chat-reader"
+    if os.name == "nt":
+        base = Path(os.environ.get("LOCALAPPDATA") or Path.home() / "AppData/Local")
+    else:
+        base = Path(os.environ.get("XDG_DATA_HOME", ""))
+        if not base.is_absolute():
+            base = Path.home() / ".local/share"
+    return base / "telegram-chat-reader"
+
+
+STATE_DIR = state_directory()
 AUTH_READY = "authorizationStateReady"
 CONNECTED = "connectionStateReady"
 DEFAULT_LIMIT = 50
@@ -146,17 +171,44 @@ def json_bytes(value):
 
 class TDLib:
     def __init__(self):
+        self.lib = self.load_library()
+        self.state = State()
+        self.client_id = None
+        self.serial = 0
+        require_type(self.execute("setLogStream", log_stream={"@type": "logStreamEmpty"}), "ok")
+        self.version = require_type(self.execute("getOption", name="version"), "optionValueString")["value"]
+        if self.version == "1.8.0":
+            raise ReaderError("TDLib 1.8.0 has an older schema. Install a current build.")
+
+    @staticmethod
+    def load_library():
         override = os.environ.get("TDJSON_LIBRARY")
-        paths = (override,) if override else (
-            "/opt/homebrew/opt/tdlib/lib/libtdjson.dylib",
-            "/usr/local/opt/tdlib/lib/libtdjson.dylib",
-            ctypes.util.find_library("tdjson"),
-        )
+        if override:
+            if not Path(override).is_absolute():
+                raise ReaderError("TDJSON_LIBRARY must be an absolute path to the TDLib JSON library.")
+            paths = (override,)
+        else:
+            try:
+                import tdjson
+            except ModuleNotFoundError as error:
+                if error.name != "tdjson":
+                    raise ReaderError("The tdjson installation is incomplete. See the skill setup.") from error
+            except (ImportError, OSError) as error:
+                raise ReaderError("Could not load the tdjson wheel. Check the Python architecture.") from error
+            else:
+                return tdjson
+            if sys.platform == "darwin":
+                paths = ("/opt/homebrew/opt/tdlib/lib/libtdjson.dylib",
+                         "/usr/local/opt/tdlib/lib/libtdjson.dylib", ctypes.util.find_library("tdjson"))
+            elif sys.platform.startswith("linux"):
+                paths = (Path.home() / ".local/lib/libtdjson.so", ctypes.util.find_library("tdjson"))
+            else:
+                paths = ()
         for path in paths:
             if not path:
                 continue
             try:
-                lib = ctypes.CDLL(path)
+                lib = ctypes.CDLL(os.fspath(path))
                 lib.td_execute.argtypes = [ctypes.c_char_p]
                 lib.td_execute.restype = ctypes.c_char_p
                 lib.td_create_client_id.argtypes = []
@@ -165,19 +217,11 @@ class TDLib:
                 lib.td_send.restype = None
                 lib.td_receive.argtypes = [ctypes.c_double]
                 lib.td_receive.restype = ctypes.c_char_p
-                break
+                return lib
             except (OSError, AttributeError):
                 continue
-        else:
-            raise ReaderError("Current TDLib JSON library was not found. See the skill setup.")
-        self.lib = lib
-        self.state = State()
-        self.client_id = None
-        self.serial = 0
-        require_type(self.execute("setLogStream", log_stream={"@type": "logStreamEmpty"}), "ok")
-        self.version = require_type(self.execute("getOption", name="version"), "optionValueString")["value"]
-        if self.version == "1.8.0":
-            raise ReaderError("TDLib 1.8.0 has an older schema. Install a current build.")
+        raise ReaderError("Could not load TDLib. Install the tdjson wheel or set TDJSON_LIBRARY "
+                          "to a compatible native library. See references/tdlib.md.")
 
     def execute(self, method, **fields):
         reply = self.lib.td_execute(json_bytes({"@type": method, **fields}))
@@ -244,7 +288,7 @@ class TDLib:
             api_hash=api_hash,
             system_language_code="ru",
             device_model="Telegram Chat Reader",
-            system_version="macOS",
+            system_version={"darwin": "macOS", "win32": "Windows", "linux": "Linux"}.get(sys.platform, sys.platform),
             application_version="1.0",
         ), "ok")
         self.wait(lambda: self.state.auth not in (None, auth))
@@ -269,13 +313,94 @@ def assert_private(st, mode, kind):
         raise ReaderError("Session directories must be owner-only 0700 and files owner-only 0600.")
 
 
+def windows_user_sid():
+    token = win32security.OpenProcessToken(win32api.GetCurrentProcess(), win32con.TOKEN_QUERY)
+    try:
+        sid, _ = win32security.GetTokenInformation(token, win32security.TokenUser)
+        return win32security.ConvertSidToStringSid(sid)
+    finally:
+        token.Close()
+
+
+def windows_private_attributes():
+    user = windows_user_sid()
+    # Protected, inheritable DACL for this user, LocalSystem and machine administrators.
+    sddl = f"O:{user}D:P(A;OICI;FA;;;{user})(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)"
+    attributes = win32security.SECURITY_ATTRIBUTES()
+    attributes.SECURITY_DESCRIPTOR = win32security.ConvertStringSecurityDescriptorToSecurityDescriptor(sddl, 1)
+    return attributes
+
+
+def check_windows_object(handle, *, directory):
+    flags = win32file.GetFileInformationByHandle(handle)[0]
+    if flags & win32con.FILE_ATTRIBUTE_REPARSE_POINT or bool(flags & win32con.FILE_ATTRIBUTE_DIRECTORY) != directory:
+        raise ReaderError("Expected an ordinary local file or directory, without a Windows reparse point.")
+    info = win32security.OWNER_SECURITY_INFORMATION | win32security.DACL_SECURITY_INFORMATION
+    security = win32security.GetSecurityInfo(handle, win32security.SE_FILE_OBJECT, info)
+    # The OS may assign Administrators as owner for an elevated token.
+    owners = {windows_user_sid(), "S-1-5-18", "S-1-5-32-544"}
+    dacl = security.GetSecurityDescriptorDacl()
+    if win32security.ConvertSidToStringSid(security.GetSecurityDescriptorOwner()) not in owners or dacl is None:
+        raise ReaderError("The Windows storage must be privately owned and have a DACL.")
+    trusted = owners | {"S-1-3-4", "S-1-3-0"}  # OWNER RIGHTS and CREATOR OWNER
+    for index in range(dacl.GetAceCount()):
+        ace = dacl.GetAce(index)
+        if ace[0][0] == win32security.ACCESS_DENIED_ACE_TYPE:
+            continue
+        if ace[0][0] != win32security.ACCESS_ALLOWED_ACE_TYPE or win32security.ConvertSidToStringSid(ace[2]) not in trusted:
+            raise ReaderError("Windows permissions grant access to another principal. Use a new private directory.")
+
+
 def private_directory(path):
+    if os.name == "nt":
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            win32file.CreateDirectory(str(path), windows_private_attributes())
+        except pywintypes.error as error:
+            if error.winerror != 183:  # ERROR_ALREADY_EXISTS
+                raise ReaderError("Could not create the private Windows directory.") from error
+        handle = win32file.CreateFile(
+            str(path), win32con.READ_CONTROL | ntsecuritycon.FILE_READ_ATTRIBUTES,
+            win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE, None, win32con.OPEN_EXISTING,
+            win32con.FILE_FLAG_BACKUP_SEMANTICS | win32file.FILE_FLAG_OPEN_REPARSE_POINT, None)
+        try:
+            check_windows_object(handle, directory=True)
+        finally:
+            handle.Close()
+        return path
     path.mkdir(mode=0o700, parents=True, exist_ok=True)
     assert_private(path.lstat(), 0o700, stat.S_ISDIR)
     return path
 
 
 def open_private(path, flags):
+    if os.name == "nt":
+        access = win32con.GENERIC_WRITE if flags & os.O_WRONLY else win32con.GENERIC_READ
+        if flags & os.O_RDWR:
+            access |= win32con.GENERIC_WRITE
+        creation = win32con.OPEN_EXISTING
+        if flags & os.O_CREAT:
+            creation = win32con.CREATE_NEW if flags & os.O_EXCL else win32con.OPEN_ALWAYS
+        attributes = windows_private_attributes() if flags & os.O_CREAT else None
+        try:
+            handle = win32file.CreateFile(
+                str(path), access | win32con.READ_CONTROL | ntsecuritycon.FILE_READ_ATTRIBUTES,
+                win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE, attributes, creation,
+                win32file.FILE_FLAG_OPEN_REPARSE_POINT, None)
+        except pywintypes.error as error:
+            if error.winerror in {2, 3}:
+                raise FileNotFoundError(path) from error
+            if error.winerror in {80, 183}:
+                raise FileExistsError(path) from error
+            raise ReaderError("Could not open the private Windows file.") from error
+        try:
+            check_windows_object(handle, directory=False)
+            fd = msvcrt.open_osfhandle(int(handle), (flags & (os.O_RDONLY | os.O_WRONLY | os.O_RDWR)) | os.O_BINARY)
+        except BaseException:
+            handle.Close()
+            raise
+        handle.Detach()  # The CRT descriptor now owns this Windows handle.
+        return fd
     fd = os.open(path, flags | os.O_NOFOLLOW, 0o600)
     try:
         assert_private(os.fstat(fd), 0o600, stat.S_ISREG)
@@ -287,7 +412,7 @@ def open_private(path, flags):
 
 def read_private_json(path):
     try:
-        fd = open_private(path, os.O_RDONLY | os.O_NONBLOCK)
+        fd = open_private(path, os.O_RDONLY | getattr(os, "O_NONBLOCK", 0))
     except FileNotFoundError:
         return None
     with os.fdopen(fd, encoding="utf-8") as stream:
@@ -301,6 +426,8 @@ def write_private_json(path, value):
     fd, name = tempfile.mkstemp(dir=path.parent)
     try:
         with os.fdopen(fd, "wb") as stream:
+            if os.name == "nt":
+                check_windows_object(msvcrt.get_osfhandle(stream.fileno()), directory=False)
             stream.write(json_bytes(value))
         os.replace(name, path)
     finally:
@@ -311,8 +438,11 @@ def write_private_json(path, value):
 def session_lock(root):
     with os.fdopen(open_private(root / "session.lock", os.O_CREAT | os.O_RDWR), "r+b") as stream:
         try:
-            fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as error:
+            if os.name == "nt":
+                msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except (BlockingIOError, PermissionError) as error:
             raise ReaderError("Another Telegram reader command is using the local session.") from error
         yield
 
@@ -374,14 +504,96 @@ def configure_keychain(root):
     write_private_json(root / "credentials.json", {"keychain": settings})
 
 
+def credential_store_name():
+    if sys.platform == "win32":
+        return "Windows Credential Manager"
+    if sys.platform == "linux":
+        return "Secret Service"
+    raise ReaderError("This credential store requires Windows or Linux.")
+
+
+def native_credential_store():
+    name = credential_store_name()
+    try:
+        if sys.platform == "win32":
+            from keyring.backends.Windows import WinVaultKeyring
+            store = WinVaultKeyring()
+            store.persist = "local machine"
+        else:
+            from keyring.backends.SecretService import Keyring
+            store = Keyring()
+        # Probe the selected class's native dependencies, without backend discovery.
+        if store.priority <= 0:
+            raise RuntimeError
+    except Exception:
+        raise ReaderError(f"Could not open {name}. Check the keyring package and "
+                          "your signed-in user's credential store. See the setup README.") from None
+    return store
+
+
+def valid_api_value(field, value):
+    if not isinstance(value, str):
+        return False
+    if field == "api_id":
+        return bool(re.fullmatch(r"[0-9]{1,10}", value)) and 0 < int(value) < 2**31
+    return bool(re.fullmatch(r"[0-9a-fA-F]{32}", value))
+
+
+def system_store_values(*, setup):
+    store = native_credential_store()
+    values = []
+    for field in ("api_id", "api_hash"):
+        service = f"telegram-chat-reader.{field}"
+        account = "telegram-chat-reader"
+        try:
+            value = store.get_password(service, account)
+        except Exception:
+            raise ReaderError(f"Could not read {credential_store_name()}. "
+                              "Unlock the owner's credential store and retry.") from None
+        if not valid_api_value(field, value):
+            if not setup:
+                raise ReaderError(f"Missing or invalid {field}. Run login in your local terminal.")
+            value = hidden_input(f"Telegram {field} (input hidden): ").strip()
+            if not valid_api_value(field, value):
+                raise ReaderError(f"Invalid {field}. Check your application at my.telegram.org/apps "
+                                  "and run login again.")
+            try:
+                store.set_password(service, account, value)
+            except Exception:
+                raise ReaderError(f"Could not save {field} in {credential_store_name()}. "
+                                  "Unlock the owner's credential store and retry.") from None
+        values.append(value)
+    return values
+
+
+def configure_credentials(root):
+    if sys.platform == "darwin":
+        configure_keychain(root)
+        return
+    config_path = root / "credentials.json"
+    config = read_private_json(config_path)
+    reference = {"credential_store": credential_store_name()}
+    if config is not None and config != reference:
+        raise ReaderError("Credential configuration does not match this operating system.")
+    if config is None:
+        print("Откройте https://my.telegram.org/apps в своём браузере. "
+              "Создайте или откройте своё приложение в API development tools. "
+              "Введите его api_id и api_hash только в этом терминале.", file=sys.stderr)
+    system_store_values(setup=True)
+    if config is None:
+        write_private_json(config_path, reference)
+
+
 def credentials(root):
     config = read_private_json(root / "credentials.json")
-    if not config or "keychain" not in config:
-        raise ReaderError("Configure exact Telegram API items in macOS Keychain. See the skill setup.")
-    api_id, api_hash = keychain_credentials(config["keychain"])
-    if (not re.fullmatch(r"[0-9]{1,10}", api_id) or not 0 < int(api_id) < 2**31
-            or not re.fullmatch(r"[0-9a-fA-F]{32}", api_hash)):
-        raise ReaderError("Invalid Telegram API ID or hash in the configured Keychain items.")
+    if sys.platform == "darwin" and config and "keychain" in config:
+        api_id, api_hash = keychain_credentials(config["keychain"])
+        if not valid_api_value("api_id", api_id) or not valid_api_value("api_hash", api_hash):
+            raise ReaderError("Invalid Telegram API ID or hash in the configured Keychain items.")
+    elif sys.platform in ("win32", "linux") and config == {"credential_store": credential_store_name()}:
+        api_id, api_hash = system_store_values(setup=False)
+    else:
+        raise ReaderError("Configure the Telegram API items by running login in your local terminal.")
     return int(api_id), api_hash
 
 
@@ -777,13 +989,56 @@ def media_path(scope, chat_id, message_id, cache, file, *, maximum_bytes=MAX_MED
     return path
 
 
+def read_text_output(command, directory):
+    # Extractors may produce much more text than history consumers need.
+    with tempfile.TemporaryFile(dir=directory) as output:
+        subprocess.run(command, stdin=subprocess.DEVNULL, stdout=output,
+                       stderr=subprocess.DEVNULL, timeout=90, check=True)
+        output.seek(0)
+        limit = 4 * (MAX_EXTRACTED_CHARS + 1)
+        data = output.read(limit + 1)
+    return codecs.getincrementaldecoder("utf-8")().decode(data[:limit], final=len(data) <= limit)
+
+
+def portable_image_text(path):
+    # Tesseract also accepts lists of local filenames. Pass only recognized image containers.
+    with path.open("rb") as image_file:
+        header = image_file.read(16)
+    raster = (header.startswith((b"\xff\xd8\xff", b"\x89PNG\r\n\x1a\n", b"II*\0", b"MM\0*"))
+              or (header[:4] == b"RIFF" and header[8:12] == b"WEBP"))
+    command = ["tesseract", str(path), "stdout", "-l", "rus+eng"]
+    if raster:
+        return read_text_output(command, path.parent)
+    if header[4:8] != b"ftyp":
+        raise ValueError("Unsupported image container.")
+    decoder = shutil.which("heif-dec") or shutil.which("heif-convert")
+    if not decoder:
+        raise FileNotFoundError("heif-dec")
+    with tempfile.TemporaryDirectory(dir=path.parent) as work:
+        png = Path(work, "image.png")
+        subprocess.run([decoder, str(path), str(png)], stdin=subprocess.DEVNULL,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=90, check=True)
+        if not png.is_file():
+            # Collections are emitted as image-1.png, image-2.png, ...
+            png = Path(work, "image-1.png")
+        command[1] = str(png)
+        return read_text_output(command, path.parent)
+
+
 def extract_text(path, kind, suffix):
     if kind == "messagePhoto" or suffix in {".pdf", ".png", ".jpg", ".jpeg", ".heic", ".tiff", ".webp"}:
         mode = "pdf" if suffix == ".pdf" else "photo"
-        helper = Path(__file__).with_name("extract_text.swift")
-        result = subprocess.run(["/usr/bin/swift", str(helper), mode, str(path)],
-                                capture_output=True, timeout=90, check=True)
-        text = result.stdout.decode("utf-8")
+        if sys.platform == "darwin":
+            helper = Path(__file__).with_name("extract_text.swift")
+            text = read_text_output(["/usr/bin/swift", str(helper), mode, str(path)], path.parent)
+        elif mode == "pdf":
+            if not shutil.which("pdftotext"):
+                return {"status": "missing_dependencies", "tools": ["pdftotext"]}
+            text = read_text_output(["pdftotext", "-enc", "UTF-8", "-nopgbrk", str(path), "-"], path.parent)
+        else:
+            if not shutil.which("tesseract"):
+                return {"status": "missing_dependencies", "tools": ["tesseract"]}
+            text = portable_image_text(path)
     elif suffix in {".txt", ".csv", ".tsv", ".md", ".json", ".log", ".srt", ".vtt"}:
         limit = 4 * (MAX_EXTRACTED_CHARS + 1)
         with path.open("rb") as stream:
@@ -991,7 +1246,7 @@ def run(args):
         with temporary as temporary_path, TDLib() as td:
             cache = Path(temporary_path).resolve() if temporary_path else None
             if interactive:
-                configure_keychain(root)
+                configure_credentials(root)
             td.start(private_directory(root / "tdlib"), *credentials(root), files_directory=cache)
             if interactive:
                 login(td)
