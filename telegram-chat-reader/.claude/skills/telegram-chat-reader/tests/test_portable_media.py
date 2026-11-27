@@ -33,8 +33,9 @@ class PortableMediaTests(unittest.TestCase):
                 result = reader.extract_text(Path("example" + suffix), "messageDocument", suffix)
                 self.assertEqual(result, {"status": "missing_dependencies", "tools": [tool]})
 
-    @unittest.skipUnless(shutil.which("pdftotext"), "install Poppler to exercise its PDF parser")
-    def test_poppler_reads_a_local_pdf_with_a_text_layer(self):
+    @unittest.skipUnless(sys.platform == "darwin" or shutil.which("pdftotext"),
+                         "install Poppler to exercise the platform PDF parser")
+    def test_platform_extractor_reads_a_local_pdf_with_a_text_layer(self):
         stream = b"BT /F1 12 Tf 10 50 Td (Reader smoke test) Tj ET"
         objects = [b"<< /Type /Catalog /Pages 2 0 R >>",
                    b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
@@ -55,7 +56,6 @@ class PortableMediaTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as work:
             path = Path(work, "sample.pdf")
             path.write_bytes(pdf)
-            with patch.object(sys, "platform", "linux"):
-                result = reader.extract_text(path, "messageDocument", ".pdf")
+            result = reader.extract_text(path, "messageDocument", ".pdf")
             self.assertEqual(result["status"], "ok")
             self.assertEqual(result["text"].strip(), "Reader smoke test")
