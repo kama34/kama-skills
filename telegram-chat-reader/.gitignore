@@ -1,0 +1,14 @@
+*
+!.gitignore
+!README.md
+!.claude/
+!.claude/skills/
+!.claude/skills/telegram-chat-reader/
+!.claude/skills/telegram-chat-reader/SKILL.md
+!.claude/skills/telegram-chat-reader/README.md
+!.claude/skills/telegram-chat-reader/scripts/
+!.claude/skills/telegram-chat-reader/scripts/reader.py
+!.claude/skills/telegram-chat-reader/scripts/extract_text.swift
+!.claude/skills/telegram-chat-reader/tests/
+!.claude/skills/telegram-chat-reader/tests/test_reader.py
+!.claude/skills/telegram-chat-reader/tests/test_media.py
